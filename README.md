@@ -73,4 +73,4 @@ Arabic RTL Support
 📧 الدعم
 للأسئلة والاستفسارات، يمكنك فتح Issue على GitHub
 
-Made with ❤️ for Ministry of Interior
+Made with ❤️ for Effect Kings
