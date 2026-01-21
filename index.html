@@ -444,13 +444,20 @@
                         )}
 
                         {currentPage === 'military' && (
-                            <div className="bg-slate-800 p-6 rounded-lg">
-                                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                                    <Icon name="userCog" className="text-3xl" />
-                                    قائمة الضباط والعسكريين
-                                </h2>
-                                
-                                {militaryPersonnel.map(person => (
+                            <div className="space-y-4">
+                                <div className="bg-slate-800 p-6 rounded-lg">
+                                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                                        <Icon name="userCog" className="text-3xl" />
+                                        قائمة الضباط والعسكريين
+                                    </h2>
+                                    
+                                    {militaryPersonnel.length === 0 ? (
+                                        <div className="text-center py-12">
+                                            <Icon name="users" className="text-6xl text-gray-600 mb-4" />
+                                            <p className="text-gray-400 text-lg">لا يوجد عسكريين</p>
+                                        </div>
+                                    ) : (
+                                        militaryPersonnel.map(person => (
                                     <div key={person.id} className="bg-slate-700 p-5 rounded-lg mb-4 border-r-4 border-blue-600">
                                         {editingMilitary?.id === person.id ? (
                                             <div className="space-y-3">
@@ -551,7 +558,8 @@
                                             </div>
                                         )}
                                     </div>
-                                ))}
+                                ))
+                                )}
 
                                 {hasPermission('add') && (
                                     <div className="mt-6 p-4 bg-blue-900/20 rounded-lg border-2 border-blue-800/50">
@@ -597,6 +605,7 @@
                                         </button>
                                     </div>
                                 )}
+                                </div>
                             </div>
                         )}
                             <div className="bg-slate-800 p-6 rounded-lg">
