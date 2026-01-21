@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -68,15 +69,14 @@
             const [announcements, setAnnouncements] = useState([]);
             const [militaryPersonnel, setMilitaryPersonnel] = useState([{
                 id: 1, name: 'عبدالله محمد', rank: 'فريق أول',
-                empId: '1001', department: 'القيادة العامة', status: 'نشط'
+                unit: '1001', department: 'القيادة العامة', status: 'نشط'
             }]);
             
             const [searchTerm, setSearchTerm] = useState('');
             const [newCriminal, setNewCriminal] = useState({ name: '', crime: '', danger: 'متوسط' });
-            const [newUser, setNewUser] = useState({ id: '', password: '', name: '', role: 'جندي', rank: 'جندي', department: '' });
+            const [newUser, setNewUser] = useState({ id: '', password: '', name: '', role: 'جندي', rank: 'Cadet', department: '' });
+            const [editingUser, setEditingUser] = useState(null);
             const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '' });
-            const [editingMilitary, setEditingMilitary] = useState(null);
-            const [newMilitary, setNewMilitary] = useState({ name: '', rank: 'Cadet', empId: '', department: '' });
 
             // تحميل البيانات من السحابة
             const loadFromCloud = async () => {
@@ -200,21 +200,57 @@
                 if (!hasPermission('manage_personnel')) return alert('ليس لديك صلاحية');
                 if (!newUser.id || !newUser.password || !newUser.name || !newUser.department) return alert('الرجاء تعبئة جميع الحقول');
                 if (users.find(u => u.id === newUser.id)) return alert('الرقم موجود مسبقاً!');
+                
+                // إضافة المستخدم
                 setUsers([...users, newUser]);
-                setMilitaryPersonnel([...militaryPersonnel, {
-                    id: Date.now(), name: newUser.name, rank: newUser.rank,
-                    empId: newUser.id, department: newUser.department, status: 'نشط'
-                }]);
+                
+                // إضافة العسكري تلقائياً
+                const existingMilitary = militaryPersonnel.find(m => m.empId === newUser.id);
+                if (!existingMilitary) {
+                    setMilitaryPersonnel([...militaryPersonnel, {
+                        id: Date.now(),
+                        name: newUser.name,
+                        rank: newUser.rank,
+                        empId: newUser.id,
+                        department: newUser.department,
+                        status: 'نشط'
+                    }]);
+                }
+                
                 setNewUser({ id: '', password: '', name: '', role: 'جندي', rank: 'جندي', department: '' });
-                alert('✅ تم إضافة المستخدم!');
+                alert('✅ تم إضافة المستخدم والعسكري!');
             };
 
             const deleteUser = (userId) => {
                 if (!hasPermission('manage_personnel')) return alert('ليس لديك صلاحية');
                 if (userId === currentUser.id) return alert('لا يمكنك حذف حسابك!');
+                
+                // حذف المستخدم والعسكري معاً
                 setUsers(users.filter(u => u.id !== userId));
-                setMilitaryPersonnel(militaryPersonnel.filter(m => m.empId !== userId));
-                alert('تم الحذف');
+                setMilitaryPersonnel(militaryPersonnel.filter(m => m.unit !== userId));
+                alert('تم حذف العسكري والحساب');
+            };
+
+            const updateUser = () => {
+                if (!hasPermission('manage_personnel')) return alert('ليس لديك صلاحية');
+                if (!editingUser.id || !editingUser.password || !editingUser.name || !editingUser.department) return alert('الرجاء تعبئة جميع الحقول');
+                
+                // تحديث المستخدم
+                setUsers(users.map(u => u.id === editingUser.id ? editingUser : u));
+                
+                // تحديث العسكري تلقائياً
+                setMilitaryPersonnel(militaryPersonnel.map(m => 
+                    m.unit === editingUser.id ? {
+                        ...m,
+                        name: editingUser.name,
+                        rank: editingUser.rank,
+                        department: editingUser.department
+                    } : m
+                ));
+                
+                if (currentUser.id === editingUser.id) setCurrentUser(editingUser);
+                setEditingUser(null);
+                alert('✅ تم تحديث العسكري والحساب!');
             };
 
             const addMilitary = () => {
@@ -354,7 +390,7 @@
                                 {page: 'criminals', icon: 'users', label: 'المطلوبين'},
                                 {page: 'reports', icon: 'fileText', label: 'البلاغات'},
                                 {page: 'announcements', icon: 'megaphone', label: 'البيانات'},
-                                {page: 'military', icon: 'userCog', label: 'الضباط'},
+                                {page: 'military', icon: 'userCog', label: 'العساكر'},
                             ].map(({page, icon, label}) => (
                                 <button key={page} onClick={() => setCurrentPage(page)}
                                     className={`p-4 rounded-lg shadow-lg flex flex-col items-center gap-2 ${
@@ -370,7 +406,7 @@
                                         currentPage === 'users' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-blue-400 hover:bg-slate-700'
                                     }`}>
                                     <Icon name="userPlus" className="text-2xl" />
-                                    <span className="text-sm font-semibold">الحسابات</span>
+                                    <span className="text-sm font-semibold">إدارة العساكر</span>
                                 </button>
                             )}
                             {hasPermission('add') && (
@@ -456,163 +492,54 @@
                                 <div className="bg-slate-800 p-6 rounded-lg">
                                     <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
                                         <Icon name="userCog" className="text-3xl" />
-                                        قائمة الضباط والعسكريين
+                                        قائمة العساكر
                                     </h2>
                                     
                                     {militaryPersonnel.length === 0 ? (
                                         <div className="text-center py-12">
                                             <Icon name="users" className="text-6xl text-gray-600 mb-4" />
-                                            <p className="text-gray-400 text-lg">لا يوجد عسكريين</p>
+                                            <p className="text-gray-400 text-lg">لا يوجد عساكر</p>
                                         </div>
                                     ) : (
-                                        militaryPersonnel.map(person => (
-                                    <div key={person.id} className="bg-slate-700 p-5 rounded-lg mb-4 border-r-4 border-blue-600">
-                                        {editingMilitary?.id === person.id ? (
-                                            <div className="space-y-3">
-                                                <h3 className="text-lg font-bold text-white mb-3">تعديل بيانات العسكري</h3>
-                                                <div className="grid md:grid-cols-2 gap-3">
-                                                    <input type="text" value={editingMilitary.name}
-                                                        onChange={(e) => setEditingMilitary({...editingMilitary, name: e.target.value})}
-                                                        className="px-3 py-2 bg-slate-600 rounded text-white"
-                                                        placeholder="الاسم الكامل" />
-                                                    <input type="text" value={editingMilitary.empId}
-                                                        onChange={(e) => setEditingMilitary({...editingMilitary, empId: e.target.value})}
-                                                        className="px-3 py-2 bg-slate-600 rounded text-white"
-                                                        placeholder="الرقم الوظيفي" />
-                                                    <input type="text" value={editingMilitary.department}
-                                                        onChange={(e) => setEditingMilitary({...editingMilitary, department: e.target.value})}
-                                                        className="px-3 py-2 bg-slate-600 rounded text-white"
-                                                        placeholder="القسم" />
-                                                    <select value={editingMilitary.rank}
-                                                        onChange={(e) => setEditingMilitary({...editingMilitary, rank: e.target.value})}
-                                                        className="px-3 py-2 bg-slate-600 rounded text-white">
-                                                        <option value="Cadet">Cadet</option>
-                                                        <option value="Solo Cadet">Solo Cadet</option>
-                                                        <option value="Officer">Officer</option>
-                                                        <option value="Officer I">Officer I</option>
-                                                        <option value="Officer II">Officer II</option>
-                                                        <option value="Officer III">Officer III</option>
-                                                        <option value="Senior Officer">Senior Officer</option>
-                                                        <option value="Sergeant">Sergeant</option>
-                                                        <option value="First Sergeant">First Sergeant</option>
-                                                        <option value="Staff Sergeant">Staff Sergeant</option>
-                                                        <option value="Lieutenant">Lieutenant</option>
-                                                        <option value="First Lieutenant">First Lieutenant</option>
-                                                        <option value="Captain">Captain</option>
-                                                        <option value="Major">Major</option>
-                                                        <option value="Colonel">Colonel</option>
-                                                        <option value="Brigadier General">Brigadier General</option>
-                                                        <option value="Major General">Major General</option>
-                                                        <option value="Lieutenant General">Lieutenant General</option>
-                                                        <option value="General">General</option>
-                                                    </select>
-                                                    <select value={editingMilitary.status}
-                                                        onChange={(e) => setEditingMilitary({...editingMilitary, status: e.target.value})}
-                                                        className="px-3 py-2 bg-slate-600 rounded text-white">
-                                                        <option value="نشط">نشط</option>
-                                                        <option value="إجازة">إجازة</option>
-                                                        <option value="موقوف">موقوف</option>
-                                                    </select>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <button onClick={updateMilitary}
-                                                        className="flex-1 bg-green-600 py-2 rounded text-white hover:bg-green-700">
-                                                        حفظ التعديلات
-                                                    </button>
-                                                    <button onClick={() => setEditingMilitary(null)}
-                                                        className="flex-1 bg-gray-600 py-2 rounded text-white hover:bg-gray-700">
-                                                        إلغاء
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="flex justify-between items-start">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-3 mb-2 flex-wrap">
-                                                        <h3 className="text-xl font-bold text-white">{person.name}</h3>
-                                                        <span className="px-4 py-1 rounded-full text-sm font-bold bg-gradient-to-r from-yellow-600 to-yellow-700 text-white flex items-center gap-1">
-                                                            <Icon name="star" />
-                                                            {person.rank}
-                                                        </span>
-                                                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                                                            person.status === 'نشط' ? 'bg-green-900/50 text-green-400' : 
-                                                            person.status === 'إجازة' ? 'bg-yellow-900/50 text-yellow-400' :
-                                                            'bg-red-900/50 text-red-400'
-                                                        }`}>
-                                                            {person.status}
-                                                        </span>
+                                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {militaryPersonnel.map(person => (
+                                                <div key={person.id} className="bg-gradient-to-br from-slate-700 to-slate-800 p-5 rounded-lg border-r-4 border-blue-600 hover:shadow-lg transition">
+                                                    <div className="text-center">
+                                                        <div className="mb-3">
+                                                            <h3 className="text-xl font-bold text-white mb-2">{person.name}</h3>
+                                                            <span className="px-4 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-600 to-yellow-700 text-white inline-flex items-center gap-1">
+                                                                <Icon name="star" />
+                                                                {person.rank}
+                                                            </span>
+                                                        </div>
+                                                        <div className="space-y-2 text-sm">
+                                                            <div className="bg-slate-600/50 p-2 rounded">
+                                                                <p className="text-gray-400">القسم</p>
+                                                                <p className="text-white font-semibold">{person.department}</p>
+                                                            </div>
+                                                            <div className="bg-slate-600/50 p-2 rounded">
+                                                                <p className="text-gray-400">اليونت</p>
+                                                                <p className="text-blue-400 font-bold">{person.unit}</p>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <p className="text-gray-400 mb-1">
-                                                        <span className="font-semibold">الرقم الوظيفي:</span> {person.empId}
-                                                    </p>
-                                                    <p className="text-gray-400">
-                                                        <span className="font-semibold">القسم:</span> {person.department}
-                                                    </p>
                                                 </div>
-                                                <div className="flex gap-2">
-                                                    {hasPermission('edit') && (
-                                                        <button onClick={() => setEditingMilitary({...person})}
-                                                            className="bg-blue-600 px-4 py-2 rounded text-white hover:bg-blue-700 text-sm">
-                                                            تعديل
-                                                        </button>
-                                                    )}
-                                                    {hasPermission('delete') && (
-                                                        <button onClick={() => deleteMilitary(person.id)}
-                                                            className="bg-red-600 px-4 py-2 rounded text-white hover:bg-red-700 text-sm">
-                                                            حذف
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))
-                                )}
-
-                                {hasPermission('add') && (
-                                    <div className="mt-6 p-4 bg-blue-900/20 rounded-lg border-2 border-blue-800/50">
-                                        <h3 className="text-lg font-bold mb-4 text-white">إضافة عسكري جديد</h3>
-                                        <div className="grid md:grid-cols-2 gap-4">
-                                            <input type="text" placeholder="الاسم الكامل" value={newMilitary.name}
-                                                onChange={(e) => setNewMilitary({...newMilitary, name: e.target.value})}
-                                                className="px-4 py-2 bg-slate-700 border border-gray-600 rounded-lg text-white" />
-                                            <input type="text" placeholder="الرقم الوظيفي" value={newMilitary.empId}
-                                                onChange={(e) => setNewMilitary({...newMilitary, empId: e.target.value})}
-                                                className="px-4 py-2 bg-slate-700 border border-gray-600 rounded-lg text-white" />
-                                            <input type="text" placeholder="القسم (مثال: شؤون، عمليات)" value={newMilitary.department}
-                                                onChange={(e) => setNewMilitary({...newMilitary, department: e.target.value})}
-                                                className="px-4 py-2 bg-slate-700 border border-gray-600 rounded-lg text-white" />
-                                            <select value={newMilitary.rank}
-                                                onChange={(e) => setNewMilitary({...newMilitary, rank: e.target.value})}
-                                                className="px-4 py-2 bg-slate-700 border border-gray-600 rounded-lg text-white">
-                                                <option value="Cadet">Cadet</option>
-                                                <option value="Solo Cadet">Solo Cadet</option>
-                                                <option value="Officer">Officer</option>
-                                                <option value="Officer I">Officer I</option>
-                                                <option value="Officer II">Officer II</option>
-                                                <option value="Officer III">Officer III</option>
-                                                <option value="Senior Officer">Senior Officer</option>
-                                                <option value="Sergeant">Sergeant</option>
-                                                <option value="First Sergeant">First Sergeant</option>
-                                                <option value="Staff Sergeant">Staff Sergeant</option>
-                                                <option value="Lieutenant">Lieutenant</option>
-                                                <option value="First Lieutenant">First Lieutenant</option>
-                                                <option value="Captain">Captain</option>
-                                                <option value="Major">Major</option>
-                                                <option value="Colonel">Colonel</option>
-                                                <option value="Brigadier General">Brigadier General</option>
-                                                <option value="Major General">Major General</option>
-                                                <option value="Lieutenant General">Lieutenant General</option>
-                                                <option value="General">General</option>
-                                            </select>
+                                            ))}
                                         </div>
-                                        <button onClick={addMilitary}
-                                            className="mt-4 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-bold flex items-center justify-center gap-2">
-                                            <Icon name="userPlus" />
-                                            إضافة عسكري
-                                        </button>
-                                    </div>
-                                )}
+                                    )}
+                                    
+                                    {hasPermission('manage_personnel') && (
+                                        <div className="mt-6 p-4 bg-blue-900/20 rounded-lg border-2 border-blue-700 text-center">
+                                            <p className="text-blue-300">
+                                                <Icon name="userPlus" className="text-xl inline" />
+                                                <span className="mr-2">لإضافة أو تعديل العساكر، اذهب إلى</span>
+                                                <button onClick={() => setCurrentPage('users')} 
+                                                    className="text-yellow-400 font-bold hover:text-yellow-300 underline mr-2">
+                                                    إدارة العساكر
+                                                </button>
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
