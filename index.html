@@ -9,6 +9,27 @@
     <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        <script type="module">
+  // Firebase SDK
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, setDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+
+  // إعدادات Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyCYgffN2dA7IILMbI2i_1YfERkKWIrpHyA",
+    authDomain: "ek-police.firebaseapp.com",
+    projectId: "ek-police",
+    storageBucket: "ek-police.firebasestorage.app",
+    messagingSenderId: "300605258409",
+    appId: "1:300605258409:web:f265025ffa5592f651c7b8",
+    measurementId: "G-ECHK86Q5PK"
+  };
+
+  // تهيئة Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+</script>
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
