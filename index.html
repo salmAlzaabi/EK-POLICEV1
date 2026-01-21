@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -349,7 +348,7 @@
                     </header>
 
                     <div className="container mx-auto p-6">
-                        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
+                        <div className="grid grid-cols-2 md:grid-cols-7 gap-4 mb-6">
                             {[
                                 {page: 'dashboard', icon: 'home', label: 'الرئيسية'},
                                 {page: 'criminals', icon: 'users', label: 'المطلوبين'},
@@ -372,6 +371,15 @@
                                     }`}>
                                     <Icon name="userPlus" className="text-2xl" />
                                     <span className="text-sm font-semibold">الحسابات</span>
+                                </button>
+                            )}
+                            {hasPermission('add') && (
+                                <button onClick={() => setCurrentPage('add')}
+                                    className={`p-4 rounded-lg shadow-lg flex flex-col items-center gap-2 ${
+                                        currentPage === 'add' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-blue-400 hover:bg-slate-700'
+                                    }`}>
+                                    <Icon name="plus" className="text-2xl" />
+                                    <span className="text-sm font-semibold">إضافة مجرم</span>
                                 </button>
                             )}
                         </div>
