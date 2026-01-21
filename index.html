@@ -76,6 +76,8 @@
             const [newCriminal, setNewCriminal] = useState({ name: '', crime: '', danger: 'متوسط' });
             const [newUser, setNewUser] = useState({ id: '', password: '', name: '', role: 'جندي', rank: 'جندي', department: '' });
             const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '' });
+            const [editingMilitary, setEditingMilitary] = useState(null);
+            const [newMilitary, setNewMilitary] = useState({ name: '', rank: 'Cadet', empId: '', department: '' });
 
             // تحميل البيانات من السحابة
             const loadFromCloud = async () => {
@@ -213,6 +215,35 @@
                 if (userId === currentUser.id) return alert('لا يمكنك حذف حسابك!');
                 setUsers(users.filter(u => u.id !== userId));
                 setMilitaryPersonnel(militaryPersonnel.filter(m => m.empId !== userId));
+                alert('تم الحذف');
+            };
+
+            const addMilitary = () => {
+                if (!hasPermission('add')) return alert('ليس لديك صلاحية');
+                if (!newMilitary.name || !newMilitary.empId || !newMilitary.department) return alert('الرجاء تعبئة جميع الحقول');
+                if (militaryPersonnel.find(m => m.empId === newMilitary.empId)) return alert('الرقم الوظيفي موجود مسبقاً!');
+                setMilitaryPersonnel([...militaryPersonnel, {
+                    id: Date.now(),
+                    ...newMilitary,
+                    status: 'نشط'
+                }]);
+                setNewMilitary({ name: '', rank: 'Cadet', empId: '', department: '' });
+                alert('✅ تم إضافة العسكري!');
+            };
+
+            const updateMilitary = () => {
+                if (!hasPermission('edit')) return alert('ليس لديك صلاحية');
+                if (!editingMilitary.name || !editingMilitary.empId || !editingMilitary.department) return alert('الرجاء تعبئة جميع الحقول');
+                setMilitaryPersonnel(militaryPersonnel.map(m => 
+                    m.id === editingMilitary.id ? editingMilitary : m
+                ));
+                setEditingMilitary(null);
+                alert('✅ تم تحديث البيانات!');
+            };
+
+            const deleteMilitary = (id) => {
+                if (!hasPermission('delete')) return alert('ليس لديك صلاحية للحذف');
+                setMilitaryPersonnel(militaryPersonnel.filter(m => m.id !== id));
                 alert('تم الحذف');
             };
 
@@ -412,7 +443,162 @@
                             </div>
                         )}
 
-                        {currentPage === 'users' && hasPermission('manage_personnel') && (
+                        {currentPage === 'military' && (
+                            <div className="bg-slate-800 p-6 rounded-lg">
+                                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                                    <Icon name="userCog" className="text-3xl" />
+                                    قائمة الضباط والعسكريين
+                                </h2>
+                                
+                                {militaryPersonnel.map(person => (
+                                    <div key={person.id} className="bg-slate-700 p-5 rounded-lg mb-4 border-r-4 border-blue-600">
+                                        {editingMilitary?.id === person.id ? (
+                                            <div className="space-y-3">
+                                                <h3 className="text-lg font-bold text-white mb-3">تعديل بيانات العسكري</h3>
+                                                <div className="grid md:grid-cols-2 gap-3">
+                                                    <input type="text" value={editingMilitary.name}
+                                                        onChange={(e) => setEditingMilitary({...editingMilitary, name: e.target.value})}
+                                                        className="px-3 py-2 bg-slate-600 rounded text-white"
+                                                        placeholder="الاسم الكامل" />
+                                                    <input type="text" value={editingMilitary.empId}
+                                                        onChange={(e) => setEditingMilitary({...editingMilitary, empId: e.target.value})}
+                                                        className="px-3 py-2 bg-slate-600 rounded text-white"
+                                                        placeholder="الرقم الوظيفي" />
+                                                    <input type="text" value={editingMilitary.department}
+                                                        onChange={(e) => setEditingMilitary({...editingMilitary, department: e.target.value})}
+                                                        className="px-3 py-2 bg-slate-600 rounded text-white"
+                                                        placeholder="القسم" />
+                                                    <select value={editingMilitary.rank}
+                                                        onChange={(e) => setEditingMilitary({...editingMilitary, rank: e.target.value})}
+                                                        className="px-3 py-2 bg-slate-600 rounded text-white">
+                                                        <option value="Cadet">Cadet</option>
+                                                        <option value="Solo Cadet">Solo Cadet</option>
+                                                        <option value="Officer">Officer</option>
+                                                        <option value="Officer I">Officer I</option>
+                                                        <option value="Officer II">Officer II</option>
+                                                        <option value="Officer III">Officer III</option>
+                                                        <option value="Senior Officer">Senior Officer</option>
+                                                        <option value="Sergeant">Sergeant</option>
+                                                        <option value="First Sergeant">First Sergeant</option>
+                                                        <option value="Staff Sergeant">Staff Sergeant</option>
+                                                        <option value="Lieutenant">Lieutenant</option>
+                                                        <option value="First Lieutenant">First Lieutenant</option>
+                                                        <option value="Captain">Captain</option>
+                                                        <option value="Major">Major</option>
+                                                        <option value="Colonel">Colonel</option>
+                                                        <option value="Brigadier General">Brigadier General</option>
+                                                        <option value="Major General">Major General</option>
+                                                        <option value="Lieutenant General">Lieutenant General</option>
+                                                        <option value="General">General</option>
+                                                    </select>
+                                                    <select value={editingMilitary.status}
+                                                        onChange={(e) => setEditingMilitary({...editingMilitary, status: e.target.value})}
+                                                        className="px-3 py-2 bg-slate-600 rounded text-white">
+                                                        <option value="نشط">نشط</option>
+                                                        <option value="إجازة">إجازة</option>
+                                                        <option value="موقوف">موقوف</option>
+                                                    </select>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button onClick={updateMilitary}
+                                                        className="flex-1 bg-green-600 py-2 rounded text-white hover:bg-green-700">
+                                                        حفظ التعديلات
+                                                    </button>
+                                                    <button onClick={() => setEditingMilitary(null)}
+                                                        className="flex-1 bg-gray-600 py-2 rounded text-white hover:bg-gray-700">
+                                                        إلغاء
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                                        <h3 className="text-xl font-bold text-white">{person.name}</h3>
+                                                        <span className="px-4 py-1 rounded-full text-sm font-bold bg-gradient-to-r from-yellow-600 to-yellow-700 text-white flex items-center gap-1">
+                                                            <Icon name="star" />
+                                                            {person.rank}
+                                                        </span>
+                                                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                                            person.status === 'نشط' ? 'bg-green-900/50 text-green-400' : 
+                                                            person.status === 'إجازة' ? 'bg-yellow-900/50 text-yellow-400' :
+                                                            'bg-red-900/50 text-red-400'
+                                                        }`}>
+                                                            {person.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-gray-400 mb-1">
+                                                        <span className="font-semibold">الرقم الوظيفي:</span> {person.empId}
+                                                    </p>
+                                                    <p className="text-gray-400">
+                                                        <span className="font-semibold">القسم:</span> {person.department}
+                                                    </p>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    {hasPermission('edit') && (
+                                                        <button onClick={() => setEditingMilitary({...person})}
+                                                            className="bg-blue-600 px-4 py-2 rounded text-white hover:bg-blue-700 text-sm">
+                                                            تعديل
+                                                        </button>
+                                                    )}
+                                                    {hasPermission('delete') && (
+                                                        <button onClick={() => deleteMilitary(person.id)}
+                                                            className="bg-red-600 px-4 py-2 rounded text-white hover:bg-red-700 text-sm">
+                                                            حذف
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+
+                                {hasPermission('add') && (
+                                    <div className="mt-6 p-4 bg-blue-900/20 rounded-lg border-2 border-blue-800/50">
+                                        <h3 className="text-lg font-bold mb-4 text-white">إضافة عسكري جديد</h3>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <input type="text" placeholder="الاسم الكامل" value={newMilitary.name}
+                                                onChange={(e) => setNewMilitary({...newMilitary, name: e.target.value})}
+                                                className="px-4 py-2 bg-slate-700 border border-gray-600 rounded-lg text-white" />
+                                            <input type="text" placeholder="الرقم الوظيفي" value={newMilitary.empId}
+                                                onChange={(e) => setNewMilitary({...newMilitary, empId: e.target.value})}
+                                                className="px-4 py-2 bg-slate-700 border border-gray-600 rounded-lg text-white" />
+                                            <input type="text" placeholder="القسم (مثال: شؤون، عمليات)" value={newMilitary.department}
+                                                onChange={(e) => setNewMilitary({...newMilitary, department: e.target.value})}
+                                                className="px-4 py-2 bg-slate-700 border border-gray-600 rounded-lg text-white" />
+                                            <select value={newMilitary.rank}
+                                                onChange={(e) => setNewMilitary({...newMilitary, rank: e.target.value})}
+                                                className="px-4 py-2 bg-slate-700 border border-gray-600 rounded-lg text-white">
+                                                <option value="Cadet">Cadet</option>
+                                                <option value="Solo Cadet">Solo Cadet</option>
+                                                <option value="Officer">Officer</option>
+                                                <option value="Officer I">Officer I</option>
+                                                <option value="Officer II">Officer II</option>
+                                                <option value="Officer III">Officer III</option>
+                                                <option value="Senior Officer">Senior Officer</option>
+                                                <option value="Sergeant">Sergeant</option>
+                                                <option value="First Sergeant">First Sergeant</option>
+                                                <option value="Staff Sergeant">Staff Sergeant</option>
+                                                <option value="Lieutenant">Lieutenant</option>
+                                                <option value="First Lieutenant">First Lieutenant</option>
+                                                <option value="Captain">Captain</option>
+                                                <option value="Major">Major</option>
+                                                <option value="Colonel">Colonel</option>
+                                                <option value="Brigadier General">Brigadier General</option>
+                                                <option value="Major General">Major General</option>
+                                                <option value="Lieutenant General">Lieutenant General</option>
+                                                <option value="General">General</option>
+                                            </select>
+                                        </div>
+                                        <button onClick={addMilitary}
+                                            className="mt-4 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-bold flex items-center justify-center gap-2">
+                                            <Icon name="userPlus" />
+                                            إضافة عسكري
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                             <div className="bg-slate-800 p-6 rounded-lg">
                                 <h2 className="text-2xl font-bold text-white mb-4">المستخدمين</h2>
                                 {users.map(user => (
@@ -452,30 +638,12 @@
                                         </select>
                                         <select value={newUser.rank} onChange={(e) => setNewUser({...newUser, rank: e.target.value})}
                                             className="px-3 py-2 bg-slate-700 rounded text-white">
-                                             <option value="Cadet">Cadet</option>
-  <option value="Solo Cadet">Solo Cadet</option>
-
-  <option value="Officer">Officer</option>
-  <option value="Officer I">Officer I</option>
-  <option value="Officer II">Officer II</option>
-  <option value="Officer III">Officer III</option>
-
-  <option value="Senior Officer">Senior Officer</option>
-
-  <option value="Sergeant">Sergeant</option>
-  <option value="First Sergeant">First Sergeant</option>
-  <option value="Staff Sergeant">Staff Sergeant</option>
-
-  <option value="Lieutenant">Lieutenant</option>
-  <option value="First Lieutenant">First Lieutenant</option>
-  <option value="Captain">Captain</option>
-  <option value="Major">Major</option>
-  <option value="Colonel">Colonel</option>
-
-  <option value="Brigadier General">Brigadier General</option>
-  <option value="Major General">Major General</option>
-  <option value="Lieutenant General">Lieutenant General</option>
-  <option value="General">General</option>
+                                            <option value="جندي">جندي</option>
+                                            <option value="رقيب">رقيب</option>
+                                            <option value="ملازم">ملازم</option>
+                                            <option value="نقيب">نقيب</option>
+                                            <option value="عقيد">عقيد</option>
+                                            <option value="فريق أول">فريق أول</option>
                                         </select>
                                     </div>
                                     <button onClick={addUser}
