@@ -35,10 +35,9 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // إعدادات قاعدة البيانات السحابية
         const DB_CONFIG = {
-            binId: '679002b0e41b4d34e46a68e1', // معرف قاعدة البيانات
-            apiKey: '$2a$10$vKHNwL7LFu3g6jqPKdJxVu6YH8YkO0RTPj1kkqJnvKaLxJ.XqYDNi', // مفتاح الوصول
+            binId: '679002b0e41b4d34e46a68e1',
+            apiKey: '$2a$10$vKHNwL7LFu3g6jqPKdJxVu6YH8YkO0RTPj1kkqJnvKaLxJ.XqYDNi',
             baseUrl: 'https://api.jsonbin.io/v3/b/'
         };
 
@@ -78,14 +77,11 @@
             const [editingUser, setEditingUser] = useState(null);
             const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '' });
 
-            // تحميل البيانات من السحابة
             const loadFromCloud = async () => {
                 try {
                     setLoading(true);
                     const response = await fetch(`${DB_CONFIG.baseUrl}${DB_CONFIG.binId}/latest`, {
-                        headers: {
-                            'X-Master-Key': DB_CONFIG.apiKey
-                        }
+                        headers: { 'X-Master-Key': DB_CONFIG.apiKey }
                     });
                     
                     if (response.ok) {
@@ -107,16 +103,11 @@
                 }
             };
 
-            // حفظ البيانات إلى السحابة
             const saveToCloud = async () => {
                 try {
                     setSyncing(true);
                     const cloudData = {
-                        users,
-                        criminals,
-                        reports,
-                        announcements,
-                        militaryPersonnel,
+                        users, criminals, reports, announcements, militaryPersonnel,
                         lastUpdate: new Date().toISOString()
                     };
                     
@@ -129,9 +120,7 @@
                         body: JSON.stringify(cloudData)
                     });
                     
-                    if (response.ok) {
-                        console.log('✅ تم حفظ البيانات على السحابة');
-                    }
+                    if (response.ok) console.log('✅ تم حفظ البيانات على السحابة');
                 } catch (error) {
                     console.error('❌ خطأ في الحفظ:', error);
                 } finally {
@@ -139,17 +128,8 @@
                 }
             };
 
-            // تحميل البيانات عند بدء التطبيق
-            useEffect(() => {
-                loadFromCloud();
-            }, []);
-
-            // حفظ تلقائي عند تغيير البيانات
-            useEffect(() => {
-                if (!loading) {
-                    saveToCloud();
-                }
-            }, [users, criminals, reports, announcements, militaryPersonnel]);
+            useEffect(() => { loadFromCloud(); }, []);
+            useEffect(() => { if (!loading) saveToCloud(); }, [users, criminals, reports, announcements, militaryPersonnel]);
 
             const hasPermission = (action) => {
                 if (!currentUser) return false;
@@ -201,31 +181,28 @@
                 if (!newUser.id || !newUser.password || !newUser.name || !newUser.department) return alert('الرجاء تعبئة جميع الحقول');
                 if (users.find(u => u.id === newUser.id)) return alert('الرقم موجود مسبقاً!');
                 
-                // إضافة المستخدم
                 setUsers([...users, newUser]);
                 
-                // إضافة العسكري تلقائياً
-                const existingMilitary = militaryPersonnel.find(m => m.empId === newUser.id);
+                const existingMilitary = militaryPersonnel.find(m => m.unit === newUser.id);
                 if (!existingMilitary) {
                     setMilitaryPersonnel([...militaryPersonnel, {
                         id: Date.now(),
                         name: newUser.name,
                         rank: newUser.rank,
-                        empId: newUser.id,
+                        unit: newUser.id,
                         department: newUser.department,
                         status: 'نشط'
                     }]);
                 }
                 
-                setNewUser({ id: '', password: '', name: '', role: 'جندي', rank: 'جندي', department: '' });
-                alert('✅ تم إضافة المستخدم والعسكري!');
+                setNewUser({ id: '', password: '', name: '', role: 'جندي', rank: 'Cadet', department: '' });
+                alert('✅ تم إضافة العسكري والحساب!');
             };
 
             const deleteUser = (userId) => {
                 if (!hasPermission('manage_personnel')) return alert('ليس لديك صلاحية');
                 if (userId === currentUser.id) return alert('لا يمكنك حذف حسابك!');
                 
-                // حذف المستخدم والعسكري معاً
                 setUsers(users.filter(u => u.id !== userId));
                 setMilitaryPersonnel(militaryPersonnel.filter(m => m.unit !== userId));
                 alert('تم حذف العسكري والحساب');
@@ -235,10 +212,8 @@
                 if (!hasPermission('manage_personnel')) return alert('ليس لديك صلاحية');
                 if (!editingUser.id || !editingUser.password || !editingUser.name || !editingUser.department) return alert('الرجاء تعبئة جميع الحقول');
                 
-                // تحديث المستخدم
                 setUsers(users.map(u => u.id === editingUser.id ? editingUser : u));
                 
-                // تحديث العسكري تلقائياً
                 setMilitaryPersonnel(militaryPersonnel.map(m => 
                     m.unit === editingUser.id ? {
                         ...m,
@@ -251,35 +226,6 @@
                 if (currentUser.id === editingUser.id) setCurrentUser(editingUser);
                 setEditingUser(null);
                 alert('✅ تم تحديث العسكري والحساب!');
-            };
-
-            const addMilitary = () => {
-                if (!hasPermission('add')) return alert('ليس لديك صلاحية');
-                if (!newMilitary.name || !newMilitary.empId || !newMilitary.department) return alert('الرجاء تعبئة جميع الحقول');
-                if (militaryPersonnel.find(m => m.empId === newMilitary.empId)) return alert('الرقم الوظيفي موجود مسبقاً!');
-                setMilitaryPersonnel([...militaryPersonnel, {
-                    id: Date.now(),
-                    ...newMilitary,
-                    status: 'نشط'
-                }]);
-                setNewMilitary({ name: '', rank: 'Cadet', empId: '', department: '' });
-                alert('✅ تم إضافة العسكري!');
-            };
-
-            const updateMilitary = () => {
-                if (!hasPermission('edit')) return alert('ليس لديك صلاحية');
-                if (!editingMilitary.name || !editingMilitary.empId || !editingMilitary.department) return alert('الرجاء تعبئة جميع الحقول');
-                setMilitaryPersonnel(militaryPersonnel.map(m => 
-                    m.id === editingMilitary.id ? editingMilitary : m
-                ));
-                setEditingMilitary(null);
-                alert('✅ تم تحديث البيانات!');
-            };
-
-            const deleteMilitary = (id) => {
-                if (!hasPermission('delete')) return alert('ليس لديك صلاحية للحذف');
-                setMilitaryPersonnel(militaryPersonnel.filter(m => m.id !== id));
-                alert('تم الحذف');
             };
 
             const filteredCriminals = criminals.filter(c => 
@@ -384,7 +330,7 @@
                     </header>
 
                     <div className="container mx-auto p-6">
-                        <div className="grid grid-cols-2 md:grid-cols-7 gap-4 mb-6">
+                        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
                             {[
                                 {page: 'dashboard', icon: 'home', label: 'الرئيسية'},
                                 {page: 'criminals', icon: 'users', label: 'المطلوبين'},
@@ -407,15 +353,6 @@
                                     }`}>
                                     <Icon name="userPlus" className="text-2xl" />
                                     <span className="text-sm font-semibold">إدارة العساكر</span>
-                                </button>
-                            )}
-                            {hasPermission('add') && (
-                                <button onClick={() => setCurrentPage('add')}
-                                    className={`p-4 rounded-lg shadow-lg flex flex-col items-center gap-2 ${
-                                        currentPage === 'add' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-blue-400 hover:bg-slate-700'
-                                    }`}>
-                                    <Icon name="plus" className="text-2xl" />
-                                    <span className="text-sm font-semibold">إضافة مجرم</span>
                                 </button>
                             )}
                         </div>
@@ -543,64 +480,232 @@
                                 </div>
                             </div>
                         )}
-                            <div className="bg-slate-800 p-6 rounded-lg">
-                                <h2 className="text-2xl font-bold text-white mb-4">المستخدمين</h2>
-                                {users.map(user => (
-                                    <div key={user.id} className="bg-slate-700 p-4 rounded mb-3">
-                                        <div className="flex justify-between">
-                                            <div>
-                                                <h3 className="text-white font-bold">{user.name}</h3>
-                                                <p className="text-gray-400 text-sm">{user.id} | {user.rank} | {user.role}</p>
-                                            </div>
-                                            {user.id !== currentUser.id && (
-                                                <button onClick={() => deleteUser(user.id)}
-                                                    className="bg-red-600 px-3 py-1 rounded text-white text-sm">حذف</button>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                                <div className="mt-6 p-4 bg-purple-900/20 rounded border border-purple-800">
-                                    <h3 className="text-white font-bold mb-3">إضافة مستخدم</h3>
-                                    <div className="grid md:grid-cols-2 gap-3">
-                                        <input type="text" placeholder="الرقم" value={newUser.id}
-                                            onChange={(e) => setNewUser({...newUser, id: e.target.value})}
-                                            className="px-3 py-2 bg-slate-700 rounded text-white" />
-                                        <input type="text" placeholder="كلمة المرور" value={newUser.password}
-                                            onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                                            className="px-3 py-2 bg-slate-700 rounded text-white" />
-                                        <input type="text" placeholder="الاسم" value={newUser.name}
-                                            onChange={(e) => setNewUser({...newUser, name: e.target.value})}
-                                            className="px-3 py-2 bg-slate-700 rounded text-white" />
-                                        <input type="text" placeholder="القسم" value={newUser.department}
-                                            onChange={(e) => setNewUser({...newUser, department: e.target.value})}
-                                            className="px-3 py-2 bg-slate-700 rounded text-white" />
-                                        <select value={newUser.role} onChange={(e) => setNewUser({...newUser, role: e.target.value})}
-                                            className="px-3 py-2 bg-slate-700 rounded text-white">
-                                            <option value="جندي">جندي</option>
-                                            <option value="ضابط">ضابط</option>
-                                            <option value="قائد">قائد</option>
-                                        </select>
-                                        <select value={newUser.rank} onChange={(e) => setNewUser({...newUser, rank: e.target.value})}
-                                            className="px-3 py-2 bg-slate-700 rounded text-white">
-                                            <option value="جندي">جندي</option>
-                                            <option value="رقيب">رقيب</option>
-                                            <option value="ملازم">ملازم</option>
-                                            <option value="نقيب">نقيب</option>
-                                            <option value="عقيد">عقيد</option>
-                                            <option value="فريق أول">فريق أول</option>
-                                        </select>
-                                    </div>
-                                    <button onClick={addUser}
-                                        className="mt-3 w-full bg-purple-600 py-2 rounded text-white">إضافة</button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            );
-        };
 
-        ReactDOM.render(<PoliceSystem />, document.getElementById('root'));
-    </script>
+                        {currentPage === 'users' && hasPermission('manage_personnel') && (
+                            <div className="bg-slate-800 p-6 rounded-lg">
+                                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                                    <Icon name="shield" className="text-3xl" />
+                                    إدارة العساكر والحسابات
+                                    <span className="text-sm text-yellow-400 bg-yellow-900/30 px-3 py-1 rounded-full">للقائد فقط</span>
+                                </h2>
+                                
+                                <div className="mb-6">
+                                    <h3 className="text-lg font-bold text-white mb-4 border-b border-blue-800 pb-2">قائمة العساكر الحالية</h3>
+                                    {users.length === 0 ? (
+                                        <div className="text-center py-8 bg-slate-700/50 rounded-lg">
+                                            <Icon name="users" className="text-6xl text-gray-600 mb-2" />
+                                            <p className="text-gray-400">لا يوجد عساكر</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {users.map(user => (
+                                                <div key={user.id} className="bg-slate-700 p-5 rounded-lg border-r-4 border-purple-600 hover:bg-slate-600 transition">
+                                                    {editingUser?.id === user.id ? (
+                                                        <div className="space-y-3">
+                                                            <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                                                                ✏️ تعديل العسكري
+                                                            </h3>
+                                                            <div className="grid md:grid-cols-3 gap-3">
+                                                                <div>
+                                                                    <label className="block text-blue-400 mb-1 text-sm">اليونت / الرقم الوظيفي</label>
+                                                                    <input type="text" value={editingUser.id}
+                                                                        <function_calls>
+<invoke name="artifacts">
+<parameter name="command">update</parameter>
+<parameter name="id">police_cloud_version</parameter>
+<parameter name="old_str">                                                                    <label className="block text-blue-400 mb-1 text-sm">اليونت / الرقم الوظيفي</label>
+<input type="text" value={editingUser.id}</parameter>
+<parameter name="new_str">                                                                    <label className="block text-blue-400 mb-1 text-sm">اليونت / الرقم الوظيفي</label>
+<input type="text" value={editingUser.id}
+                                                                     className="w-full px-3 py-2 bg-slate-600 rounded text-white" disabled />
+</div>
+<div>
+<label className="block text-blue-400 mb-1 text-sm">الاسم الكامل</label>
+<input type="text" value={editingUser.name}
+onChange={(e) => setEditingUser({...editingUser, name: e.target.value})}
+className="w-full px-3 py-2 bg-slate-600 rounded text-white" />
+</div>
+<div>
+<label className="block text-blue-400 mb-1 text-sm">كلمة المرور</label>
+<input type="text" value={editingUser.password}
+onChange={(e) => setEditingUser({...editingUser, password: e.target.value})}
+className="w-full px-3 py-2 bg-slate-600 rounded text-white" />
+</div>
+<div>
+<label className="block text-blue-400 mb-1 text-sm">القسم</label>
+<input type="text" value={editingUser.department}
+onChange={(e) => setEditingUser({...editingUser, department: e.target.value})}
+className="w-full px-3 py-2 bg-slate-600 rounded text-white" />
+</div>
+<div>
+<label className="block text-blue-400 mb-1 text-sm">الرتبة</label>
+<select value={editingUser.rank}
+onChange={(e) => setEditingUser({...editingUser, rank: e.target.value})}
+className="w-full px-3 py-2 bg-slate-600 rounded text-white">
+<option value="Cadet">Cadet</option>
+<option value="Solo Cadet">Solo Cadet</option>
+<option value="Officer">Officer</option>
+<option value="Officer I">Officer I</option>
+<option value="Officer II">Officer II</option>
+<option value="Officer III">Officer III</option>
+<option value="Senior Officer">Senior Officer</option>
+<option value="Sergeant">Sergeant</option>
+<option value="First Sergeant">First Sergeant</option>
+<option value="Staff Sergeant">Staff Sergeant</option>
+<option value="Lieutenant">Lieutenant</option>
+<option value="First Lieutenant">First Lieutenant</option>
+<option value="Captain">Captain</option>
+<option value="Major">Major</option>
+<option value="Colonel">Colonel</option>
+<option value="Brigadier General">Brigadier General</option>
+<option value="Major General">Major General</option>
+<option value="Lieutenant General">Lieutenant General</option>
+<option value="General">General</option>
+</select>
+</div>
+<div>
+<label className="block text-blue-400 mb-1 text-sm">الصلاحية</label>
+<select value={editingUser.role}
+onChange={(e) => setEditingUser({...editingUser, role: e.target.value})}
+className="w-full px-3 py-2 bg-slate-600 rounded text-white">
+<option value="جندي">فرد (يشوف فقط)</option>
+<option value="ضابط">ضابط (إضافة وتعديل)</option>
+<option value="قائد">قائد (كل الصلاحيات)</option>
+</select>
+</div>
+</div>
+<div className="flex gap-2 mt-4">
+<button onClick={updateUser}
+                                                                 className="flex-1 bg-green-600 py-2 rounded text-white hover:bg-green-700 font-bold">
+✅ حفظ التعديلات
+</button>
+<button onClick={() => setEditingUser(null)}
+className="flex-1 bg-gray-600 py-2 rounded text-white hover:bg-gray-700">
+❌ إلغاء
+</button>
+</div>
+</div>
+) : (
+<div className="flex justify-between items-center">
+<div className="flex items-center gap-4 flex-1">
+<div className="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg">
+{user.name.charAt(0)}
+</div>
+<div className="flex-1">
+<div className="flex items-center gap-3 mb-1 flex-wrap">
+<h3 className="text-xl font-bold text-white">{user.name}</h3>
+<span className="px-3 py-1 rounded-full text-xs font-bold bg-yellow-900/50 text-yellow-400">
+<Icon name="star" /> {user.rank}
+</span>
+<span className={px-3 py-1 rounded-full text-xs font-bold ${                                                                             user.role === 'قائد' ? 'bg-red-900/50 text-red-400' :                                                                             user.role === 'ضابط' ? 'bg-blue-900/50 text-blue-400' :                                                                             'bg-green-900/50 text-green-400'                                                                         }}>
+{user.role}
+</span>
+</div>
+<div className="grid md:grid-cols-3 gap-3 text-sm text-gray-300">
+<p><span className="text-blue-400">🆔</span> اليونت: <span className="font-mono text-white font-bold">{user.id}</span></p>
+<p><span className="text-blue-400">🔑</span> الباسورد: <span className="font-mono text-white font-bold">{user.password}</span></p>
+<p><span className="text-blue-400">📍</span> القسم: <span className="text-white">{user.department}</span></p>
+</div>
+</div>
+</div>
+<div className="flex gap-2">
+<button onClick={() => setEditingUser({...user})}
+className="bg-blue-600 px-4 py-2 rounded text-white text-sm hover:bg-blue-700 flex items-center gap-1 font-bold">
+✏️ تعديل
+</button>
+{user.id !== currentUser.id && (
+<button onClick={() => deleteUser(user.id)}
+className="bg-red-600 px-4 py-2 rounded text-white text-sm hover:bg-red-700 font-bold">
+🗑️ حذف
+</button>
+)}
+</div>
+</div>
+)}
+</div>
+))}
+</div>
+)}
+</div>
+                            <div className="mt-6 p-6 bg-purple-900/20 rounded-lg border-2 border-purple-800">
+                                <h3 className="text-white font-bold mb-4 text-lg flex items-center gap-2">
+                                    <Icon name="userPlus" className="text-2xl" />
+                                    إضافة عسكري جديد
+                                </h3>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-blue-400 mb-2 text-sm font-semibold">الاسم الكامل</label>
+                                        <input type="text" placeholder="مثال: أحمد محمد" value={newUser.name}
+                                            onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                                            className="w-full px-3 py-2 bg-slate-700 rounded text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-blue-400 mb-2 text-sm font-semibold">اليونت / الرقم الوظيفي</label>
+                                        <input type="text" placeholder="مثال: 2001" value={newUser.id}
+                                            onChange={(e) => setNewUser({...newUser, id: e.target.value})}
+                                            className="w-full px-3 py-2 bg-slate-700 rounded text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-blue-400 mb-2 text-sm font-semibold">كلمة المرور</label>
+                                        <input type="text" placeholder="مثال: pass123" value={newUser.password}
+                                            onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                                            className="w-full px-3 py-2 bg-slate-700 rounded text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-blue-400 mb-2 text-sm font-semibold">القسم</label>
+                                        <input type="text" placeholder="مثال: العمليات" value={newUser.department}
+                                            onChange={(e) => setNewUser({...newUser, department: e.target.value})}
+                                            className="w-full px-3 py-2 bg-slate-700 rounded text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-blue-400 mb-2 text-sm font-semibold">الصلاحية</label>
+                                        <select value={newUser.role} onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                                            className="w-full px-3 py-2 bg-slate-700 rounded text-white">
+                                            <option value="جندي">فرد (يشوف فقط)</option>
+                                            <option value="ضابط">ضابط (إضافة وتعديل)</option>
+                                            <option value="قائد">قائد (كل الصلاحيات)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-blue-400 mb-2 text-sm font-semibold">الرتبة</label>
+                                        <select value={newUser.rank} onChange={(e) => setNewUser({...newUser, rank: e.target.value})}
+                                            className="w-full px-3 py-2 bg-slate-700 rounded text-white">
+                                            <option value="Cadet">Cadet</option>
+                                            <option value="Solo Cadet">Solo Cadet</option>
+                                            <option value="Officer">Officer</option>
+                                            <option value="Officer I">Officer I</option>
+                                            <option value="Officer II">Officer II</option>
+                                            <option value="Officer III">Officer III</option>
+                                            <option value="Senior Officer">Senior Officer</option>
+                                            <option value="Sergeant">Sergeant</option>
+                                            <option value="First Sergeant">First Sergeant</option>
+                                            <option value="Staff Sergeant">Staff Sergeant</option>
+                                            <option value="Lieutenant">Lieutenant</option>
+                                            <option value="First Lieutenant">First Lieutenant</option>
+                                            <option value="Captain">Captain</option>
+                                            <option value="Major">Major</option>
+                                            <option value="Colonel">Colonel</option>
+                                            <option value="Brigadier General">Brigadier General</option>
+                                            <option value="Major General">Major General</option>
+                                            <option value="Lieutenant General">Lieutenant General</option>
+                                            <option value="General">General</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button onClick={addUser}
+                                    className="mt-4 w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-3 rounded-lg hover:from-purple-500 hover:to-purple-600 font-bold text-lg flex items-center justify-center gap-2">
+                                    <Icon name="plus" />
+                                    إضافة العسكري والحساب
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+    ReactDOM.render(<PoliceSystem />, document.getElementById('root'));
+</script>
 </body>
-</html>
+</html></parameter>
