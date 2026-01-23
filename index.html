@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MDT | نظام وزارة الداخلية المطور</title>
+    <title>MDT | Dark Edition</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -18,91 +18,84 @@
             font-family: 'Noto Kufi Arabic', sans-serif; 
             margin: 0;
             overflow: hidden;
-            background: #f0f4f8;
-            height: 100vh;
+            background: #0f172a; /* لون داكن جداً */
+            color: #f8fafc;
         }
 
-        /* حاوية الخلفية المتحركة */
         #particles-js {
             position: absolute;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
             z-index: -1;
         }
 
-        /* تأثير الزجاج الفاخر */
         .glass-ui {
-            background: rgba(255, 255, 255, 0.45);
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 28px;
-        }
-
-        .sidebar-container {
-            margin: 20px;
-            height: calc(100vh - 40px);
-            width: 280px;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
-        }
-
-        .main-container {
-            margin: 20px 20px 20px 0;
-            height: calc(100vh - 40px);
-            overflow-y: auto;
-            scrollbar-width: none;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
         }
 
         .nav-btn {
-            transition: all 0.4s ease;
-            margin: 10px 20px;
-            border-radius: 20px;
-            color: #475569;
+            transition: all 0.3s ease;
+            margin: 8px 15px;
+            border-radius: 16px;
+            color: #94a3b8;
         }
 
         .nav-btn:hover {
-            background: rgba(255, 255, 255, 0.9);
-            transform: scale(1.05);
-            color: #4f46e5;
+            background: rgba(255, 255, 255, 0.05);
+            color: #818cf8;
+            padding-right: 30px;
         }
 
         .nav-active {
-            background: white !important;
-            color: #4f46e5 !important;
-            font-weight: 900;
-            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.15);
+            background: linear-gradient(90deg, rgba(79, 70, 229, 0.2) 0%, transparent 100%) !important;
+            color: #818cf8 !important;
+            border-right: 4px solid #4f46e5;
         }
 
-        .card-stat {
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        /* تصميم التقارير */
+        .report-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(79, 70, 229, 0.2);
+            transition: 0.3s;
         }
 
-        .card-stat:hover {
-            transform: translateY(-10px);
+        .report-card:hover {
+            border-color: #4f46e5;
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.1);
         }
 
-        /* تخصيص المدخلات */
-        input, select {
-            background: rgba(255, 255, 255, 0.7) !important;
-            border: 1px solid rgba(79, 70, 229, 0.1) !important;
-            border-radius: 16px !important;
-            padding: 12px 20px !important;
-            transition: all 0.3s !important;
+        input, textarea, select {
+            background: rgba(15, 23, 42, 0.8) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            border-radius: 12px !important;
+            padding: 12px !important;
         }
 
-        input:focus {
-            background: white !important;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1) !important;
+        input:focus, textarea:focus {
+            border-color: #4f46e5 !important;
+            outline: none;
         }
 
-        .action-btn {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            color: white;
-            border-radius: 18px;
-            font-weight: 700;
-            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        .neon-btn {
+            background: #4f46e5;
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.4);
+            transition: 0.3s;
         }
+
+        .neon-btn:hover {
+            background: #6366f1;
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.6);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -111,7 +104,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCYgffN2dA7IILMbI2i_1YfERkKWIrpHyA",
@@ -119,238 +112,141 @@
             projectId: "ek-police",
             storageBucket: "ek-police.firebasestorage.app",
             messagingSenderId: "300605258409",
-            appId: "1:300605258409:web:f265025ffa5592f651c7b8",
-            measurementId: "G-ECHK86Q5PK"
+            appId: "1:300605258409:web:f265025ffa5592f651c7b8"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        window.fb = { db, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc };
+        window.fb = { db, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc, serverTimestamp };
 
-        // تهيئة الخلفية التفاعلية
         particlesJS("particles-js", {
             "particles": {
-                "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
+                "number": { "value": 50 },
                 "color": { "value": "#4f46e5" },
-                "shape": { "type": "circle" },
-                "opacity": { "value": 0.2, "random": false },
-                "size": { "value": 3, "random": true },
-                "line_linked": { "enable": true, "distance": 150, "color": "#4f46e5", "opacity": 0.1, "width": 1 },
-                "move": { "enable": true, "speed": 2, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
+                "opacity": { "value": 0.3 },
+                "size": { "value": 2 },
+                "line_linked": { "enable": true, "distance": 150, "color": "#4f46e5", "opacity": 0.1 }
             },
-            "interactivity": {
-                "detect_on": "canvas",
-                "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" }, "resize": true },
-                "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 1 } }, "push": { "particles_nb": 4 } }
-            },
-            "retina_detect": true
+            "interactivity": { "events": { "onhover": { "enable": true, "mode": "repulse" } } }
         });
     </script>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
-
-        const RANK_HIERARCHY = [
-            { id: 'General', weight: 19 }, { id: 'Lieutenant General', weight: 18 },
-            { id: 'Major General', weight: 17 }, { id: 'Brigadier General', weight: 16 },
-            { id: 'Colonel', weight: 15 }, { id: 'Major', weight: 14 },
-            { id: 'Captain', weight: 13 }, { id: 'First Lieutenant', weight: 12 },
-            { id: 'Lieutenant', weight: 11 }, { id: 'Staff Sergeant', weight: 10 },
-            { id: 'First Sergeant', weight: 9 }, { id: 'Sergeant', weight: 8 },
-            { id: 'Senior Officer', weight: 7 }, { id: 'Officer III', weight: 6 },
-            { id: 'Officer II', weight: 5 }, { id: 'Officer I', weight: 4 },
-            { id: 'Officer', weight: 3 }, { id: 'Solo Cadet', weight: 2 },
-            { id: 'Cadet', weight: 1 }
-        ];
+        const { useState, useEffect } = React;
 
         const App = () => {
             const [isLoggedIn, setIsLoggedIn] = useState(false);
             const [currentUser, setCurrentUser] = useState(null);
             const [currentPage, setCurrentPage] = useState('dashboard');
             const [users, setUsers] = useState([]);
-            const [criminals, setCriminals] = useState([]);
-            const [isEditing, setIsEditing] = useState(false);
-
-            const [loginForm, setLoginForm] = useState({ id: '', password: '' });
-            const [newUser, setNewUser] = useState({ id: '', password: '', name: '', role: 'رتبة فرد', rank: 'Cadet', department: '' });
-            const [newCriminal, setNewCriminal] = useState({ name: '', crime: '', danger: 'متوسط' });
+            const [reports, setReports] = useState([]);
+            const [reportText, setReportText] = useState('');
 
             useEffect(() => {
                 if (!window.fb) return;
-                const unsubU = window.fb.onSnapshot(window.fb.collection(window.fb.db, "users"), (snap) => {
+                window.fb.onSnapshot(window.fb.collection(window.fb.db, "users"), (snap) => {
                     setUsers(snap.docs.map(d => ({ ...d.data(), fbId: d.id })));
                 });
-                const unsubC = window.fb.onSnapshot(window.fb.collection(window.fb.db, "criminals"), (snap) => {
-                    setCriminals(snap.docs.map(d => ({ ...d.data(), fbId: d.id })));
+                const q = window.fb.query(window.fb.collection(window.fb.db, "reports"), window.fb.orderBy("timestamp", "desc"));
+                window.fb.onSnapshot(q, (snap) => {
+                    setReports(snap.docs.map(d => ({ ...d.data(), fbId: d.id })));
                 });
-                return () => { unsubU(); unsubC(); };
             }, []);
 
-            const isCommand = (u) => u?.id === '1001' || u?.role === 'رتبة قيادية';
-            const isOfficer = (u) => isCommand(u) || u?.role === 'رتبة ضابط';
+            const handleLogin = (id, pass) => {
+                const u = users.find(x => x.id === id && x.password === pass);
+                if (u) { setCurrentUser(u); setIsLoggedIn(true); }
+            };
 
-            const handleLogin = () => {
-                const u = users.find(x => x.id === loginForm.id && x.password === loginForm.password);
-                if (u) { setCurrentUser(u); setIsLoggedIn(true); } else alert('بيانات الدخول غير صحيحة');
+            const submitReport = async () => {
+                if (!reportText.trim()) return;
+                await window.fb.addDoc(window.fb.collection(window.fb.db, "reports"), {
+                    userName: currentUser.name,
+                    userId: currentUser.id,
+                    content: reportText,
+                    timestamp: window.fb.serverTimestamp()
+                });
+                setReportText('');
+                alert('تم إرسال التقرير بنجاح');
             };
 
             if (!isLoggedIn) return (
-                <div className="h-screen w-full flex items-center justify-center p-6 relative">
-                    <div className="glass-ui w-full max-w-md p-10 text-center shadow-2xl">
-                        <div className="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl animate-bounce">
-                            <span className="text-4xl text-white">🛡️</span>
-                        </div>
-                        <h1 className="text-3xl font-black text-slate-800 mb-6">بوابة الصقر الأمنية</h1>
-                        <div className="space-y-4">
-                            <input type="text" placeholder="الرقم العسكري" className="w-full" onChange={e=>setLoginForm({...loginForm, id: e.target.value})} />
-                            <input type="password" placeholder="كلمة المرور" className="w-full" onChange={e=>setLoginForm({...loginForm, password: e.target.value})} onKeyPress={e=>e.key==='Enter'&&handleLogin()} />
-                            <button onClick={handleLogin} className="w-full action-btn py-4 text-lg">دخول النظام</button>
-                        </div>
+                <div className="h-screen w-full flex items-center justify-center p-6">
+                    <div className="glass-ui w-full max-w-md p-10 text-center border border-white/10 shadow-2xl">
+                        <h1 className="text-3xl font-black text-white mb-8">نظام الصقر <span className="text-indigo-500">MDT</span></h1>
+                        <input type="text" id="uid" placeholder="الرقم العسكري" className="w-full mb-4" />
+                        <input type="password" id="ups" placeholder="كلمة المرور" className="w-full mb-6" />
+                        <button onClick={() => handleLogin(document.getElementById('uid').value, document.getElementById('ups').value)} 
+                                className="w-full neon-btn py-4 rounded-xl font-bold">دخول النظام</button>
                     </div>
                 </div>
             );
 
             return (
-                <div className="flex h-screen relative z-10">
+                <div className="flex h-screen p-4 gap-4">
                     {/* Sidebar */}
-                    <aside className="glass-ui sidebar-container flex flex-col overflow-hidden">
-                        <div className="p-8 text-center border-b border-white/20">
-                            <div className="text-2xl font-black text-indigo-700">وزارة الداخلية</div>
-                            <div className="text-[10px] text-slate-500 font-bold uppercase mt-1">Republic of Interior</div>
+                    <aside className="glass-ui w-72 flex flex-col py-8">
+                        <div className="px-8 mb-10">
+                            <div className="text-xl font-black tracking-widest text-white">INTERIOR <span className="text-indigo-500">DEPT.</span></div>
                         </div>
                         
-                        <nav className="flex-grow pt-6 overflow-y-auto">
-                            <button onClick={()=>setCurrentPage('dashboard')} className={`flex items-center w-[240px] p-4 nav-btn ${currentPage==='dashboard'?'nav-active':''}`}>
-                                <span className="ml-3">🏛️</span> لوحة التحكم
-                            </button>
-                            <button onClick={()=>setCurrentPage('schedule')} className={`flex items-center w-[240px] p-4 nav-btn ${currentPage==='schedule'?'nav-active':''}`}>
-                                <span className="ml-3">📋</span> سجل الأفراد
-                            </button>
-                            <button onClick={()=>setCurrentPage('criminals')} className={`flex items-center w-[240px] p-4 nav-btn ${currentPage==='criminals'?'nav-active':''}`}>
-                                <span className="ml-3">⚖️</span> المطلوبين
-                            </button>
-                            {isCommand(currentUser) && (
-                                <button onClick={()=>setCurrentPage('users')} className={`flex items-center w-[240px] p-4 nav-btn ${currentPage==='users'?'nav-active text-amber-600':''}`}>
-                                    <span className="ml-3">⚙️</span> إدارة النظام
-                                </button>
-                            )}
+                        <nav className="flex-grow">
+                            <button onClick={()=>setCurrentPage('dashboard')} className={`flex items-center w-full p-4 nav-btn ${currentPage==='dashboard'?'nav-active':''}`}>📊 الإحصائيات</button>
+                            <button onClick={()=>setCurrentPage('reports')} className={`flex items-center w-full p-4 nav-btn ${currentPage==='reports'?'nav-active':''}`}>📝 التقارير الميدانية</button>
+                            <button onClick={()=>setCurrentPage('criminals')} className={`flex items-center w-full p-4 nav-btn ${currentPage==='criminals'?'nav-active':''}`}>🚨 المطلوبين</button>
                         </nav>
 
-                        <div className="p-6 bg-white/20">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
-                                    {currentUser.id === '1001' ? '👑' : currentUser.name[0]}
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-xs font-black text-slate-800">{currentUser.name}</p>
-                                    <p className="text-[10px] text-indigo-600 font-bold uppercase">{currentUser.rank}</p>
-                                </div>
+                        <div className="px-6 mt-auto">
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                                <p className="text-xs text-slate-400">المستخدم الحالي:</p>
+                                <p className="font-bold text-indigo-400">{currentUser.name}</p>
+                                <button onClick={()=>setIsLoggedIn(false)} className="mt-4 text-red-400 text-xs hover:underline">تسجيل خروج</button>
                             </div>
-                            <button onClick={()=>setIsLoggedIn(false)} className="w-full p-2 text-red-500 hover:bg-red-50 rounded-xl text-xs font-bold transition-all">تسجيل الخروج</button>
                         </div>
                     </aside>
 
-                    {/* Main Content */}
-                    <main className="glass-ui flex-grow main-container p-10">
-                        <div className="flex justify-between items-start mb-10">
-                            <div>
-                                <h2 className="text-4xl font-black text-slate-800">
-                                    {currentPage === 'dashboard' && 'الإحصائيات العامة'}
-                                    {currentPage === 'schedule' && 'سجل القوة البشرية'}
-                                    {currentPage === 'criminals' && 'قائمة التعميمات'}
-                                    {currentPage === 'users' && 'إدارة الموارد البشرية'}
-                                </h2>
-                                <p className="text-indigo-600 font-bold text-sm mt-2 flex items-center">
-                                    <span className="w-2 h-2 bg-green-500 rounded-full ml-2 animate-ping"></span>
-                                    بث مباشر من المركز الرئيسي
-                                </p>
-                            </div>
-                            <div className="text-slate-400 font-mono text-sm bg-white/50 px-4 py-2 rounded-full border border-white">
-                                {new Date().toLocaleDateString('ar-SA')}
-                            </div>
-                        </div>
-
+                    {/* Content */}
+                    <main className="glass-ui flex-grow overflow-y-auto p-10">
                         {currentPage === 'dashboard' && (
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                {[
-                                    { t: 'إجمالي القوة', v: users.length, i: '👮', c: 'text-indigo-600' },
-                                    { t: 'تعميمات نشطة', v: criminals.length, i: '🚨', c: 'text-red-500' },
-                                    { t: 'المهمات', v: '12', i: '🎯', c: 'text-amber-500' },
-                                    { t: 'استقرار النظام', v: '99%', i: '🛡️', c: 'text-green-600' }
-                                ].map((s, idx) => (
-                                    <div key={idx} className="glass-ui p-8 card-stat cursor-default shadow-sm bg-white/30">
-                                        <div className="text-3xl mb-4">{s.i}</div>
-                                        <div className="text-xs font-black text-slate-400 uppercase mb-1">{s.t}</div>
-                                        <div className={`text-4xl font-black ${s.c}`}>{s.v}</div>
-                                    </div>
-                                ))}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="glass-ui p-8 border-b-2 border-indigo-500">
+                                    <p className="text-slate-400 text-sm mb-2">إجمالي التقارير</p>
+                                    <h3 className="text-4xl font-black">{reports.length}</h3>
+                                </div>
+                                <div className="glass-ui p-8 border-b-2 border-green-500">
+                                    <p className="text-slate-400 text-sm mb-2">القوة المتصلة</p>
+                                    <h3 className="text-4xl font-black">{users.length}</h3>
+                                </div>
                             </div>
                         )}
 
-                        {currentPage === 'schedule' && (
-                            <div className="glass-ui overflow-hidden bg-white/20">
-                                <table className="w-full text-right">
-                                    <thead>
-                                        <tr className="bg-indigo-600/5 text-slate-500 text-xs font-black uppercase border-b border-white/30">
-                                            <th className="p-6">العنصر الأمنـي</th>
-                                            <th className="p-6">الرتبة العسكرية</th>
-                                            <th className="p-6">القطاع</th>
-                                            <th className="p-6">الرقم</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/20">
-                                        {users.map(u => (
-                                            <tr key={u.id} className="hover:bg-white/40 transition-colors">
-                                                <td className="p-6 flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">👮</div>
-                                                    <span className="font-bold text-slate-800">{u.name}</span>
-                                                </td>
-                                                <td className="p-6 text-sm font-bold text-indigo-700">{u.rank}</td>
-                                                <td className="p-6 text-slate-500 text-sm">{u.department}</td>
-                                                <td className="p-6 font-mono text-slate-400 text-xs">{u.id}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-
-                        {currentPage === 'users' && isCommand(currentUser) && (
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                <div className="lg:col-span-1">
-                                    <div className="glass-ui p-8 shadow-xl bg-white/40 border-t-4 border-t-indigo-600">
-                                        <h3 className="text-xl font-black mb-6">تعديل قاعدة البيانات</h3>
-                                        <div className="space-y-4">
-                                            <input type="text" placeholder="الرقم العسكري" disabled={isEditing} value={newUser.id} className="w-full" onChange={e=>setNewUser({...newUser, id: e.target.value})} />
-                                            <input type="text" placeholder="الاسم الكامل" value={newUser.name} className="w-full" onChange={e=>setNewUser({...newUser, name: e.target.value})} />
-                                            <input type="text" placeholder="القسم" value={newUser.department} className="w-full" onChange={e=>setNewUser({...newUser, department: e.target.value})} />
-                                            <input type="text" placeholder="كلمة المرور" value={newUser.password} className="w-full" onChange={e=>setNewUser({...newUser, password: e.target.value})} />
-                                            <select className="w-full" value={newUser.rank} onChange={e=>setNewUser({...newUser, rank: e.target.value})}>
-                                                {RANK_HIERARCHY.map(r => <option key={r.id} value={r.id}>{r.id}</option>)}
-                                            </select>
-                                            <button onClick={async() => {
-                                                await window.fb.setDoc(window.fb.doc(window.fb.db, "users", newUser.id), newUser);
-                                                setIsEditing(false); alert('تمت العملية بنجاح');
-                                            }} className="w-full action-btn py-4">تثبيت البيانات</button>
-                                        </div>
+                        {currentPage === 'reports' && (
+                            <div className="max-w-4xl mx-auto space-y-8">
+                                <div className="glass-ui p-6 border border-indigo-500/30">
+                                    <h3 className="text-lg font-bold mb-4">كتابة تقرير ميداني جديد</h3>
+                                    <textarea 
+                                        className="w-full h-32 mb-4" 
+                                        placeholder="اكتب تفاصيل مباشرتك أو البلاغ هنا..."
+                                        value={reportText}
+                                        onChange={(e)=>setReportText(e.target.value)}
+                                    ></textarea>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs text-slate-500">سيتم تسجيل التقرير باسم: {currentUser.name} ({currentUser.id})</span>
+                                        <button onClick={submitReport} className="neon-btn px-8 py-2 rounded-lg font-bold">إرسال التقرير</button>
                                     </div>
                                 </div>
-                                <div className="lg:col-span-2 space-y-4 overflow-y-auto max-h-[600px] pr-2">
-                                    {users.map(u => (
-                                        <div key={u.id} className="glass-ui p-6 flex justify-between items-center bg-white/20 hover:bg-white/50 transition-all group">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-14 h-14 rounded-2xl bg-indigo-600/10 text-indigo-600 flex items-center justify-center font-black text-xl">
-                                                    {u.id.slice(-2)}
-                                                </div>
-                                                <div>
-                                                    <p className="font-black text-slate-800">{u.name}</p>
-                                                    <p className="text-[10px] text-indigo-500 font-bold uppercase">{u.rank} • {u.role}</p>
-                                                </div>
+
+                                <div className="space-y-4">
+                                    <h3 className="text-xl font-black border-r-4 border-indigo-500 pr-4">سجل التقارير الواردة</h3>
+                                    {reports.map(r => (
+                                        <div key={r.fbId} className="report-card p-6 rounded-2xl">
+                                            <div className="flex justify-between mb-3 border-b border-white/5 pb-2">
+                                                <span className="font-black text-indigo-400">{r.userName} <span className="text-slate-600 ml-2">#{r.userId}</span></span>
+                                                <span className="text-[10px] text-slate-500">
+                                                    {r.timestamp?.toDate().toLocaleString('ar-SA')}
+                                                </span>
                                             </div>
-                                            <div className="flex gap-2">
-                                                <button onClick={()=>{setNewUser(u); setIsEditing(true);}} className="p-3 hover:bg-white rounded-xl transition-all">📝</button>
-                                                {u.id !== '1001' && <button onClick={async()=>confirm('حذف؟')&&await window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="p-3 text-red-500 hover:bg-red-50 rounded-xl">🗑️</button>}
-                                            </div>
+                                            <p className="text-slate-300 leading-relaxed text-sm">{r.content}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -358,34 +254,10 @@
                         )}
 
                         {currentPage === 'criminals' && (
-                            <div className="max-w-4xl mx-auto space-y-8">
-                                {isOfficer(currentUser) && (
-                                    <div className="glass-ui p-8 border-r-8 border-r-red-500 bg-red-50/10">
-                                        <h3 className="text-xl font-black text-slate-800 mb-6 uppercase">إصدار تعميم عاجل</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <input type="text" placeholder="اسم الهدف" className="p-4" value={newCriminal.name} onChange={e=>setNewCriminal({...newCriminal, name: e.target.value})} />
-                                            <input type="text" placeholder="نوع الجرم" className="p-4" value={newCriminal.crime} onChange={e=>setNewCriminal({...newCriminal, crime: e.target.value})} />
-                                            <button onClick={async()=>{
-                                                if(!newCriminal.name) return;
-                                                await window.fb.addDoc(window.fb.collection(window.fb.db, "criminals"), {...newCriminal});
-                                                setNewCriminal({name:'', crime:'', danger:'متوسط'});
-                                            }} className="bg-red-600 text-white p-4 rounded-xl font-bold shadow-lg hover:bg-red-700">تعميم الآن</button>
-                                        </div>
-                                    </div>
-                                )}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {criminals.map(c => (
-                                        <div key={c.fbId} className="glass-ui p-8 flex justify-between items-center border border-red-200 bg-white/40 group">
-                                            <div>
-                                                <div className="bg-red-100 text-red-600 text-[10px] px-2 py-1 rounded inline-block font-black mb-2">TARGET</div>
-                                                <h4 className="text-2xl font-black text-slate-800">{c.name}</h4>
-                                                <p className="text-sm font-bold text-red-500/70 mt-1">{c.crime}</p>
-                                            </div>
-                                            {isOfficer(currentUser) && (
-                                                <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "criminals", c.fbId))} className="w-12 h-12 flex items-center justify-center bg-red-50 text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-all">✖</button>
-                                            )}
-                                        </div>
-                                    ))}
+                            <div className="grid grid-cols-1 gap-4">
+                                <h2 className="text-2xl font-black text-red-500 mb-4 italic">MOST WANTED / قائمة التعميمات</h2>
+                                <div className="bg-red-500/10 p-4 rounded-xl border border-red-500/20 text-red-200">
+                                    ⚠️ يرجى الحذر عند التعامل مع الأشخاص المدرجين في هذه القائمة.
                                 </div>
                             </div>
                         )}
