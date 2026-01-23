@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <link rel="icon" type="image/png" href="https://cdn.discordapp.com/emojis/1394931233825361930.webp?size=160&animated=true">
+    <link rel="icon" type="image/png" href="https://cdn.discordapp.com/emojis/1394931233825361930.webp?size=160&animated=true">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MDT | POLICE </title>
@@ -30,7 +30,7 @@
 
         .sidebar { width: 260px; background: var(--primary); border-left: 1px solid rgba(255,255,255,0.05); }
         .main-content { background: #0a0f1d; background-image: radial-gradient(#1e293b 0.5px, transparent 0.5px); background-size: 24px 24px; }
-        .tactical-panel { background: var(--secondary); border: 1px solid rgba(59, 130, 246, 0.1); border-right: 4px solid var(--accent); }
+        .tactical-panel { background: var(--secondary); border: 1px solid rgba(59, 130, 246, 0.1); border-right: 4px solid var(--accent); transition: all 0.3s; }
         .supreme-panel { border-right: 4px solid var(--supreme); background: linear-gradient(90deg, rgba(251, 191, 36, 0.05) 0%, transparent 100%); }
         .nav-link { transition: all 0.2s; border-radius: 8px; margin: 4px 12px; cursor: pointer; }
         .nav-active { background: var(--accent) !important; color: white !important; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
@@ -83,12 +83,14 @@
             const [users, setUsers] = useState([]);
             const [criminals, setCriminals] = useState([]);
             const [reports, setReports] = useState([]);
+            const [uniforms, setUniforms] = useState([]);
             
-            // Forms & Filters
+            // Forms
             const [searchTerm, setSearchTerm] = useState('');
             const [loginForm, setLoginForm] = useState({ id: '', password: '' });
             const [newUser, setNewUser] = useState({ id: '', password: '', name: '', role: 'رتبة فرد', rank: 'Cadet', department: '' });
             const [newCriminal, setNewCriminal] = useState({ name: '', crime: '', danger: 'متوسط' });
+            const [newUniform, setNewUniform] = useState({ title: '', link: '' });
             const [reportForm, setReportForm] = useState({ content: '', time: '', isEditing: false, docId: '' });
             const [isEditingUser, setIsEditingUser] = useState(false);
 
@@ -96,6 +98,7 @@
                 if (!window.fb) return;
                 window.fb.onSnapshot(window.fb.collection(window.fb.db, "users"), (s) => setUsers(s.docs.map(d=>({...d.data(), fbId: d.id}))));
                 window.fb.onSnapshot(window.fb.collection(window.fb.db, "criminals"), (s) => setCriminals(s.docs.map(d=>({...d.data(), fbId: d.id}))));
+                window.fb.onSnapshot(window.fb.collection(window.fb.db, "uniforms"), (s) => setUniforms(s.docs.map(d=>({...d.data(), fbId: d.id}))));
                 const q = window.fb.query(window.fb.collection(window.fb.db, "field_reports"), window.fb.orderBy("createdAt", "desc"));
                 window.fb.onSnapshot(q, (s) => setReports(s.docs.map(d=>({...d.data(), fbId: d.id}))));
             }, []);
@@ -144,13 +147,12 @@
             if (!isLoggedIn) return (
                 <div className="h-screen w-full flex items-center justify-center bg-[#020617] p-4">
                     <div className="w-full max-w-md p-8 bg-[#0f172a] border border-blue-500/20 rounded-lg shadow-2xl">
-                        <div className="text-center mb-8"><div className="w-78 h-78 mx-auto mb-6 flex items-center justify-center">
-    <img 
-        src="https://cdn.discordapp.com/attachments/1453507995781693634/1464367144228622516/185-1855065_los-santos-police-department-president-of-the-united-states-removebg-preview.png?ex=697535ad&is=6973e42d&hm=36374c04aa1f881264eab683cba0d57d347dd41b654467b3c21cf8181f977e3e&" 
-        alt="Logo" 
-        className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]"
-    />
-</div><h1 className="text-2xl font-black"> MDT | POLICE </h1></div>
+                        <div className="text-center mb-8">
+                            <div className="w-48 h-48 mx-auto mb-6 flex items-center justify-center">
+                                <img src="https://cdn.discordapp.com/attachments/1453507995781693634/1464367144228622516/185-1855065_los-santos-police-department-president-of-the-united-states-removebg-preview.png?ex=697535ad&is=6973e42d&hm=36374c04aa1f881264eab683cba0d57d347dd41b654467b3c21cf8181f977e3e&" alt="Logo" className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+                            </div>
+                            <h1 className="text-2xl font-black"> MDT | POLICE </h1>
+                        </div>
                         <div className="space-y-4">
                             <input type="text" placeholder="الرقم العسكري" className="w-full p-4 rounded" onChange={e=>setLoginForm({...loginForm, id: e.target.value})} />
                             <input type="password" placeholder="كلمة المرور" className="w-full p-4 rounded" onChange={e=>setLoginForm({...loginForm, password: e.target.value})} onKeyPress={e=>e.key==='Enter'&&handleLogin()} />
@@ -167,6 +169,7 @@
                         <nav className="flex-grow mt-6">
                             <button onClick={()=>setCurrentPage('dashboard')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='dashboard'?'nav-active':''}`}>📊 لوحة التحكم</button>
                             <button onClick={()=>setCurrentPage('reports')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='reports'?'nav-active':''}`}>📄 التقارير والبحث</button>
+                            <button onClick={()=>setCurrentPage('uniforms')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='uniforms'?'nav-active':''}`}>👕 الملابس العسكرية</button>
                             <button onClick={()=>setCurrentPage('schedule')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='schedule'?'nav-active':''}`}>📋 الجدول العسكري</button>
                             <button onClick={()=>setCurrentPage('criminals')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='criminals'?'nav-active':''}`}>⚖️ المطلوبين</button>
                             {isCommand(currentUser) && (
@@ -187,6 +190,7 @@
                             <h1 className="text-4xl font-black uppercase">
                                 {currentPage === 'dashboard' && 'نظرة عامة'}
                                 {currentPage === 'reports' && 'مركز التقارير الميدانية'}
+                                {currentPage === 'uniforms' && 'تجهيزات الملابس'}
                                 {currentPage === 'schedule' && 'الجدول العسكري'}
                                 {currentPage === 'criminals' && 'تعميمات أمنية'}
                                 {currentPage === 'users' && 'ادارة الموظفين'}
@@ -206,8 +210,42 @@
                                     <h3 className="text-5xl font-black text-red-500">{criminals.length}</h3>
                                 </div>
                                 <div className="tactical-panel p-8 border-r-blue-500">
-                                    <p className="text-gray-500 font-bold text-xs uppercase mb-1">التقارير المرفوعة</p>
-                                    <h3 className="text-5xl font-black text-blue-400">{reports.length}</h3>
+                                    <p className="text-gray-500 font-bold text-xs uppercase mb-1">تجهيزات الملابس</p>
+                                    <h3 className="text-5xl font-black text-blue-400">{uniforms.length}</h3>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* UNIFORMS PAGE */}
+                        {currentPage === 'uniforms' && (
+                            <div className="max-w-5xl mx-auto space-y-8">
+                                {isOfficer(currentUser) && (
+                                    <div className="tactical-panel p-8 border-r-blue-600">
+                                        <h3 className="text-xl font-black text-blue-500 mb-6">إضافة قطعة عسكرية جديدة</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <input type="text" placeholder="اسم اللباس" className="p-4 rounded" value={newUniform.title} onChange={e=>setNewUniform({...newUniform, title: e.target.value})} />
+                                            <input type="text" placeholder="رابط اللباس / صورة" dir="ltr" className="p-4 rounded text-left" value={newUniform.link} onChange={e=>setNewUniform({...newUniform, link: e.target.value})} />
+                                            <button onClick={async()=>{
+                                                if(!newUniform.title || !newUniform.link) return alert('أكمل البيانات');
+                                                await window.fb.addDoc(window.fb.collection(window.fb.db, "uniforms"), newUniform);
+                                                setNewUniform({title:'', link:''});
+                                            }} className="bg-blue-600 p-4 rounded font-bold shadow-lg">إضافة للتجهيزات</button>
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {uniforms.map(uni => (
+                                        <div key={uni.fbId} className="tactical-panel p-6 border-white/5 flex flex-col gap-4 group">
+                                            <div className="flex justify-between items-start">
+                                                <div><h4 className="text-xl font-black">{uni.title}</h4><p className="text-[10px] text-blue-400 font-bold uppercase">EQUIPMENT</p></div>
+                                                {isOfficer(currentUser) && <button onClick={async()=>confirm('حذف؟')&&await window.fb.deleteDoc(window.fb.doc(window.fb.db, "uniforms", uni.fbId))} className="text-red-500 opacity-20 group-hover:opacity-100">🗑️</button>}
+                                            </div>
+                                            <div className="bg-black/40 p-3 rounded border border-white/5 flex items-center justify-between">
+                                                <code className="text-xs text-gray-500 truncate w-2/3" dir="ltr">{uni.link}</code>
+                                                <a href={uni.link} target="_blank" className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded text-xs font-bold">فتح الرابط</a>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         )}
@@ -219,7 +257,6 @@
                                     <span className="text-xl">🔍</span>
                                     <input type="text" placeholder="ابحث بالرقم العسكري أو الاسم..." className="w-full bg-transparent border-none !p-2" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                                 </div>
-
                                 <div className="tactical-panel p-6 border-r-blue-500">
                                     <h3 className="text-lg font-black mb-4">{reportForm.isEditing ? 'تعديل التقرير' : 'إضافة تقرير جديد'}</h3>
                                     <div className="space-y-4">
@@ -228,7 +265,6 @@
                                         <button onClick={submitReport} className="w-full bg-blue-600 py-3 rounded font-bold shadow-lg shadow-blue-900/40">حفظ التقرير</button>
                                     </div>
                                 </div>
-
                                 <div className="grid gap-4">
                                     {filteredReports.map(rep => (
                                         <div key={rep.fbId} className="tactical-panel p-6 border-white/5 border-r-slate-500">
