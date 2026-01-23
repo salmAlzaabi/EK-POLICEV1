@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOI Tactical System | نظام العمليات المطور</title>
+    <title>Ministry of Interior System | نظام وزارة الداخلية</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -185,7 +185,7 @@
                             <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-900/40">
                                 <span className="text-4xl">🛡️</span>
                             </div>
-                            <h1 className="text-2xl font-black tracking-tighter">مركز الدخول الموحد</h1>
+                            <h1 className="text-2xl font-black tracking-tighter"> MDT | POLICE  </h1>
                             <p className="text-blue-500 text-[10px] font-bold uppercase mt-1">Authorized Personnel Only</p>
                         </div>
                         <div className="space-y-4">
@@ -203,7 +203,7 @@
                     <aside className="sidebar flex flex-col h-full shadow-2xl z-50">
                         <div className="p-6 text-center border-b border-white/5">
                             <h2 className="text-xl font-black text-white">وزارة الداخلية</h2>
-                            <p className="text-[10px] text-gray-500 tracking-tighter">إدارة العمليات المركزية</p>
+                            <p className="text-[10px] text-gray-500 tracking-tighter">Ministry of Interior System</p>
                         </div>
                         
                         <nav className="flex-grow mt-6">
@@ -214,11 +214,11 @@
                                 <span className="ml-3">📋</span> الجدول العسكري
                             </button>
                             <button onClick={()=>setCurrentPage('criminals')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='criminals'?'nav-active':''}`}>
-                                <span className="ml-3">⚖️</span> السجل الجنائي
+                                <span className="ml-3">⚖️</span> المطلوبين للعدالة
                             </button>
                             {isCommand(currentUser) && (
                                 <button onClick={()=>setCurrentPage('users')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='users'?'nav-active bg-amber-600 shadow-amber-900/20':'text-amber-500'}`}>
-                                    <span className="ml-3">🛠️</span> إدارة القوة
+                                    <span className="ml-3">🛠️</span> إدارة العساكر
                                 </button>
                             )}
                         </nav>
@@ -243,9 +243,9 @@
                             <div>
                                 <h1 className="text-4xl font-black tracking-tight uppercase">
                                     {currentPage === 'dashboard' && 'نظرة عامة'}
-                                    {currentPage === 'schedule' && 'القوة العسكرية'}
+                                    {currentPage === 'schedule' && 'جدول افراد الشرطة'}
                                     {currentPage === 'criminals' && 'تعميمات أمنية'}
-                                    {currentPage === 'users' && 'مركز التحكم'}
+                                    {currentPage === 'users' && 'ادارة الموظفين'}
                                 </h1>
                                 <p className="text-blue-500 text-sm font-bold mt-2">
                                     <span className="status-dot bg-green-500"></span> النظام متصل بالخادم الرئيسي
@@ -360,7 +360,7 @@
                             <div className="max-w-4xl mx-auto space-y-8">
                                 {isOfficer(currentUser) && (
                                     <div className="tactical-panel p-8 border-r-4 border-r-red-600">
-                                        <h3 className="text-xl font-black text-red-500 mb-6 uppercase">إصدار مذكرة جلب</h3>
+                                        <h3 className="text-xl font-black text-red-500 mb-6 uppercase">إصدار مذكرة تعميم</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <input type="text" placeholder="الاسم" className="p-4 rounded" value={newCriminal.name} onChange={e=>setNewCriminal({...newCriminal, name: e.target.value})} />
                                             <input type="text" placeholder="التهمة" className="p-4 rounded" value={newCriminal.crime} onChange={e=>setNewCriminal({...newCriminal, crime: e.target.value})} />
@@ -368,7 +368,7 @@
                                                 if(!newCriminal.name) return;
                                                 await window.fb.addDoc(window.fb.collection(window.fb.db, "criminals"), {...newCriminal, timestamp: new Date().getTime()});
                                                 setNewCriminal({name:'', crime:'', danger:'متوسط'});
-                                            }} className="bg-red-600 p-4 rounded font-bold shadow-lg shadow-red-900/30 hover:scale-[1.02] transition-all">تفعيل المذكرة</button>
+                                            }} className="bg-red-600 p-4 rounded font-bold shadow-lg shadow-red-900/30 hover:scale-[1.02] transition-all">اعلان التعميم</button>
                                         </div>
                                     </div>
                                 )}
