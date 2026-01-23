@@ -99,7 +99,6 @@
                 window.fb.onSnapshot(q, (s) => setReports(s.docs.map(d=>({...d.data(), fbId: d.id}))));
             }, []);
 
-            // التعديل هنا: استخدام الرقم العسكري A-1
             const isSupreme = (u) => u?.id === 'A-1';
             const isCommand = (u) => isSupreme(u) || u?.role === 'رتبة قيادية';
             const isOfficer = (u) => isCommand(u) || u?.role === 'رتبة ضابط';
