@@ -112,14 +112,14 @@
             }, []);
 
             // منطق الصلاحيات المحدث
-            const isSupreme = (user) => user?.id === 'A-1';
+            const isSupreme = (user) => user?.id === '1001';
             const isCommand = (user) => isSupreme(user) || user?.role === 'رتبة قيادية';
             const isOfficer = (user) => isCommand(user) || user?.role === 'رتبة ضابط';
 
             const sortedUsers = useMemo(() => {
                 return [...users].sort((a, b) => {
-                    if (a.id === 'A-1') return -1; // المالك دائماً أول واحد
-                    if (b.id === 'A-1') return 1;
+                    if (a.id === '1001') return -1; // المالك دائماً أول واحد
+                    if (b.id === '1001') return 1;
                     const weightA = RANK_HIERARCHY.find(r => r.id === a.rank)?.weight || 0;
                     const weightB = RANK_HIERARCHY.find(r => r.id === b.rank)?.weight || 0;
                     return weightB - weightA;
@@ -147,7 +147,7 @@
             };
 
             const deleteUser = async (id) => {
-                if (id === 'A-1') return alert('لا يمكن حذف حساب المالك الأساسي للنظام');
+                if (id === '1001') return alert('لا يمكن حذف حساب المالك الأساسي للنظام');
                 if (id === currentUser.id) return alert('لا يمكنك حذف نفسك');
                 if (confirm('هل أنت متأكد من حذف هذا العسكري؟')) {
                     await window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", id));
@@ -196,7 +196,7 @@
                         <button onClick={()=>setCurrentPage('schedule')} className={`px-6 py-3 rounded-2xl whitespace-nowrap transition-all ${currentPage==='schedule'?'bg-blue-600 shadow-blue-600/30 shadow-lg':'glass-card opacity-60'}`}>الجدول العسكري</button>
                         <button onClick={()=>setCurrentPage('criminals')} className={`px-6 py-3 rounded-2xl whitespace-nowrap transition-all ${currentPage==='criminals'?'bg-blue-600 shadow-blue-600/30 shadow-lg':'glass-card opacity-60'}`}>المطلوبين أمنياً</button>
                         {isCommand(currentUser) && (
-                            <button onClick={()=>setCurrentPage('users')} className={`px-6 py-3 rounded-2xl whitespace-nowrap transition-all ${currentPage==='users'?'bg-amber-500 shadow-amber-500/30 shadow-lg text-black font-bold':'glass-card opacity-60'}`}>إدارة العسكر</button>
+                            <button onClick={()=>setCurrentPage('users')} className={`px-6 py-3 rounded-2xl whitespace-nowrap transition-all ${currentPage==='users'?'bg-amber-500 shadow-amber-500/30 shadow-lg text-black font-bold':'glass-card opacity-60'}`}>إدارة القوة</button>
                         )}
                     </nav>
 
@@ -215,7 +215,7 @@
                                 </div>
                                 <div className="glass-card p-10 rounded-[2.5rem] border-b-4 border-amber-500">
                                     <h3 className="text-gray-400 font-bold mb-2">Access range</h3>
-                                    <p className="text-2xl font-black text-amber-500">{isSupreme(currentUser) ? 'كامل الصلاحيات (A-1)' : currentUser.role}</p>
+                                    <p className="text-2xl font-black text-amber-500">{isSupreme(currentUser) ? 'كامل الصلاحيات (1001)' : currentUser.role}</p>
                                 </div>
                             </div>
                         )}
@@ -235,7 +235,7 @@
                                         </thead>
                                         <tbody className="divide-y divide-white/5">
                                             {sortedUsers.map(u => (
-                                                <tr key={u.id} className={`hover:bg-blue-600/5 transition-all ${u.id === 'A-1' ? 'bg-amber-500/5' : ''}`}>
+                                                <tr key={u.id} className={`hover:bg-blue-600/5 transition-all ${u.id === '1001' ? 'bg-amber-500/5' : ''}`}>
                                                     <td className="p-6">
                                                         <div className="flex items-center gap-3">
                                                             {u.id === '1001' ? <Icon name="crown" className="text-amber-400"/> : <Icon name="star" className="text-blue-500 text-xs"/>}
@@ -296,16 +296,16 @@
                                         <div key={u.id} className="glass-card p-5 rounded-3xl flex justify-between items-center group hover:bg-white/5 transition-all">
                                             <div className="flex items-center gap-4">
                                                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black ${u.id === '1001' ? 'bg-amber-500 text-black' : 'bg-slate-800 text-blue-500'}`}>
-                                                    {u.id === 'A-1' ? <Icon name="crown"/> : u.name[0]}
+                                                    {u.id === '1001' ? <Icon name="crown"/> : u.name[0]}
                                                 </div>
                                                 <div>
-                                                    <p className="font-black text-lg">{u.name} {u.id === 'A-1' && <span className="text-[10px] bg-amber-500 text-black px-2 py-0.5 rounded-full ml-2">Police Chief</span>}</p>
+                                                    <p className="font-black text-lg">{u.name} {u.id === '1001' && <span className="text-[10px] bg-amber-500 text-black px-2 py-0.5 rounded-full ml-2">SYSTEM OWNER</span>}</p>
                                                     <p className="text-xs text-gray-500 uppercase font-bold">{u.rank} • {u.department}</p>
                                                 </div>
                                             </div>
                                             <div className="flex gap-2">
                                                 <button onClick={()=>startEdit(u)} className="p-3 bg-blue-500/10 text-blue-500 rounded-xl hover:bg-blue-500 hover:text-white transition-all"><Icon name="edit"/></button>
-                                                {u.id !== 'A-1' && (
+                                                {u.id !== '1001' && (
                                                     <button onClick={()=>deleteUser(u.id)} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"><Icon name="trash"/></button>
                                                 )}
                                             </div>
@@ -354,7 +354,7 @@
                     </main>
 
                     <footer className="mt-auto p-10 text-center text-gray-700 text-[10px] tracking-[0.5em] uppercase font-bold">
-                        Supreme Command System • Authorized for Effect Kings • 2026
+                        Supreme Command System • Authorized for 1001 • 2026
                     </footer>
                 </div>
             );
