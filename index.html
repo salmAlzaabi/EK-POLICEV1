@@ -3,75 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MDT | COMMANDER SYSTEM v4.0</title>
+    <title>MIL-OS | COMMANDER ABDULLAH</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;600;900&family=Noto+Kufi+Arabic:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Noto+Kufi+Arabic:wght@400;700;900&display=swap');
         
-        :root {
-            --primary-blue: #0ea5e9;
-            --danger: #ef4444;
-            --bg-deep: #020617;
-        }
-
         body { 
             font-family: 'Noto Kufi Arabic', sans-serif; 
-            background: var(--bg-deep); 
-            color: #f8fafc; 
-            overflow: hidden; 
-            height: 100vh;
-            background-image: 
-                linear-gradient(rgba(14, 165, 233, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(14, 165, 233, 0.05) 1px, transparent 1px);
-            background-size: 50px 50px;
+            background: #0a0a0a; 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            overflow: hidden;
+            background-image: url('https://w0.peakpx.com/wallpaper/596/966/HD-wallpaper-army-camouflage-pattern-military.jpg');
+            background-size: cover;
+            background-position: center;
         }
 
-        .hq-panel {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(14, 165, 233, 0.2);
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        /* Phone Frame */
+        .phone-container {
+            width: 380px;
+            height: 780px;
+            background: rgba(10, 10, 10, 0.85);
+            border: 12px solid #1a1a1a;
+            border-radius: 50px;
+            position: relative;
+            box-shadow: 0 0 100px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,1);
+            overflow: hidden;
+            backdrop-filter: blur(15px);
         }
 
-        .sidebar-link {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        .phone-screen {
+            height: 100%;
+            display: flex;
+            flex-grow: 1;
+            flex-direction: column;
+            padding: 20px;
+            padding-top: 40px;
             position: relative;
         }
 
-        .active-link {
-            background: linear-gradient(90deg, rgba(14, 165, 233, 0.2) 0%, transparent 100%);
-            border-right: 4px solid var(--primary-blue);
-            color: var(--primary-blue);
+        /* Status Bar */
+        .status-bar {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            right: 0;
+            padding: 0 30px;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Exo 2';
+            font-size: 12px;
+            color: white;
+            z-index: 100;
         }
 
-        .tactical-btn {
-            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+        /* App Icon Style */
+        .app-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            cursor: pointer;
             transition: 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
-        .tactical-btn:hover {
-            box-shadow: 0 0 20px rgba(14, 165, 233, 0.5);
-            transform: translateY(-2px);
+        .app-icon:active { transform: scale(0.9); }
+        .app-label { font-size: 11px; margin-top: 8px; font-weight: 900; color: white; text-align: center; }
+
+        /* Window Overlay */
+        .app-window {
+            position: absolute;
+            inset: 0;
+            background: #0f172a;
+            z-index: 200;
+            padding: 20px;
+            padding-top: 50px;
+            animation: slideUp 0.4s ease-out;
         }
 
-        .user-card {
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: 0.3s;
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .tactical-input {
+            background: rgba(255,255,255,0.05) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            color: white;
+            border-radius: 15px;
+            padding: 12px;
+            outline: none;
+            width: 100%;
         }
 
-        .user-card:hover {
-            border-color: var(--primary-blue);
-            background: rgba(14, 165, 233, 0.05);
+        .nav-bar {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 5px;
+            background: white;
+            border-radius: 10px;
+            opacity: 0.5;
+            cursor: pointer;
         }
 
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+        ::-webkit-scrollbar { width: 0px; }
     </style>
 </head>
 <body>
@@ -79,7 +126,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyCYgffN2dA7IILMbI2i_1YfERkKWIrpHyA",
@@ -91,248 +138,158 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        window.fb = { db, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy };
+        window.fb = { db, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc, serverTimestamp };
     </script>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
-
-        const RANKS = [
-            { id: 'General', label: 'General (Field Marshal)', color: 'text-yellow-500' },
-            { id: 'Colonel', label: 'Colonel', color: 'text-slate-300' },
-            { id: 'Major', label: 'Major', color: 'text-blue-400' },
-            { id: 'Captain', label: 'Captain', color: 'text-indigo-400' },
-            { id: 'Lieutenant', label: 'Lieutenant', color: 'text-emerald-400' },
-            { id: 'Sergeant', label: 'Sergeant', color: 'text-orange-400' },
-            { id: 'Officer', label: 'Officer', color: 'text-sky-300' },
-            { id: 'Cadet', label: 'Cadet', color: 'text-slate-500' }
-        ];
+        const { useState, useEffect } = React;
 
         const App = () => {
-            const [isLoggedIn, setIsLoggedIn] = useState(false);
+            const [isLocked, setIsLocked] = useState(true);
             const [user, setUser] = useState(null);
-            const [page, setPage] = useState('dashboard');
+            const [openApp, setOpenApp] = useState(null);
             const [data, setData] = useState({ users: [], reports: [], uniforms: [] });
-            const [forms, setForms] = useState({ login: {}, newUser: {rank: 'Cadet'} });
+            const [forms, setForms] = useState({ login: {}, newUser: {rank:'Cadet'} });
 
             useEffect(() => {
                 if (!window.fb) return;
-                
-                // التأكد من وجود Abdullah Mohammed دائماً
-                window.fb.setDoc(window.fb.doc(window.fb.db, "users", "1001"), {
-                    id: "1001", name: "Abdullah Mohammed", password: "123", rank: "General"
-                }, { merge: true });
-
                 window.fb.onSnapshot(window.fb.collection(window.fb.db, "users"), s => setData(p => ({...p, users: s.docs.map(d=>d.data())})));
                 window.fb.onSnapshot(window.fb.collection(window.fb.db, "uniforms"), s => setData(p => ({...p, uniforms: s.docs.map(d=>({...d.data(), fid: d.id}))})));
+                const q = window.fb.query(window.fb.collection(window.fb.db, "field_reports"), window.fb.orderBy("createdAt", "desc"));
+                window.fb.onSnapshot(q, s => setData(p => ({...p, reports: s.docs.map(d=>({...d.data(), fid: d.id}))})));
             }, []);
 
-            const isCmd = (u) => u?.id === '1001';
-            const formatID = (id) => id === '1001' ? 'A-1' : id;
-
-            const sortedUsers = useMemo(() => {
-                return [...data.users].sort((a, b) => {
-                    const rA = RANKS.findIndex(r => r.id === a.rank);
-                    const rB = RANKS.findIndex(r => r.id === b.rank);
-                    return rA - rB;
-                });
-            }, [data.users]);
-
             const handleLogin = () => {
-                const searchID = forms.login.id?.trim().toUpperCase() === 'A-1' ? '1001' : forms.login.id;
+                const searchID = forms.login.id?.toUpperCase() === 'A-1' ? '1001' : forms.login.id;
                 const found = data.users.find(u => u.id === searchID && u.password === forms.login.pass);
-                if (found) { setUser(found); setIsLoggedIn(true); } else alert("Access Denied: Invalid Credentials");
+                if (found) { setUser(found); setIsLocked(false); } else alert("Access Denied");
             };
 
-            if (!isLoggedIn) return (
-                <div className="h-screen flex items-center justify-center p-6">
-                    <div className="hq-panel w-full max-w-lg p-12 rounded-[50px] border-t-4 border-sky-500 animate__animated animate__fadeInDown">
-                        <div className="text-center mb-10">
-                            <h2 className="text-4xl font-black tracking-tighter italic text-white mb-2">MDT COMMAND</h2>
-                            <p className="text-sky-500 text-xs font-black tracking-[0.3em] uppercase opacity-80">Military Access Terminal</p>
+            const isCmd = (u) => u?.id === '1001';
+
+            // -- Lock Screen --
+            if (isLocked) return (
+                <div className="phone-container">
+                    <div className="status-bar"><span>03:27 AM</span><span>📶🔋 100%</span></div>
+                    <div className="phone-screen flex flex-col items-center justify-center">
+                        <div className="mb-10 text-center animate__animated animate__pulse animate__infinite">
+                            <h1 className="text-5xl">🛡️</h1>
+                            <p className="mt-4 font-black text-blue-500 tracking-widest">A-1 SECURE SYSTEM</p>
                         </div>
-                        <div className="space-y-6">
-                            <div className="relative">
-                                <span className="absolute left-4 top-4 text-sky-500 opacity-50 font-bold text-xs uppercase">ID</span>
-                                <input className="w-full bg-black/40 border border-white/10 p-6 rounded-3xl text-center font-black focus:border-sky-500 transition-all outline-none" placeholder="A-1" onChange={e=>setForms({...forms, login:{...forms.login, id:e.target.value}})} />
-                            </div>
-                            <div className="relative">
-                                <span className="absolute left-4 top-4 text-sky-500 opacity-50 font-bold text-xs uppercase">Key</span>
-                                <input type="password" className="w-full bg-black/40 border border-white/10 p-6 rounded-3xl text-center font-black focus:border-sky-500 transition-all outline-none" placeholder="••••••" onChange={e=>setForms({...forms, login:{...forms.login, pass:e.target.value}})} />
-                            </div>
-                            <button onClick={handleLogin} className="tactical-btn w-full py-5 rounded-3xl font-black text-lg shadow-2xl">Establish Connection</button>
+                        <div className="w-full space-y-3 px-4">
+                            <input className="tactical-input text-center" placeholder="A-1" onChange={e=>setForms({...forms, login:{...forms.login, id:e.target.value}})} />
+                            <input type="password" className="tactical-input text-center" placeholder="PIN" onChange={e=>setForms({...forms, login:{...forms.login, pass:e.target.value}})} />
+                            <button onClick={handleLogin} className="w-full bg-blue-600 py-4 rounded-2xl font-black">UNLOCK</button>
                         </div>
                     </div>
                 </div>
             );
 
             return (
-                <div className="flex h-screen p-4 gap-4">
-                    {/* Navigation Rail */}
-                    <aside className="w-80 hq-panel rounded-[40px] flex flex-col p-8 animate__animated animate__fadeInRight">
-                        <div className="mb-12">
-                            <h1 className="text-2xl font-black italic text-sky-500 tracking-tighter">HQ CENTRAL</h1>
-                            <p className="text-[10px] text-slate-500 font-bold">DEPARTMENT OF JUSTICE v4.0</p>
+                <div className="phone-container">
+                    <div className="status-bar"><span>{new Date().getHours()}:{new Date().getMinutes()}</span><span>📶🔋 100%</span></div>
+                    
+                    {/* Home Screen */}
+                    <div className="phone-screen">
+                        <div className="grid grid-cols-3 gap-6 mt-10">
+                            <div className="flex flex-col items-center" onClick={()=>setOpenApp('reports')}>
+                                <div className="app-icon bg-gradient-to-br from-blue-500 to-indigo-700">📝</div>
+                                <span className="app-label">التقارير</span>
+                            </div>
+                            <div className="flex flex-col items-center" onClick={()=>setOpenApp('force')}>
+                                <div className="app-icon bg-gradient-to-br from-slate-600 to-slate-900">👥</div>
+                                <span className="app-label">القوة</span>
+                            </div>
+                            <div className="flex flex-col items-center" onClick={()=>setOpenApp('uniforms')}>
+                                <div className="app-icon bg-gradient-to-br from-amber-500 to-orange-700">👕</div>
+                                <span className="app-label">المستودع</span>
+                            </div>
+                            {isCmd(user) && (
+                                <div className="flex flex-col items-center" onClick={()=>setOpenApp('admin')}>
+                                    <div className="app-icon bg-gradient-to-br from-red-600 to-red-950 border-red-500/50">⚙️</div>
+                                    <span className="app-label">الإدارة</span>
+                                </div>
+                            )}
                         </div>
                         
-                        <nav className="flex-grow space-y-3">
-                            <NavItem active={page==='dashboard'} onClick={()=>setPage('dashboard')} label="Overview" icon="📊" />
-                            <NavItem active={page==='force'} onClick={()=>setPage('force')} label="Personnel Roster" icon="👥" />
-                            <NavItem active={page==='uniforms'} onClick={()=>setPage('uniforms')} label="Weaponry & Gear" icon="🛡️" />
-                            {isCmd(user) && <NavItem active={page==='admin'} onClick={()=>setPage('admin')} label="Account Control" icon="⚙️" color="text-amber-500" />}
-                        </nav>
-
-                        <div className="mt-auto bg-black/20 p-6 rounded-[30px] border border-white/5">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-sky-600 rounded-2xl flex items-center justify-center font-black shadow-lg shadow-sky-600/30">{formatID(user.id)}</div>
-                                <div className="overflow-hidden">
-                                    <p className="font-black text-sm truncate uppercase">{user.name}</p>
-                                    <button onClick={()=>window.location.reload()} className="text-[9px] font-black text-red-500 hover:text-red-400">TERMINATE SESSION</button>
-                                </div>
-                            </div>
+                        <div className="mt-auto text-center mb-10 opacity-40">
+                            <p className="text-[10px] font-black uppercase">Commander: {user.name}</p>
                         </div>
-                    </aside>
+                    </div>
 
-                    {/* Main Command View */}
-                    <main className="flex-grow hq-panel rounded-[40px] overflow-hidden flex flex-col animate__animated animate__fadeIn">
-                        <header className="p-10 flex justify-between items-center border-b border-white/5">
-                            <h2 className="text-5xl font-black italic uppercase tracking-tighter opacity-90">{page}</h2>
-                            <div className="text-left font-mono text-[10px] text-sky-500 font-bold">
-                                <p>SYSTEM STATUS: SECURE</p>
-                                <p>ACCESS POINT: {formatID(user.id)}</p>
+                    {/* App Windows */}
+                    {openApp && (
+                        <div className="app-window">
+                            <div className="flex justify-between items-center mb-6">
+                                <button onClick={()=>setOpenApp(null)} className="text-blue-500 font-black">✕ إغلاق</button>
+                                <h3 className="text-sm font-black uppercase">{openApp}</h3>
                             </div>
-                        </header>
-
-                        <div className="flex-grow overflow-y-auto p-10">
-                            {/* Dashboard */}
-                            {page === 'dashboard' && (
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                    <SummaryCard label="Total Force" value={data.users.length} sub="Active Personnel" />
-                                    <SummaryCard label="Gear Inventory" value={data.uniforms.length} sub="Items in Storage" />
-                                    <SummaryCard label="System Rank" value={user.rank} sub="Current Authorization" />
-                                </div>
-                            )}
-
-                            {/* Personnel Management (HQ Admin) */}
-                            {page === 'admin' && isCmd(user) && (
-                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                                    {/* Form Section */}
-                                    <div className="lg:col-span-1 space-y-6">
-                                        <div className="bg-black/20 p-8 rounded-[40px] border border-white/10">
-                                            <h3 className="text-xl font-black mb-6 text-sky-500 uppercase tracking-widest">Register Individual</h3>
-                                            <div className="space-y-4">
-                                                <input className="w-full bg-black/40 border border-white/10 p-4 rounded-2xl text-sm" placeholder="ID (e.g. 1002)" onChange={e=>setForms({...forms, newUser:{...forms.newUser, id:e.target.value}})} />
-                                                <input className="w-full bg-black/40 border border-white/10 p-4 rounded-2xl text-sm" placeholder="Full English Name" onChange={e=>setForms({...forms, newUser:{...forms.newUser, name:e.target.value}})} />
-                                                <input className="w-full bg-black/40 border border-white/10 p-4 rounded-2xl text-sm" placeholder="Secure Password" onChange={e=>setForms({...forms, newUser:{...forms.newUser, pass:e.target.value}})} />
-                                                <select className="w-full bg-black/40 border border-white/10 p-4 rounded-2xl text-sm" onChange={e=>setForms({...forms, newUser:{...forms.newUser, rank:e.target.value}})}>
-                                                    {RANKS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
-                                                </select>
-                                                <button onClick={async()=>{
-                                                    if(!forms.newUser.id || !forms.newUser.name) return;
-                                                    await window.fb.setDoc(window.fb.doc(window.fb.db, "users", forms.newUser.id), forms.newUser);
-                                                    alert("Personnel Registered.");
-                                                }} className="tactical-btn w-full py-4 rounded-2xl font-black text-sm uppercase">Auth Data</button>
-                                            </div>
+                            
+                            <div className="overflow-y-auto h-full pb-20">
+                                {/* Admin App */}
+                                {openApp === 'admin' && (
+                                    <div className="space-y-6">
+                                        <div className="bg-white/5 p-4 rounded-2xl">
+                                            <h4 className="text-xs font-black text-blue-400 mb-4 uppercase">إضافة مستخدم</h4>
+                                            <input className="tactical-input mb-2 text-xs" placeholder="الرقم العسكري" onChange={e=>setForms({...forms, newUser:{...forms.newUser, id:e.target.value}})} />
+                                            <input className="tactical-input mb-2 text-xs" placeholder="الاسم الكامل" onChange={e=>setForms({...forms, newUser:{...forms.newUser, name:e.target.value}})} />
+                                            <input className="tactical-input mb-2 text-xs" placeholder="كلمة المرور" onChange={e=>setForms({...forms, newUser:{...forms.newUser, pass:e.target.value}})} />
+                                            <button onClick={async()=>await window.fb.setDoc(window.fb.doc(window.fb.db, "users", forms.newUser.id), forms.newUser)} className="w-full bg-blue-600 py-3 rounded-xl font-black text-xs">حفظ</button>
                                         </div>
-                                    </div>
-                                    
-                                    {/* Accounts Table */}
-                                    <div className="lg:col-span-2">
-                                        <div className="bg-black/20 rounded-[40px] border border-white/10 overflow-hidden">
-                                            <table className="w-full text-right">
-                                                <thead className="bg-white/5 text-[10px] font-black text-slate-500 uppercase">
-                                                    <tr><th className="p-6">ID</th><th className="p-6">Name</th><th className="p-6">Rank</th><th className="p-6">Control</th></tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-white/5">
-                                                    {sortedUsers.map(u => (
-                                                        <tr key={u.id} className="user-card">
-                                                            <td className="p-6 font-black text-sky-500 font-mono">{formatID(u.id)}</td>
-                                                            <td className="p-6 font-bold text-sm">{u.name}</td>
-                                                            <td className={`p-6 text-xs font-black uppercase ${RANKS.find(r=>r.id===u.rank)?.color}`}>{u.rank}</td>
-                                                            <td className="p-6">
-                                                                {u.id !== '1001' ? (
-                                                                    <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="text-red-500 text-[10px] font-black border border-red-500/20 px-4 py-2 rounded-xl hover:bg-red-500 hover:text-white transition-all">REVOKE ACCESS</button>
-                                                                ) : <span className="text-sky-500 text-[10px] font-black uppercase tracking-widest">Master Key</span>}
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Personnel Roster */}
-                            {page === 'force' && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate__animated animate__fadeInUp">
-                                    {sortedUsers.map(u => (
-                                        <div key={u.id} className="bg-black/30 p-8 rounded-[40px] border border-white/5 relative overflow-hidden group">
-                                            <div className="absolute top-0 right-0 w-2 h-full bg-sky-600 opacity-20 group-hover:opacity-100 transition-all"></div>
-                                            <p className="text-4xl font-black text-white/5 absolute -left-2 -bottom-2 font-mono">{formatID(u.id)}</p>
-                                            <div className="relative z-10">
-                                                <h4 className="text-xl font-black mb-1">{u.name}</h4>
-                                                <p className={`text-xs font-black uppercase tracking-widest ${RANKS.find(r=>r.id===u.rank)?.color}`}>{u.rank}</p>
-                                                <div className="mt-4 flex gap-2">
-                                                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Status: On Duty</span>
+                                        <div className="space-y-2">
+                                            {data.users.map(u => (
+                                                <div key={u.id} className="flex justify-between items-center bg-white/5 p-3 rounded-xl">
+                                                    <span className="text-xs font-bold">{u.name}</span>
+                                                    {u.id !== '1001' && <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="text-red-500 text-[10px]">حذف</button>}
                                                 </div>
-                                            </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
-                            )}
+                                    </div>
+                                )}
 
-                            {/* Gear Section */}
-                            {page === 'uniforms' && (
-                                <div className="space-y-10 animate__animated animate__fadeIn">
-                                    {isCmd(user) && (
-                                        <div className="bg-black/20 p-8 rounded-[40px] max-w-xl border border-sky-500/30">
-                                            <h3 className="text-sm font-black mb-6 text-sky-500 uppercase tracking-widest">Inventory Log</h3>
-                                            <div className="space-y-4">
-                                                <input className="w-full bg-black/40 border border-white/10 p-4 rounded-2xl text-sm" placeholder="Item Name" onChange={e=>setForms({...forms, uniform:{...forms.uniform, name:e.target.value}})} />
-                                                <input className="w-full bg-black/40 border border-white/10 p-4 rounded-2xl text-sm" placeholder="Asset URL" onChange={e=>setForms({...forms, uniform:{...forms.uniform, img:e.target.value}})} />
-                                                <button onClick={async()=>await window.fb.addDoc(window.fb.collection(window.fb.db, "uniforms"), forms.uniform)} className="tactical-btn w-full py-4 rounded-2xl font-black">Register Asset</button>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                                        {data.uniforms.map(u => (
-                                            <div key={u.fid} className="bg-black/40 rounded-[40px] overflow-hidden group border border-white/5 hover:border-sky-500/50 transition-all">
-                                                <div className="h-64 relative">
-                                                    <img src={u.img} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700" />
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-                                                    <div className="absolute bottom-6 right-6">
-                                                        <p className="text-[9px] text-sky-500 font-black uppercase tracking-widest">Asset Unlocked</p>
-                                                        <h4 className="text-xl font-black">{u.name}</h4>
+                                {/* Reports App */}
+                                {openApp === 'reports' && (
+                                    <div className="space-y-4">
+                                        <textarea className="tactical-input h-24 text-xs" placeholder="اكتب بلاغك هنا..." onChange={e=>setForms({...forms, report:e.target.value})}></textarea>
+                                        <button onClick={async()=>await window.fb.addDoc(window.fb.collection(window.fb.db, "field_reports"), {
+                                            content: forms.report, authorName: user.name, authorId: user.id, createdAt: window.fb.serverTimestamp()
+                                        })} className="w-full bg-blue-600 py-3 rounded-xl font-black text-xs">أرشفة</button>
+                                        <div className="space-y-3 mt-6">
+                                            {data.reports.map(r => (
+                                                <div key={r.fid} className="bg-white/5 p-4 rounded-2xl border-l-2 border-blue-500">
+                                                    <div className="flex justify-between text-[10px] mb-2 opacity-50">
+                                                        <span>{r.authorName}</span>
+                                                        {(isCmd(user) || r.authorId === user.id) && <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "field_reports", r.fid))} className="text-red-500">حذف</button>}
                                                     </div>
+                                                    <p className="text-xs leading-relaxed">{r.content}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Force App */}
+                                {openApp === 'force' && (
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {data.users.map(u => (
+                                            <div key={u.id} className="bg-white/5 p-4 rounded-2xl flex items-center gap-4">
+                                                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center font-black text-xs">{u.id === '1001' ? 'A-1' : u.id}</div>
+                                                <div>
+                                                    <h4 className="text-xs font-black">{u.name}</h4>
+                                                    <p className="text-[10px] opacity-50 uppercase">{u.rank}</p>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
-                    </main>
+                    )}
+
+                    <div className="nav-bar" onClick={()=>setOpenApp(null)}></div>
                 </div>
             );
         };
-
-        const NavItem = ({active, onClick, label, icon, color="text-slate-400"}) => (
-            <div onClick={onClick} className={`sidebar-link p-5 flex items-center gap-5 font-black text-xs uppercase tracking-widest rounded-2xl cursor-pointer ${active ? 'active-link' : color + ' hover:bg-white/5'}`}>
-                <span className="text-xl">{icon}</span>
-                <span>{label}</span>
-            </div>
-        );
-
-        const SummaryCard = ({label, value, sub}) => (
-            <div className="bg-black/20 p-10 rounded-[50px] border border-white/5 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/10 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-all duration-700"></div>
-                <p className="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">{label}</p>
-                <h3 className="text-5xl font-black italic mb-2 tracking-tighter">{value}</h3>
-                <p className="text-[10px] font-bold text-sky-500 uppercase">{sub}</p>
-            </div>
-        );
 
         ReactDOM.render(<App />, document.getElementById('root'));
     </script>
