@@ -3,21 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MDT | COMMANDER ABDULLAH</title>
+    <title>MDT | COMMANDER SYSTEM v4.0</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;700;900&display=swap');
-        body { font-family: 'Noto Kufi Arabic', sans-serif; background: #020617; color: #f8fafc; overflow: hidden; height: 100vh; }
-        .glass-panel { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .nav-item { transition: 0.3s; cursor: pointer; border-radius: 15px; margin-bottom: 4px; }
-        .nav-active { background: #3b82f6; color: white; box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
-        .tactical-input { background: rgba(0,0,0,0.4) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white; outline: none; transition: 0.3s; }
-        .tactical-input:focus { border-color: #3b82f6 !important; box-shadow: 0 0 10px rgba(59,130,246,0.3); }
-        @media (max-width: 768px) { .sidebar { display: none; } .mobile-nav { display: flex; position: fixed; bottom: 0; width: 100%; background: #0f172a; height: 70px; z-index: 100; border-top: 1px solid #334155; justify-content: space-around; align-items: center; } }
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;600;900&family=Noto+Kufi+Arabic:wght@400;700;900&display=swap');
+        
+        :root {
+            --primary-blue: #0ea5e9;
+            --danger: #ef4444;
+            --bg-deep: #020617;
+        }
+
+        body { 
+            font-family: 'Noto Kufi Arabic', sans-serif; 
+            background: var(--bg-deep); 
+            color: #f8fafc; 
+            overflow: hidden; 
+            height: 100vh;
+            background-image: 
+                linear-gradient(rgba(14, 165, 233, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14, 165, 233, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .hq-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        }
+
+        .sidebar-link {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .active-link {
+            background: linear-gradient(90deg, rgba(14, 165, 233, 0.2) 0%, transparent 100%);
+            border-right: 4px solid var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        .tactical-btn {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tactical-btn:hover {
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .user-card {
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: 0.3s;
+        }
+
+        .user-card:hover {
+            border-color: var(--primary-blue);
+            background: rgba(14, 165, 233, 0.05);
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -25,7 +79,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyCYgffN2dA7IILMbI2i_1YfERkKWIrpHyA",
@@ -37,240 +91,246 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        window.fb = { db, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc, serverTimestamp };
+        window.fb = { db, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy };
     </script>
 
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        const RANK_ORDER = { 'General': 1, 'Colonel': 2, 'Major': 3, 'Captain': 4, 'Lieutenant': 5, 'Sergeant': 6, 'Officer': 7, 'Cadet': 8 };
+        const RANKS = [
+            { id: 'General', label: 'General (Field Marshal)', color: 'text-yellow-500' },
+            { id: 'Colonel', label: 'Colonel', color: 'text-slate-300' },
+            { id: 'Major', label: 'Major', color: 'text-blue-400' },
+            { id: 'Captain', label: 'Captain', color: 'text-indigo-400' },
+            { id: 'Lieutenant', label: 'Lieutenant', color: 'text-emerald-400' },
+            { id: 'Sergeant', label: 'Sergeant', color: 'text-orange-400' },
+            { id: 'Officer', label: 'Officer', color: 'text-sky-300' },
+            { id: 'Cadet', label: 'Cadet', color: 'text-slate-500' }
+        ];
 
         const App = () => {
             const [isLoggedIn, setIsLoggedIn] = useState(false);
             const [user, setUser] = useState(null);
             const [page, setPage] = useState('dashboard');
             const [data, setData] = useState({ users: [], reports: [], uniforms: [] });
-            const [forms, setForms] = useState({ login: {}, report: '', newUser: {rank: 'Cadet'} });
+            const [forms, setForms] = useState({ login: {}, newUser: {rank: 'Cadet'} });
 
             useEffect(() => {
                 if (!window.fb) return;
                 
-                // التأكد من وجود حساب عبدالله محمد A-1 في قاعدة البيانات فور التشغيل
+                // التأكد من وجود Abdullah Mohammed دائماً
                 window.fb.setDoc(window.fb.doc(window.fb.db, "users", "1001"), {
-                    id: "1001",
-                    name: "Abdullah Mohammed",
-                    password: "123", // يمكنك تغيير كلمة المرور من هنا أو من لوحة الإدارة
-                    rank: "General",
-                    role: "Commander"
+                    id: "1001", name: "Abdullah Mohammed", password: "123", rank: "General"
                 }, { merge: true });
 
                 window.fb.onSnapshot(window.fb.collection(window.fb.db, "users"), s => setData(p => ({...p, users: s.docs.map(d=>d.data())})));
                 window.fb.onSnapshot(window.fb.collection(window.fb.db, "uniforms"), s => setData(p => ({...p, uniforms: s.docs.map(d=>({...d.data(), fid: d.id}))})));
-                const q = window.fb.query(window.fb.collection(window.fb.db, "field_reports"), window.fb.orderBy("createdAt", "desc"));
-                window.fb.onSnapshot(q, s => setData(p => ({...p, reports: s.docs.map(d=>({...d.data(), fid: d.id}))})));
             }, []);
 
-            const isCommander = (u) => u?.id === '1001';
+            const isCmd = (u) => u?.id === '1001';
             const formatID = (id) => id === '1001' ? 'A-1' : id;
+
+            const sortedUsers = useMemo(() => {
+                return [...data.users].sort((a, b) => {
+                    const rA = RANKS.findIndex(r => r.id === a.rank);
+                    const rB = RANKS.findIndex(r => r.id === b.rank);
+                    return rA - rB;
+                });
+            }, [data.users]);
 
             const handleLogin = () => {
                 const searchID = forms.login.id?.trim().toUpperCase() === 'A-1' ? '1001' : forms.login.id;
                 const found = data.users.find(u => u.id === searchID && u.password === forms.login.pass);
-                if (found) { setUser(found); setIsLoggedIn(true); } else alert("❌ بيانات غير صحيحة");
+                if (found) { setUser(found); setIsLoggedIn(true); } else alert("Access Denied: Invalid Credentials");
             };
 
-            const sortedUsers = useMemo(() => {
-                return [...data.users].sort((a, b) => (RANK_ORDER[a.rank] || 9) - (RANK_ORDER[b.rank] || 9));
-            }, [data.users]);
-
             if (!isLoggedIn) return (
-                <div className="h-screen flex items-center justify-center p-6 bg-slate-950">
-                    <div className="glass-panel w-full max-w-md p-10 rounded-[40px] text-center animate__animated animate__fadeIn">
-                        <div className="w-20 h-20 bg-blue-600 rounded-2xl mx-auto mb-6 flex items-center justify-center text-4xl shadow-xl shadow-blue-500/20">🛡️</div>
-                        <h2 className="text-2xl font-black mb-2 italic">DEPARTMENT OF JUSTICE</h2>
-                        <p className="text-xs text-slate-500 mb-8 uppercase font-bold tracking-widest">MDT Access Point</p>
-                        <div className="space-y-4">
-                            <input className="tactical-input w-full p-4 rounded-2xl text-center font-bold" placeholder="Military ID (A-1)" onChange={e=>setForms({...forms, login:{...forms.login, id:e.target.value}})} />
-                            <input type="password" className="tactical-input w-full p-4 rounded-2xl text-center font-bold" placeholder="Password" onChange={e=>setForms({...forms, login:{...forms.login, pass:e.target.value}})} />
-                            <button onClick={handleLogin} className="w-full bg-blue-600 py-4 rounded-2xl font-black hover:bg-blue-500 transition-all shadow-lg">Login System</button>
+                <div className="h-screen flex items-center justify-center p-6">
+                    <div className="hq-panel w-full max-w-lg p-12 rounded-[50px] border-t-4 border-sky-500 animate__animated animate__fadeInDown">
+                        <div className="text-center mb-10">
+                            <h2 className="text-4xl font-black tracking-tighter italic text-white mb-2">MDT COMMAND</h2>
+                            <p className="text-sky-500 text-xs font-black tracking-[0.3em] uppercase opacity-80">Military Access Terminal</p>
+                        </div>
+                        <div className="space-y-6">
+                            <div className="relative">
+                                <span className="absolute left-4 top-4 text-sky-500 opacity-50 font-bold text-xs uppercase">ID</span>
+                                <input className="w-full bg-black/40 border border-white/10 p-6 rounded-3xl text-center font-black focus:border-sky-500 transition-all outline-none" placeholder="A-1" onChange={e=>setForms({...forms, login:{...forms.login, id:e.target.value}})} />
+                            </div>
+                            <div className="relative">
+                                <span className="absolute left-4 top-4 text-sky-500 opacity-50 font-bold text-xs uppercase">Key</span>
+                                <input type="password" className="w-full bg-black/40 border border-white/10 p-6 rounded-3xl text-center font-black focus:border-sky-500 transition-all outline-none" placeholder="••••••" onChange={e=>setForms({...forms, login:{...forms.login, pass:e.target.value}})} />
+                            </div>
+                            <button onClick={handleLogin} className="tactical-btn w-full py-5 rounded-3xl font-black text-lg shadow-2xl">Establish Connection</button>
                         </div>
                     </div>
                 </div>
             );
 
             return (
-                <div className="flex h-screen overflow-hidden">
-                    {/* Sidebar Desktop */}
-                    <aside className="sidebar w-72 glass-panel m-4 rounded-[30px] flex flex-col p-6 animate__animated animate__fadeInLeft">
-                        <div className="mb-10 text-center">
-                            <h1 className="text-2xl font-black text-blue-500 italic">MDT HQ</h1>
-                            <div className="h-1 w-12 bg-blue-500 mx-auto mt-1 rounded-full"></div>
+                <div className="flex h-screen p-4 gap-4">
+                    {/* Navigation Rail */}
+                    <aside className="w-80 hq-panel rounded-[40px] flex flex-col p-8 animate__animated animate__fadeInRight">
+                        <div className="mb-12">
+                            <h1 className="text-2xl font-black italic text-sky-500 tracking-tighter">HQ CENTRAL</h1>
+                            <p className="text-[10px] text-slate-500 font-bold">DEPARTMENT OF JUSTICE v4.0</p>
                         </div>
-                        <nav className="flex-grow space-y-1">
-                            <NavItem active={page==='dashboard'} onClick={()=>setPage('dashboard')} label="Dashboard" icon="📊" />
-                            <NavItem active={page==='reports'} onClick={()=>setPage('reports')} label="Reports Archive" icon="📝" />
-                            <NavItem active={page==='uniforms'} onClick={()=>setPage('uniforms')} label="Uniform Roster" icon="👕" />
-                            <NavItem active={page==='force'} onClick={()=>setPage('force')} label="Force Personnel" icon="👥" />
-                            {isCommander(user) && <NavItem active={page==='admin'} onClick={()=>setPage('admin')} label="HQ Management" icon="⚙️" color="text-amber-500" />}
+                        
+                        <nav className="flex-grow space-y-3">
+                            <NavItem active={page==='dashboard'} onClick={()=>setPage('dashboard')} label="Overview" icon="📊" />
+                            <NavItem active={page==='force'} onClick={()=>setPage('force')} label="Personnel Roster" icon="👥" />
+                            <NavItem active={page==='uniforms'} onClick={()=>setPage('uniforms')} label="Weaponry & Gear" icon="🛡️" />
+                            {isCmd(user) && <NavItem active={page==='admin'} onClick={()=>setPage('admin')} label="Account Control" icon="⚙️" color="text-amber-500" />}
                         </nav>
-                        <div className="mt-auto p-4 bg-white/5 rounded-2xl flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black">{formatID(user.id)}</div>
-                            <div className="text-xs font-bold truncate">
-                                <p>{user.name}</p>
-                                <button onClick={()=>window.location.reload()} className="text-red-500 font-black uppercase text-[10px]">Logout</button>
+
+                        <div className="mt-auto bg-black/20 p-6 rounded-[30px] border border-white/5">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-sky-600 rounded-2xl flex items-center justify-center font-black shadow-lg shadow-sky-600/30">{formatID(user.id)}</div>
+                                <div className="overflow-hidden">
+                                    <p className="font-black text-sm truncate uppercase">{user.name}</p>
+                                    <button onClick={()=>window.location.reload()} className="text-[9px] font-black text-red-500 hover:text-red-400">TERMINATE SESSION</button>
+                                </div>
                             </div>
                         </div>
                     </aside>
 
-                    {/* Mobile Navigation */}
-                    <div className="mobile-nav hidden">
-                        <button onClick={()=>setPage('dashboard')} className={page==='dashboard'?'text-blue-500':''}>📊</button>
-                        <button onClick={()=>setPage('reports')} className={page==='reports'?'text-blue-500':''}>📝</button>
-                        <button onClick={()=>setPage('uniforms')} className={page==='uniforms'?'text-blue-500':''}>👕</button>
-                        {isCommander(user) && <button onClick={()=>setPage('admin')} className={page==='admin'?'text-amber-500':''}>⚙️</button>}
-                    </div>
-
-                    <main className="flex-grow overflow-y-auto p-6 md:p-12">
-                        <header className="mb-12 flex justify-between items-end border-b border-white/10 pb-6 animate__animated animate__fadeInDown">
-                            <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white/90">{page}</h2>
-                            <span className="text-blue-500 font-black uppercase text-[10px]">Secure Link Active</span>
+                    {/* Main Command View */}
+                    <main className="flex-grow hq-panel rounded-[40px] overflow-hidden flex flex-col animate__animated animate__fadeIn">
+                        <header className="p-10 flex justify-between items-center border-b border-white/5">
+                            <h2 className="text-5xl font-black italic uppercase tracking-tighter opacity-90">{page}</h2>
+                            <div className="text-left font-mono text-[10px] text-sky-500 font-bold">
+                                <p>SYSTEM STATUS: SECURE</p>
+                                <p>ACCESS POINT: {formatID(user.id)}</p>
+                            </div>
                         </header>
 
-                        {/* Page: Dashboard */}
-                        {page === 'dashboard' && (
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate__animated animate__zoomIn">
-                                <StatBox label="Active Personnel" value={data.users.length} icon="🛡️" color="blue" />
-                                <StatBox label="Archive Reports" value={data.reports.length} icon="📂" color="indigo" />
-                                <StatBox label="Storage Items" value={data.uniforms.length} icon="📦" color="amber" />
-                            </div>
-                        )}
-
-                        {/* Page: Reports Archive */}
-                        {page === 'reports' && (
-                            <div className="max-w-4xl mx-auto space-y-6">
-                                <div className="glass-panel p-6 rounded-[30px] border-r-4 border-blue-600 animate__animated animate__fadeInUp">
-                                    <h3 className="text-sm font-black mb-4 uppercase text-blue-500 tracking-widest">New Field Report</h3>
-                                    <textarea className="tactical-input w-full h-32 p-4 rounded-2xl mb-4 text-sm" placeholder="Details of the incident..." onChange={e=>setForms({...forms, report:e.target.value})}></textarea>
-                                    <button onClick={async()=>{
-                                        if(!forms.report) return;
-                                        await window.fb.addDoc(window.fb.collection(window.fb.db, "field_reports"), {
-                                            content: forms.report, authorName: user.name, authorId: user.id, createdAt: window.fb.serverTimestamp()
-                                        });
-                                        setForms({...forms, report:''});
-                                    }} className="bg-blue-600 px-8 py-3 rounded-xl font-black hover:bg-blue-500 transition-all">Submit Archive</button>
+                        <div className="flex-grow overflow-y-auto p-10">
+                            {/* Dashboard */}
+                            {page === 'dashboard' && (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                    <SummaryCard label="Total Force" value={data.users.length} sub="Active Personnel" />
+                                    <SummaryCard label="Gear Inventory" value={data.uniforms.length} sub="Items in Storage" />
+                                    <SummaryCard label="System Rank" value={user.rank} sub="Current Authorization" />
                                 </div>
-                                <div className="space-y-4">
-                                    {data.reports.map(r => (
-                                        <div key={r.fid} className="glass-panel p-6 rounded-2xl border-l border-white/5 animate__animated animate__fadeIn">
-                                            <div className="flex justify-between items-center mb-4 pb-2 border-b border-white/5">
-                                                <span className="text-xs font-black text-blue-400">{formatID(r.authorId)} - {r.authorName}</span>
-                                                {(isCommander(user) || r.authorId === user.id) && (
-                                                    <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "field_reports", r.fid))} className="text-red-500 hover:text-red-300 text-xs font-black">DELETE</button>
-                                                )}
+                            )}
+
+                            {/* Personnel Management (HQ Admin) */}
+                            {page === 'admin' && isCmd(user) && (
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                                    {/* Form Section */}
+                                    <div className="lg:col-span-1 space-y-6">
+                                        <div className="bg-black/20 p-8 rounded-[40px] border border-white/10">
+                                            <h3 className="text-xl font-black mb-6 text-sky-500 uppercase tracking-widest">Register Individual</h3>
+                                            <div className="space-y-4">
+                                                <input className="w-full bg-black/40 border border-white/10 p-4 rounded-2xl text-sm" placeholder="ID (e.g. 1002)" onChange={e=>setForms({...forms, newUser:{...forms.newUser, id:e.target.value}})} />
+                                                <input className="w-full bg-black/40 border border-white/10 p-4 rounded-2xl text-sm" placeholder="Full English Name" onChange={e=>setForms({...forms, newUser:{...forms.newUser, name:e.target.value}})} />
+                                                <input className="w-full bg-black/40 border border-white/10 p-4 rounded-2xl text-sm" placeholder="Secure Password" onChange={e=>setForms({...forms, newUser:{...forms.newUser, pass:e.target.value}})} />
+                                                <select className="w-full bg-black/40 border border-white/10 p-4 rounded-2xl text-sm" onChange={e=>setForms({...forms, newUser:{...forms.newUser, rank:e.target.value}})}>
+                                                    {RANKS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+                                                </select>
+                                                <button onClick={async()=>{
+                                                    if(!forms.newUser.id || !forms.newUser.name) return;
+                                                    await window.fb.setDoc(window.fb.doc(window.fb.db, "users", forms.newUser.id), forms.newUser);
+                                                    alert("Personnel Registered.");
+                                                }} className="tactical-btn w-full py-4 rounded-2xl font-black text-sm uppercase">Auth Data</button>
                                             </div>
-                                            <p className="text-slate-300 text-sm leading-relaxed">{r.content}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Page: HQ Management (Admin) */}
-                        {page === 'admin' && isCommander(user) && (
-                            <div className="max-w-5xl mx-auto space-y-10 animate__animated animate__fadeIn">
-                                <div className="glass-panel p-8 rounded-[30px] border-r-4 border-amber-600">
-                                    <h3 className="text-xl font-black mb-6 uppercase tracking-widest text-amber-500">Add New Personnel</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <input className="tactical-input p-4 rounded-xl text-sm" placeholder="Military ID (e.g. 1002)" onChange={e=>setForms({...forms, newUser:{...forms.newUser, id:e.target.value}})} />
-                                        <input className="tactical-input p-4 rounded-xl text-sm" placeholder="Full Name (English)" onChange={e=>setForms({...forms, newUser:{...forms.newUser, name:e.target.value}})} />
-                                        <input className="tactical-input p-4 rounded-xl text-sm" placeholder="Login Password" onChange={e=>setForms({...forms, newUser:{...forms.newUser, pass:e.target.value}})} />
-                                        <select className="tactical-input p-4 rounded-xl text-sm" onChange={e=>setForms({...forms, newUser:{...forms.newUser, rank:e.target.value}})}>
-                                            {Object.keys(RANK_ORDER).map(r => <option key={r} value={r}>{r}</option>)}
-                                        </select>
-                                    </div>
-                                    <button onClick={async()=>{
-                                        if(!forms.newUser.id || !forms.newUser.name) return;
-                                        await window.fb.setDoc(window.fb.doc(window.fb.db, "users", forms.newUser.id), forms.newUser);
-                                        alert("User successfully added to HQ database");
-                                    }} className="w-full bg-amber-600 mt-6 py-4 rounded-xl font-black hover:bg-amber-500 transition-all">Register User</button>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Page: Force Personnel */}
-                        {page === 'force' && (
-                            <div className="glass-panel rounded-[30px] overflow-hidden animate__animated animate__fadeIn">
-                                <table className="w-full text-left">
-                                    <thead className="bg-white/5 text-[10px] font-black text-slate-500 uppercase">
-                                        <tr><th className="p-6">Military ID</th><th className="p-6">Rank</th><th className="p-6">Full Name</th><th className="p-6 text-center">Status</th></tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/5">
-                                        {sortedUsers.map(u => (
-                                            <tr key={u.id} className="hover:bg-blue-600/5 transition-all">
-                                                <td className="p-6 font-black text-blue-500">{formatID(u.id)}</td>
-                                                <td className="p-6"><span className="bg-slate-800 px-3 py-1 rounded text-[10px] font-black uppercase">{u.rank}</span></td>
-                                                <td className="p-6 font-bold text-sm tracking-tight">{u.name}</td>
-                                                <td className="p-6 text-center">
-                                                    {isCommander(user) && u.id !== '1001' ? (
-                                                        <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="text-red-500 text-[10px] font-black hover:underline">DISCHARGE</button>
-                                                    ) : <span className="text-green-500 text-[10px] font-black uppercase">Active Duty</span>}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-
-                        {/* Page: Uniform Roster */}
-                        {page === 'uniforms' && (
-                            <div className="space-y-10 animate__animated animate__fadeIn">
-                                {isCommander(user) && (
-                                    <div className="glass-panel p-8 rounded-[30px] max-w-xl border-r-4 border-blue-500">
-                                        <h3 className="text-sm font-black mb-6 uppercase text-blue-500">Warehouse Management</h3>
-                                        <div className="space-y-4">
-                                            <input className="tactical-input w-full p-4 rounded-xl text-sm" placeholder="Uniform Item Name" onChange={e=>setForms({...forms, uniform:{...forms.uniform, name:e.target.value}})} />
-                                            <input className="tactical-input w-full p-4 rounded-xl text-sm" placeholder="Image URL" onChange={e=>setForms({...forms, uniform:{...forms.uniform, img:e.target.value}})} />
-                                            <button onClick={async()=>await window.fb.addDoc(window.fb.collection(window.fb.db, "uniforms"), forms.uniform)} className="w-full bg-blue-600 py-4 rounded-xl font-black">Register Item</button>
                                         </div>
                                     </div>
-                                )}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    {data.uniforms.map(u => (
-                                        <div key={u.fid} className="glass-panel rounded-[30px] overflow-hidden group hover:border-blue-500 transition-all border-b-2 border-transparent">
-                                            <div className="h-64 bg-black relative">
-                                                <img src={u.img} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all" />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
-                                                <div className="absolute bottom-4 right-4 text-right">
-                                                    <p className="text-[10px] text-blue-400 font-black uppercase tracking-widest">Tactical Gear</p>
-                                                    <h4 className="text-lg font-black">{u.name}</h4>
+                                    
+                                    {/* Accounts Table */}
+                                    <div className="lg:col-span-2">
+                                        <div className="bg-black/20 rounded-[40px] border border-white/10 overflow-hidden">
+                                            <table className="w-full text-right">
+                                                <thead className="bg-white/5 text-[10px] font-black text-slate-500 uppercase">
+                                                    <tr><th className="p-6">ID</th><th className="p-6">Name</th><th className="p-6">Rank</th><th className="p-6">Control</th></tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-white/5">
+                                                    {sortedUsers.map(u => (
+                                                        <tr key={u.id} className="user-card">
+                                                            <td className="p-6 font-black text-sky-500 font-mono">{formatID(u.id)}</td>
+                                                            <td className="p-6 font-bold text-sm">{u.name}</td>
+                                                            <td className={`p-6 text-xs font-black uppercase ${RANKS.find(r=>r.id===u.rank)?.color}`}>{u.rank}</td>
+                                                            <td className="p-6">
+                                                                {u.id !== '1001' ? (
+                                                                    <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="text-red-500 text-[10px] font-black border border-red-500/20 px-4 py-2 rounded-xl hover:bg-red-500 hover:text-white transition-all">REVOKE ACCESS</button>
+                                                                ) : <span className="text-sky-500 text-[10px] font-black uppercase tracking-widest">Master Key</span>}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Personnel Roster */}
+                            {page === 'force' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate__animated animate__fadeInUp">
+                                    {sortedUsers.map(u => (
+                                        <div key={u.id} className="bg-black/30 p-8 rounded-[40px] border border-white/5 relative overflow-hidden group">
+                                            <div className="absolute top-0 right-0 w-2 h-full bg-sky-600 opacity-20 group-hover:opacity-100 transition-all"></div>
+                                            <p className="text-4xl font-black text-white/5 absolute -left-2 -bottom-2 font-mono">{formatID(u.id)}</p>
+                                            <div className="relative z-10">
+                                                <h4 className="text-xl font-black mb-1">{u.name}</h4>
+                                                <p className={`text-xs font-black uppercase tracking-widest ${RANKS.find(r=>r.id===u.rank)?.color}`}>{u.rank}</p>
+                                                <div className="mt-4 flex gap-2">
+                                                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Status: On Duty</span>
                                                 </div>
-                                                {isCommander(user) && <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "uniforms", u.fid))} className="absolute top-4 left-4 bg-red-600/20 text-red-500 p-2 rounded-lg text-xs font-black">X</button>}
                                             </div>
                                         </div>
                                     ))}
                                 </div>
-                            </div>
-                        )}
+                            )}
+
+                            {/* Gear Section */}
+                            {page === 'uniforms' && (
+                                <div className="space-y-10 animate__animated animate__fadeIn">
+                                    {isCmd(user) && (
+                                        <div className="bg-black/20 p-8 rounded-[40px] max-w-xl border border-sky-500/30">
+                                            <h3 className="text-sm font-black mb-6 text-sky-500 uppercase tracking-widest">Inventory Log</h3>
+                                            <div className="space-y-4">
+                                                <input className="w-full bg-black/40 border border-white/10 p-4 rounded-2xl text-sm" placeholder="Item Name" onChange={e=>setForms({...forms, uniform:{...forms.uniform, name:e.target.value}})} />
+                                                <input className="w-full bg-black/40 border border-white/10 p-4 rounded-2xl text-sm" placeholder="Asset URL" onChange={e=>setForms({...forms, uniform:{...forms.uniform, img:e.target.value}})} />
+                                                <button onClick={async()=>await window.fb.addDoc(window.fb.collection(window.fb.db, "uniforms"), forms.uniform)} className="tactical-btn w-full py-4 rounded-2xl font-black">Register Asset</button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                                        {data.uniforms.map(u => (
+                                            <div key={u.fid} className="bg-black/40 rounded-[40px] overflow-hidden group border border-white/5 hover:border-sky-500/50 transition-all">
+                                                <div className="h-64 relative">
+                                                    <img src={u.img} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700" />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                                                    <div className="absolute bottom-6 right-6">
+                                                        <p className="text-[9px] text-sky-500 font-black uppercase tracking-widest">Asset Unlocked</p>
+                                                        <h4 className="text-xl font-black">{u.name}</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </main>
                 </div>
             );
         };
 
         const NavItem = ({active, onClick, label, icon, color="text-slate-400"}) => (
-            <div onClick={onClick} className={`p-4 nav-item flex items-center gap-4 font-bold ${active ? 'nav-active' : color + ' hover:bg-white/5'}`}>
+            <div onClick={onClick} className={`sidebar-link p-5 flex items-center gap-5 font-black text-xs uppercase tracking-widest rounded-2xl cursor-pointer ${active ? 'active-link' : color + ' hover:bg-white/5'}`}>
                 <span className="text-xl">{icon}</span>
-                <span className="text-xs uppercase tracking-widest">{label}</span>
+                <span>{label}</span>
             </div>
         );
 
-        const StatBox = ({label, value, icon, color}) => (
-            <div className={`glass-panel p-10 rounded-[40px] border-b-4 border-${color}-500 group relative overflow-hidden`}>
-                <div className="relative z-10">
-                    <p className="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">{label}</p>
-                    <h3 className="text-6xl font-black italic">{value}</h3>
-                </div>
-                <div className="absolute -right-4 -bottom-4 text-8xl opacity-5 transform group-hover:scale-110 transition-all">{icon}</div>
+        const SummaryCard = ({label, value, sub}) => (
+            <div className="bg-black/20 p-10 rounded-[50px] border border-white/5 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/10 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-all duration-700"></div>
+                <p className="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">{label}</p>
+                <h3 className="text-5xl font-black italic mb-2 tracking-tighter">{value}</h3>
+                <p className="text-[10px] font-bold text-sky-500 uppercase">{sub}</p>
             </div>
         );
 
