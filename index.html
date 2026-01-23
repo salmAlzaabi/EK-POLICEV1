@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <link rel="icon" type="image/png" href="https://cdn.discordapp.com/emojis/1394931233825361930.webp?size=160&animated=true">
+    <link rel="icon" type="image/png" href="https://cdn.discordapp.com/emojis/1394931233825361930.webp?size=160&animated=true">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MDT | POLICE </title>
@@ -84,7 +84,6 @@
             const [criminals, setCriminals] = useState([]);
             const [reports, setReports] = useState([]);
             
-            // Forms & Filters
             const [searchTerm, setSearchTerm] = useState('');
             const [loginForm, setLoginForm] = useState({ id: '', password: '' });
             const [newUser, setNewUser] = useState({ id: '', password: '', name: '', role: 'رتبة فرد', rank: 'Cadet', department: '' });
@@ -100,13 +99,15 @@
                 window.fb.onSnapshot(q, (s) => setReports(s.docs.map(d=>({...d.data(), fbId: d.id}))));
             }, []);
 
-            const isSupreme = (u) => u?.id === '1001';
+            // التعديل هنا: استخدام الرقم العسكري A-1
+            const isSupreme = (u) => u?.id === 'A-1';
             const isCommand = (u) => isSupreme(u) || u?.role === 'رتبة قيادية';
             const isOfficer = (u) => isCommand(u) || u?.role === 'رتبة ضابط';
 
             const sortedUsers = useMemo(() => {
                 return [...users].sort((a, b) => {
-                    if (a.id === '1001') return -1;
+                    if (a.id === 'A-1') return -1;
+                    if (b.id === 'A-1') return 1;
                     const wA = RANK_HIERARCHY.find(r => r.id === a.rank)?.weight || 0;
                     const wB = RANK_HIERARCHY.find(r => r.id === b.rank)?.weight || 0;
                     return wB - wA;
@@ -123,6 +124,7 @@
             };
 
             const saveUser = async () => {
+                if(!newUser.id) return alert('الرجاء إدخال الرقم العسكري');
                 await window.fb.setDoc(window.fb.doc(window.fb.db, "users", newUser.id), newUser);
                 setNewUser({ id: '', password: '', name: '', role: 'رتبة فرد', rank: 'Cadet', department: '' });
                 setIsEditingUser(false);
@@ -144,13 +146,16 @@
             if (!isLoggedIn) return (
                 <div className="h-screen w-full flex items-center justify-center bg-[#020617] p-4">
                     <div className="w-full max-w-md p-8 bg-[#0f172a] border border-blue-500/20 rounded-lg shadow-2xl">
-                        <div className="text-center mb-8"><div className="w-78 h-78 mx-auto mb-6 flex items-center justify-center">
-    <img 
-        src="https://cdn.discordapp.com/attachments/1453507995781693634/1464367144228622516/185-1855065_los-santos-police-department-president-of-the-united-states-removebg-preview.png?ex=697535ad&is=6973e42d&hm=36374c04aa1f881264eab683cba0d57d347dd41b654467b3c21cf8181f977e3e&" 
-        alt="Logo" 
-        className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]"
-    />
-</div><h1 className="text-2xl font-black"> MDT | POLICE </h1></div>
+                        <div className="text-center mb-8">
+                            <div className="w-78 h-78 mx-auto mb-6 flex items-center justify-center">
+                                <img 
+                                    src="https://cdn.discordapp.com/attachments/1453507995781693634/1464367144228622516/185-1855065_los-santos-police-department-president-of-the-united-states-removebg-preview.png?ex=697535ad&is=6973e42d&hm=36374c04aa1f881264eab683cba0d57d347dd41b654467b3c21cf8181f977e3e&" 
+                                    alt="Logo" 
+                                    className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                                />
+                            </div>
+                            <h1 className="text-2xl font-black"> MDT | POLICE </h1>
+                        </div>
                         <div className="space-y-4">
                             <input type="text" placeholder="الرقم العسكري" className="w-full p-4 rounded" onChange={e=>setLoginForm({...loginForm, id: e.target.value})} />
                             <input type="password" placeholder="كلمة المرور" className="w-full p-4 rounded" onChange={e=>setLoginForm({...loginForm, password: e.target.value})} onKeyPress={e=>e.key==='Enter'&&handleLogin()} />
@@ -163,7 +168,10 @@
             return (
                 <div className="flex h-screen overflow-hidden">
                     <aside className="sidebar flex flex-col h-full shadow-2xl z-50">
-                        <div className="p-6 text-center border-b border-white/5"><h2 className="text-xl font-black">وزارة الداخلية</h2><p className="text-[10px] text-gray-500 uppercase tracking-widest">MDT SYSTEM</p></div>
+                        <div className="p-6 text-center border-b border-white/5">
+                            <h2 className="text-xl font-black">وزارة الداخلية</h2>
+                            <p className="text-[10px] text-gray-500 uppercase tracking-widest">MDT SYSTEM</p>
+                        </div>
                         <nav className="flex-grow mt-6">
                             <button onClick={()=>setCurrentPage('dashboard')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='dashboard'?'nav-active':''}`}>📊 لوحة التحكم</button>
                             <button onClick={()=>setCurrentPage('reports')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='reports'?'nav-active':''}`}>📄 التقارير والبحث</button>
@@ -175,8 +183,13 @@
                         </nav>
                         <div className="p-4 border-t border-white/5">
                             <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg mb-4">
-                                <div className="w-10 h-10 rounded bg-blue-600 flex items-center justify-center font-bold">{isSupreme(currentUser) ? '👑' : currentUser.name[0]}</div>
-                                <div className="overflow-hidden"><p className="text-xs font-bold truncate">{currentUser.name}</p><p className="text-[10px] text-blue-400 font-bold uppercase">{currentUser.id}</p></div>
+                                <div className="w-10 h-10 rounded bg-blue-600 flex items-center justify-center font-bold">
+                                    {isSupreme(currentUser) ? '👑' : currentUser.name[0]}
+                                </div>
+                                <div className="overflow-hidden">
+                                    <p className="text-xs font-bold truncate">{currentUser.name}</p>
+                                    <p className="text-[10px] text-blue-400 font-bold uppercase">{currentUser.id}</p>
+                                </div>
                             </div>
                             <button onClick={()=>setIsLoggedIn(false)} className="w-full p-3 bg-red-600/10 text-red-500 rounded-lg hover:bg-red-600 hover:text-white transition-all text-sm font-bold">خروج</button>
                         </div>
@@ -194,7 +207,6 @@
                             <p className="text-blue-500 text-sm font-bold"><span className="status-dot bg-green-500"></span> النظام متصل</p>
                         </header>
 
-                        {/* DASHBOARD */}
                         {currentPage === 'dashboard' && (
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <div className="tactical-panel p-8">
@@ -212,7 +224,6 @@
                             </div>
                         )}
 
-                        {/* REPORTS & SEARCH */}
                         {currentPage === 'reports' && (
                             <div className="max-w-4xl mx-auto space-y-8">
                                 <div className="tactical-panel p-4 border-r-amber-500 flex gap-4 items-center">
@@ -234,7 +245,7 @@
                                         <div key={rep.fbId} className="tactical-panel p-6 border-white/5 border-r-slate-500">
                                             <div className="flex justify-between items-start mb-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-blue-600 flex items-center justify-center rounded font-bold">{rep.authorId.slice(-2)}</div>
+                                                    <div className="w-10 h-10 bg-blue-600 flex items-center justify-center rounded font-bold">{rep.authorId === 'A-1' ? 'A1' : rep.authorId.slice(-2)}</div>
                                                     <div>
                                                         <h4 className="font-black">{rep.authorName}</h4>
                                                         <p className="text-[10px] text-blue-500 font-bold uppercase">{rep.authorRank} • {rep.incidentTime} {rep.updated && <span className="text-amber-500">(معدل)</span>}</p>
@@ -252,7 +263,6 @@
                             </div>
                         )}
 
-                        {/* SCHEDULE */}
                         {currentPage === 'schedule' && (
                             <div className="tactical-panel overflow-hidden">
                                 <table className="w-full text-right">
@@ -275,7 +285,6 @@
                             </div>
                         )}
 
-                        {/* CRIMINALS */}
                         {currentPage === 'criminals' && (
                             <div className="max-w-4xl mx-auto space-y-8">
                                 {isOfficer(currentUser) && (
@@ -303,7 +312,6 @@
                             </div>
                         )}
 
-                        {/* USERS ADMIN */}
                         {currentPage === 'users' && isCommand(currentUser) && (
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                                 <div className="lg:col-span-1">
@@ -329,12 +337,14 @@
                                     {users.map(u => (
                                         <div key={u.id} className="tactical-panel p-5 flex justify-between items-center group">
                                             <div className="flex items-center gap-4">
-                                                <div className={`w-12 h-12 flex items-center justify-center font-bold ${isSupreme(u) ? 'bg-amber-500 text-black' : 'bg-slate-800'}`}>{isSupreme(u) ? '1001' : u.id.slice(-2)}</div>
+                                                <div className={`w-12 h-12 flex items-center justify-center font-bold ${isSupreme(u) ? 'bg-amber-500 text-black' : 'bg-slate-800'}`}>
+                                                    {isSupreme(u) ? 'A-1' : u.id.slice(-2)}
+                                                </div>
                                                 <div><p className="font-bold">{u.name} {isSupreme(u) && '👑'}</p><p className="text-[10px] text-gray-500 uppercase">{u.rank} | {u.role}</p></div>
                                             </div>
                                             <div className="flex gap-2">
                                                 <button onClick={()=>{setNewUser(u); setIsEditingUser(true);}} className="p-3 bg-blue-500/10 text-blue-500 rounded hover:bg-blue-500 hover:text-white transition-all">تعديل</button>
-                                                {u.id !== '1001' && <button onClick={async()=>confirm('حذف؟')&&await window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="p-3 bg-red-500/10 text-red-500 rounded hover:bg-red-500 hover:text-white transition-all">حذف</button>}
+                                                {u.id !== 'A-1' && <button onClick={async()=>confirm('حذف؟')&&await window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="p-3 bg-red-500/10 text-red-500 rounded hover:bg-red-500 hover:text-white transition-all">حذف</button>}
                                             </div>
                                         </div>
                                     ))}
