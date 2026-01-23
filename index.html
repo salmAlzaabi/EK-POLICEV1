@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام وزارة الداخلية | MOI System</title>
+    <title>نظام وزارة الداخلية | MDT System</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -219,7 +219,7 @@
                             {[
                                 {id: 'dashboard', label: 'الرئيسية', icon: 'home'},
                                 {id: 'criminals', label: 'المطلوبين', icon: 'users'},
-                                {id: 'users', label: 'القوى البشرية', icon: 'userCog', admin: true},
+                                {id: 'users', label: 'الموظفون', icon: 'userCog', admin: true},
                             ].map(item => (
                                 (!item.admin || currentUser.role === 'قائد') && (
                                     <button key={item.id} onClick={() => setCurrentPage(item.id)} 
@@ -360,7 +360,7 @@
                     </main>
 
                     <footer className="p-6 text-center text-gray-600 text-[10px] uppercase tracking-[0.2em]">
-                        Classified MOI System © 2026 | All Operations Logged
+                        Classified MDT System © 2026 | All Operations Logged
                     </footer>
                 </div>
             );
