@@ -147,8 +147,8 @@
             if (!isLoggedIn) return (
                 <div className="min-h-screen flex items-center justify-center p-4">
                     <div className="glass-panel w-full max-w-md p-10 rounded-[30px] text-center border border-white/10">
-                        <img src="رابط_شعارك_هنا" className="w-40 h-40 mx-auto mb-8 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
-                        <h2 className="text-2xl font-extrabold tracking-tighter mb-8 bg-gradient-to-r from-white to-blue-400 bg-clip-text text-transparent">بوابة النظام الموحد</h2>
+                        <img src="https://cdn.discordapp.com/attachments/1453507995781693634/1464367144228622516/185-1855065_los-santos-police-department-president-of-the-united-states-removebg-preview.png?ex=697535ad&is=6973e42d&hm=36374c04aa1f881264eab683cba0d57d347dd41b654467b3c21cf8181f977e3e&" className="w-40 h-40 mx-auto mb-8 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+                        <h2 className="text-2xl font-extrabold tracking-tighter mb-8 bg-gradient-to-r from-white to-blue-400 bg-clip-text text-transparent">MDT | POLICE </h2>
                         <div className="space-y-4">
                             <input type="text" placeholder="الرقم العسكري" className="w-full bg-slate-900/50 p-4 rounded-2xl text-center border border-white/5 focus:ring-2 ring-blue-500/20" onChange={e=>setForms({...forms, login:{...forms.login, id:e.target.value}})} />
                             <input type="password" placeholder="كلمة المرور" className="w-full bg-slate-900/50 p-4 rounded-2xl text-center border border-white/5 focus:ring-2 ring-blue-500/20" onChange={e=>setForms({...forms, login:{...forms.login, pass:e.target.value}})} />
@@ -163,13 +163,13 @@
                     {/* Sidebar Desktop */}
                     <aside className="desktop-sidebar glass-panel flex flex-col p-6">
                         <div className="text-center mb-10">
-                            <img src="رابط_شعارك_هنا" className="w-20 h-20 mx-auto mb-4" />
+                            <img src="https://cdn.discordapp.com/attachments/1453507995781693634/1464367144228622516/185-1855065_los-santos-police-department-president-of-the-united-states-removebg-preview.png?ex=697535ad&is=6973e42d&hm=36374c04aa1f881264eab683cba0d57d347dd41b654467b3c21cf8181f977e3e&" className="w-20 h-20 mx-auto mb-4" />
                             <p className="text-[10px] font-black text-blue-500 tracking-[0.3em] uppercase">Tactical MDT</p>
                         </div>
                         <nav className="space-y-2 flex-grow">
                             <NavIcon id="dashboard" icon="📊" label="لوحة التحكم" />
                             <NavIcon id="reports" icon="📁" label="سجل التقارير" />
-                            <NavIcon id="force" icon="👥" label="قائمة القوة" />
+                            <NavIcon id="force" icon="👥" label="قائمة العساكر" />
                             <NavIcon id="wanted" icon="⚠️" label="المطلوبين" />
                             {isLeader(user) && <NavIcon id="admin" icon="⚙️" label="الإدارة العليا" />}
                         </nav>
