@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MDT | Comprehensive System</title>
+    <title>MDT | Tactical Elite</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -11,28 +11,68 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100;400;700;900&display=swap');
-        :root { --primary: #0f172a; --secondary: #1e293b; --accent: #3b82f6; }
-        body { font-family: 'Noto Kufi Arabic', sans-serif; background-color: #020617; color: #e2e8f0; margin: 0; }
-
-        /* Tactical Styling */
-        .tactical-panel { background: var(--secondary); border: 1px solid rgba(59, 130, 246, 0.1); border-right: 4px solid var(--accent); border-radius: 12px; }
-        .nav-active { background: var(--accent) !important; color: white !important; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@300;500;800&display=swap');
         
-        /* Responsive Logic */
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .main-content { margin-right: 0 !important; padding: 15px !important; padding-bottom: 100px !important; }
-            .mobile-nav { display: flex; position: fixed; bottom: 0; width: 100%; background: var(--primary); border-top: 1px solid rgba(255,255,255,0.05); z-index: 1000; padding-bottom: 20px; }
-        }
-        @media (min-width: 769px) {
-            .mobile-nav { display: none; }
-            .sidebar { width: 280px; position: fixed; right: 0; top: 0; height: 100vh; background: var(--primary); border-left: 1px solid rgba(255,255,255,0.05); }
-            .main-content { margin-right: 280px; padding: 40px; }
+        body {
+            font-family: 'Noto Kufi Arabic', sans-serif;
+            background: #020617;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.15) 0, transparent 50%), 
+                radial-gradient(at 100% 100%, rgba(30, 58, 138, 0.1) 0, transparent 50%);
+            color: #f1f5f9;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
         }
 
-        input, select, textarea { background: #0f172a !important; border: 1px solid #334155 !important; color: white !important; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--accent) !important; }
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .tactical-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.4));
+            border-right: 3px solid #3b82f6;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tactical-card:hover {
+            transform: translateY(-2px);
+            border-right-width: 6px;
+            background: rgba(30, 41, 59, 0.6);
+        }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page-entry { animation: fadeIn 0.4s ease-out forwards; }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .desktop-sidebar { display: none; }
+            .content-area { margin-right: 0 !important; padding: 16px !important; padding-bottom: 100px !important; }
+            .mobile-bottom-nav { 
+                display: flex; position: fixed; bottom: 0; width: 100%; 
+                background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(20px);
+                border-top: 1px solid rgba(255,255,255,0.08); z-index: 1000;
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-bottom-nav { display: none; }
+            .desktop-sidebar { width: 280px; position: fixed; right: 0; top: 0; height: 100vh; z-index: 1000; }
+            .content-area { margin-right: 280px; padding: 40px; }
+        }
+
+        .nav-btn-active { color: #3b82f6 !important; background: rgba(59, 130, 246, 0.1); border-radius: 12px; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -58,7 +98,7 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        const RANK_HIERARCHY = [
+        const RANK_DATA = [
             { id: 'General', weight: 19 }, { id: 'Lieutenant General', weight: 18 },
             { id: 'Major General', weight: 17 }, { id: 'Brigadier General', weight: 16 },
             { id: 'Colonel', weight: 15 }, { id: 'Major', weight: 14 },
@@ -73,191 +113,213 @@
 
         const App = () => {
             const [isLoggedIn, setIsLoggedIn] = useState(false);
-            const [currentUser, setCurrentUser] = useState(null);
-            const [currentPage, setCurrentPage] = useState('dashboard');
-            const [users, setUsers] = useState([]);
-            const [criminals, setCriminals] = useState([]);
-            const [reports, setReports] = useState([]);
-            const [loginForm, setLoginForm] = useState({ id: '', password: '' });
-            const [reportForm, setReportForm] = useState({ content: '', time: '' });
-            const [adminForm, setAdminForm] = useState({ id: '', name: '', rank: 'Cadet', role: 'رتبة فرد', password: '' });
+            const [user, setUser] = useState(null);
+            const [page, setPage] = useState('dashboard');
+            const [dbData, setDbData] = useState({ users: [], criminals: [], reports: [] });
+            const [forms, setForms] = useState({ login: {}, report: {}, admin: {rank: 'Cadet'} });
 
             useEffect(() => {
                 if (!window.fb) return;
-                window.fb.onSnapshot(window.fb.collection(window.fb.db, "users"), s => setUsers(s.docs.map(d=>d.data())));
-                window.fb.onSnapshot(window.fb.collection(window.fb.db, "criminals"), s => setCriminals(s.docs.map(d=>({...d.data(), fbId: d.id}))));
+                window.fb.onSnapshot(window.fb.collection(window.fb.db, "users"), s => setDbData(prev => ({...prev, users: s.docs.map(d=>d.data())})));
+                window.fb.onSnapshot(window.fb.collection(window.fb.db, "criminals"), s => setDbData(prev => ({...prev, criminals: s.docs.map(d=>({...d.data(), fid: d.id}))})));
                 const q = window.fb.query(window.fb.collection(window.fb.db, "field_reports"), window.fb.orderBy("createdAt", "desc"));
-                window.fb.onSnapshot(q, s => setReports(s.docs.map(d=>({...d.data(), fbId: d.id}))));
+                window.fb.onSnapshot(q, s => setDbData(prev => ({...prev, reports: s.docs.map(d=>({...d.data(), fid: d.id}))})));
             }, []);
 
-            const isCommand = (u) => u?.id === '1001' || u?.role === 'رتبة قيادية';
-
-            const sortedUsers = useMemo(() => {
-                return [...users].sort((a, b) => {
-                    const wA = RANK_HIERARCHY.find(r => r.id === a.rank)?.weight || 0;
-                    const wB = RANK_HIERARCHY.find(r => r.id === b.rank)?.weight || 0;
-                    return wB - wA;
-                });
-            }, [users]);
+            const isLeader = (u) => u?.id === '1001' || u?.role === 'رتبة قيادية';
+            
+            const sortedForce = useMemo(() => {
+                return [...dbData.users].sort((a,b) => (RANK_DATA.find(r=>r.id===b.rank)?.weight || 0) - (RANK_DATA.find(r=>r.id===a.rank)?.weight || 0));
+            }, [dbData.users]);
 
             const handleLogin = () => {
-                const u = users.find(x => x.id === loginForm.id && x.password === loginForm.password);
-                if (u) { setCurrentUser(u); setIsLoggedIn(true); } else alert('بيانات خاطئة');
+                const found = dbData.users.find(u => u.id === forms.login.id && u.password === forms.login.pass);
+                if (found) { setUser(found); setIsLoggedIn(true); } else alert('البيانات غير صحيحة');
             };
 
-            const NavItem = ({id, icon, label}) => (
-                <button onClick={()=>setCurrentPage(id)} className={`flex flex-col md:flex-row items-center gap-3 p-3 md:px-6 md:py-4 w-full transition-all ${currentPage===id?'nav-active':'text-slate-400'}`}>
+            const NavIcon = ({id, icon, label}) => (
+                <button onClick={()=>setPage(id)} className={`flex flex-col md:flex-row items-center justify-center gap-3 p-3 md:px-6 md:py-4 transition-all ${page === id ? 'nav-btn-active' : 'text-slate-500 hover:text-white'}`}>
                     <span className="text-xl">{icon}</span>
-                    <span className="text-[10px] md:text-sm font-bold">{label}</span>
+                    <span className="text-[10px] md:text-sm font-bold tracking-wide">{label}</span>
                 </button>
             );
 
             if (!isLoggedIn) return (
-                <div className="min-h-screen flex items-center justify-center p-6 bg-[#020617]">
-                    <div className="w-full max-w-sm text-center">
-                        <img src="رابط_شعارك_هنا" className="w-48 h-48 mx-auto mb-6 object-contain" />
-                        <h1 className="text-2xl font-black mb-8">نظام البيانات الموحد</h1>
-                        <div className="space-y-3">
-                            <input type="text" placeholder="الرقم العسكري" className="w-full p-4 rounded-xl text-center" onChange={e=>setLoginForm({...loginForm, id: e.target.value})} />
-                            <input type="password" placeholder="كلمة المرور" className="w-full p-4 rounded-xl text-center" onChange={e=>setLoginForm({...loginForm, password: e.target.value})} />
-                            <button onClick={handleLogin} className="w-full bg-blue-600 p-4 rounded-xl font-bold mt-4">دخول النظام</button>
+                <div className="min-h-screen flex items-center justify-center p-4">
+                    <div className="glass-panel w-full max-w-md p-10 rounded-[30px] text-center border border-white/10">
+                        <img src="رابط_شعارك_هنا" className="w-40 h-40 mx-auto mb-8 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+                        <h2 className="text-2xl font-extrabold tracking-tighter mb-8 bg-gradient-to-r from-white to-blue-400 bg-clip-text text-transparent">بوابة النظام الموحد</h2>
+                        <div className="space-y-4">
+                            <input type="text" placeholder="الرقم العسكري" className="w-full bg-slate-900/50 p-4 rounded-2xl text-center border border-white/5 focus:ring-2 ring-blue-500/20" onChange={e=>setForms({...forms, login:{...forms.login, id:e.target.value}})} />
+                            <input type="password" placeholder="كلمة المرور" className="w-full bg-slate-900/50 p-4 rounded-2xl text-center border border-white/5 focus:ring-2 ring-blue-500/20" onChange={e=>setForms({...forms, login:{...forms.login, pass:e.target.value}})} />
+                            <button onClick={handleLogin} className="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-black text-white shadow-xl shadow-blue-900/40 transition-all active:scale-95">دخول المركز</button>
                         </div>
                     </div>
                 </div>
             );
 
             return (
-                <div className="min-h-screen flex">
-                    <aside className="sidebar flex flex-col">
-                        <div className="p-8 text-center border-b border-white/5">
-                            <img src="رابط_شعارك_هنا" className="w-24 h-24 mx-auto mb-4 object-contain" />
-                            <h2 className="font-black text-xs tracking-widest uppercase text-blue-500">Ministry of Interior</h2>
+                <div className="flex flex-col md:flex-row min-h-screen">
+                    {/* Sidebar Desktop */}
+                    <aside className="desktop-sidebar glass-panel flex flex-col p-6">
+                        <div className="text-center mb-10">
+                            <img src="رابط_شعارك_هنا" className="w-20 h-20 mx-auto mb-4" />
+                            <p className="text-[10px] font-black text-blue-500 tracking-[0.3em] uppercase">Tactical MDT</p>
                         </div>
-                        <nav className="flex-grow pt-4">
-                            <NavItem id="dashboard" icon="📊" label="الرئيسية" />
-                            <NavItem id="reports" icon="📄" label="التقارير" />
-                            <NavItem id="schedule" icon="📋" label="القوة" />
-                            <NavItem id="criminals" icon="⚖️" label="المطلوبين" />
-                            {isCommand(currentUser) && <NavItem id="admin" icon="🛠️" label="الإدارة" />}
+                        <nav className="space-y-2 flex-grow">
+                            <NavIcon id="dashboard" icon="📊" label="لوحة التحكم" />
+                            <NavIcon id="reports" icon="📁" label="سجل التقارير" />
+                            <NavIcon id="force" icon="👥" label="قائمة القوة" />
+                            <NavIcon id="wanted" icon="⚠️" label="المطلوبين" />
+                            {isLeader(user) && <NavIcon id="admin" icon="⚙️" label="الإدارة العليا" />}
                         </nav>
-                        <button onClick={()=>setIsLoggedIn(false)} className="p-6 text-red-500 font-bold text-xs uppercase tracking-tighter">تسجيل الخروج</button>
+                        <div className="mt-auto pt-6 border-t border-white/5 flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold">{user.name[0]}</div>
+                            <div className="text-xs">
+                                <p className="font-bold">{user.name}</p>
+                                <button onClick={()=>setIsLoggedIn(false)} className="text-red-400 hover:text-red-300">خروج</button>
+                            </div>
+                        </div>
                     </aside>
 
-                    <nav className="mobile-nav">
-                        <NavItem id="dashboard" icon="📊" label="الرئيسية" />
-                        <NavItem id="reports" icon="📄" label="التقارير" />
-                        <NavItem id="schedule" icon="📋" label="القوة" />
-                        <NavItem id="criminals" icon="⚖️" label="المطلوبين" />
-                        {isCommand(currentUser) && <NavItem id="admin" icon="🛠️" label="الإدارة" />}
+                    {/* Mobile Bottom Nav */}
+                    <nav className="mobile-bottom-nav px-4 flex justify-around items-center">
+                        <NavIcon id="dashboard" icon="📊" label="الرئيسية" />
+                        <NavIcon id="reports" icon="📁" label="التقارير" />
+                        <NavIcon id="force" icon="👥" label="القوة" />
+                        <NavIcon id="wanted" icon="⚠️" label="المطلوبين" />
+                        {isLeader(user) && <NavIcon id="admin" icon="⚙️" label="الإدارة" />}
                     </nav>
 
-                    <main className="main-content flex-grow">
-                        <header className="mb-8 p-4 md:p-0">
-                            <h1 className="text-3xl font-black">
-                                {currentPage==='dashboard' && 'الإحصائيات العامة'}
-                                {currentPage==='reports' && 'مركز البلاغات'}
-                                {currentPage==='schedule' && 'سجل القوة (الرتب)'}
-                                {currentPage==='criminals' && 'قائمة المطلوبين'}
-                                {currentPage==='admin' && 'إدارة النظام'}
-                            </h1>
-                        </header>
-
-                        {currentPage === 'dashboard' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 md:p-0">
-                                <div className="tactical-panel p-10">
-                                    <p className="text-xs text-gray-500 font-bold mb-2">إجمالي الأفراد</p>
-                                    <h2 className="text-6xl font-black">{users.length}</h2>
-                                </div>
-                                <div className="tactical-panel p-10 border-r-red-500">
-                                    <p className="text-xs text-gray-500 font-bold mb-2">تعميمات نشطة</p>
-                                    <h2 className="text-6xl font-black text-red-500">{criminals.length}</h2>
+                    {/* Main Area */}
+                    <main className="content-area flex-grow overflow-y-auto">
+                        <div className="page-entry">
+                            <div className="flex justify-between items-center mb-10">
+                                <h1 className="text-3xl md:text-5xl font-black italic tracking-tighter">
+                                    {page === 'dashboard' && 'OVERVIEW'}
+                                    {page === 'reports' && 'FIELD REPORTS'}
+                                    {page === 'force' && 'FORCE REGISTER'}
+                                    {page === 'wanted' && 'WANTED LIST'}
+                                    {page === 'admin' && 'ADMIN CENTER'}
+                                </h1>
+                                <div className="text-right desktop-only">
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Current Status</p>
+                                    <p className="text-green-500 font-bold text-xs flex items-center gap-2">● SYSTEM ACTIVE</p>
                                 </div>
                             </div>
-                        )}
 
-                        {currentPage === 'reports' && (
-                            <div className="max-w-4xl mx-auto space-y-6">
-                                <div className="tactical-panel p-6 border-r-blue-500">
-                                    <h3 className="font-bold mb-4">رفع تقرير ميداني</h3>
-                                    <input type="text" placeholder="الوقت" className="w-full p-4 mb-2 rounded-lg" value={reportForm.time} onChange={e=>setReportForm({...reportForm, time: e.target.value})} />
-                                    <textarea placeholder="تفاصيل المهمة..." className="w-full p-4 h-32 rounded-lg" value={reportForm.content} onChange={e=>setReportForm({...reportForm, content: e.target.value})}></textarea>
-                                    <button onClick={async()=>{
-                                        await window.fb.addDoc(window.fb.collection(window.fb.db, "field_reports"), {
-                                            ...reportForm, authorName: currentUser.name, authorId: currentUser.id, createdAt: window.fb.serverTimestamp()
-                                        });
-                                        setReportForm({content:'', time:''});
-                                    }} className="w-full bg-blue-600 p-4 rounded-lg font-bold mt-2">نشر</button>
+                            {/* Dashboard */}
+                            {page === 'dashboard' && (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="glass-panel p-8 rounded-[30px] tactical-card">
+                                        <p className="text-xs font-bold text-slate-500 mb-2">القوة العاملة</p>
+                                        <h2 className="text-6xl font-black">{dbData.users.length}</h2>
+                                    </div>
+                                    <div className="glass-panel p-8 rounded-[30px] tactical-card border-r-red-500">
+                                        <p className="text-xs font-bold text-slate-500 mb-2">تعميمات نشطة</p>
+                                        <h2 className="text-6xl font-black text-red-500">{dbData.criminals.length}</h2>
+                                    </div>
+                                    <div className="glass-panel p-8 rounded-[30px] tactical-card border-r-blue-500">
+                                        <p className="text-xs font-bold text-slate-500 mb-2">تقارير اليوم</p>
+                                        <h2 className="text-6xl font-black text-blue-500">{dbData.reports.length}</h2>
+                                    </div>
                                 </div>
-                                {reports.map(r => (
-                                    <div key={r.fbId} className="tactical-panel p-6">
-                                        <div className="flex justify-between items-center mb-2 font-black text-xs text-blue-400">
-                                            <span>{r.authorName} ({r.authorId})</span>
-                                            <span>{r.incidentTime}</span>
+                            )}
+
+                            {/* Force List */}
+                            {page === 'force' && (
+                                <div className="glass-panel rounded-[30px] overflow-hidden border border-white/5">
+                                    <table className="w-full text-right">
+                                        <thead className="bg-white/5 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                            <tr><th className="p-6">الرتبة العسكرية</th><th className="p-6">الاسم الكامل</th><th className="p-6">الرقم</th></tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-white/5">
+                                            {sortedForce.map(u => (
+                                                <tr key={u.id} className="hover:bg-white/5 transition-colors">
+                                                    <td className="p-6 text-blue-400 font-bold text-sm tracking-tighter">
+                                                        <span className="bg-blue-500/10 px-3 py-1 rounded-full">{u.rank}</span>
+                                                    </td>
+                                                    <td className="p-6 font-bold">{u.name}</td>
+                                                    <td className="p-6 font-mono text-slate-500 text-xs">{u.id}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+                            {/* Reports */}
+                            {page === 'reports' && (
+                                <div className="grid gap-6 max-w-4xl mx-auto">
+                                    <div className="glass-panel p-8 rounded-[30px] border-r-4 border-r-blue-500">
+                                        <h3 className="font-bold mb-6 text-blue-400 flex items-center gap-2"><span>✚</span> إضافة بلاغ جديد</h3>
+                                        <div className="space-y-4">
+                                            <input type="text" placeholder="الوقت (مثلاً 02:00 AM)" className="w-full bg-black/20 p-4 rounded-xl" value={forms.report.time || ''} onChange={e=>setForms({...forms, report:{...forms.report, time:e.target.value}})} />
+                                            <textarea placeholder="اكتب تفاصيل المباشرة هنا..." className="w-full bg-black/20 p-4 rounded-xl h-32" value={forms.report.content || ''} onChange={e=>setForms({...forms, report:{...forms.report, content:e.target.value}})}></textarea>
+                                            <button onClick={async()=>{
+                                                await window.fb.addDoc(window.fb.collection(window.fb.db, "field_reports"), {...forms.report, authorName: user.name, authorId: user.id, createdAt: window.fb.serverTimestamp()});
+                                                setForms({...forms, report:{}});
+                                            }} className="w-full bg-blue-600 py-4 rounded-xl font-black">إرسال التقرير للأرشيف</button>
                                         </div>
-                                        <p className="text-sm opacity-80">{r.content}</p>
                                     </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {currentPage === 'schedule' && (
-                            <div className="tactical-panel overflow-x-auto">
-                                <table className="w-full text-right">
-                                    <thead className="bg-slate-900 text-[10px] text-gray-500 uppercase">
-                                        <tr><th className="p-5">الرتبة</th><th className="p-5">الاسم</th><th className="p-5">الرقم</th></tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/5">
-                                        {sortedUsers.map(u => (
-                                            <tr key={u.id} className="hover:bg-white/5 transition-all">
-                                                <td className="p-5 font-bold text-blue-400">{u.rank}</td>
-                                                <td className="p-5 font-black">{u.name}</td>
-                                                <td className="p-5 text-gray-500 font-mono text-xs">{u.id}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-
-                        {currentPage === 'criminals' && (
-                            <div className="max-w-2xl mx-auto space-y-4">
-                                {criminals.map(c => (
-                                    <div key={c.fbId} className="tactical-panel p-6 border-r-red-600 flex justify-between items-center">
-                                        <div><h4 className="text-xl font-black text-red-500 uppercase">{c.name}</h4><p className="text-xs font-bold opacity-50">{c.crime}</p></div>
-                                        {isCommand(currentUser) && <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "criminals", c.fbId))} className="text-red-500 text-xs">حذف</button>}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {currentPage === 'admin' && (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                <div className="tactical-panel p-6 border-r-amber-500">
-                                    <h3 className="font-black mb-6 uppercase text-xs text-amber-500 tracking-widest">إدارة شؤون الأفراد</h3>
-                                    <div className="space-y-4">
-                                        <input type="text" placeholder="الرقم العسكري" className="w-full p-4 rounded-xl" value={adminForm.id} onChange={e=>setAdminForm({...adminForm, id:e.target.value})} />
-                                        <input type="text" placeholder="الاسم" className="w-full p-4 rounded-xl" value={adminForm.name} onChange={e=>setAdminForm({...adminForm, name:e.target.value})} />
-                                        <input type="password" placeholder="كلمة المرور" className="w-full p-4 rounded-xl" value={adminForm.password} onChange={e=>setAdminForm({...adminForm, password:e.target.value})} />
-                                        <select className="w-full p-4 rounded-xl" value={adminForm.rank} onChange={e=>setAdminForm({...adminForm, rank:e.target.value})}>
-                                            {RANK_HIERARCHY.map(r => <option key={r.id} value={r.id}>{r.id}</option>)}
-                                        </select>
-                                        <button onClick={async()=>{
-                                            await window.fb.setDoc(window.fb.doc(window.fb.db, "users", adminForm.id), adminForm);
-                                            alert('تم حفظ البيانات');
-                                            setAdminForm({id:'', name:'', rank:'Cadet', role:'رتبة فرد', password:''});
-                                        }} className="w-full bg-amber-600 p-4 rounded-xl font-black uppercase text-sm">حفظ التغييرات</button>
-                                    </div>
-                                </div>
-                                <div className="space-y-3 overflow-y-auto max-h-[500px] pr-2">
-                                    {users.map(u => (
-                                        <div key={u.id} className="tactical-panel p-4 flex justify-between items-center text-xs">
-                                            <div><p className="font-bold">{u.name}</p><p className="text-gray-500 uppercase">{u.rank} | {u.id}</p></div>
-                                            <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="text-red-500 px-2">إبعاد</button>
+                                    {dbData.reports.map(r => (
+                                        <div key={r.fid} className="glass-panel p-6 rounded-[25px] border-white/5 relative overflow-hidden">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded bg-blue-500/20 flex items-center justify-center text-[10px] font-bold text-blue-400">{r.authorId}</div>
+                                                    <div><p className="text-sm font-bold">{r.authorName}</p><p className="text-[10px] text-slate-500">{r.incidentTime}</p></div>
+                                                </div>
+                                            </div>
+                                            <p className="text-sm leading-relaxed text-slate-300 pr-4 border-r border-blue-500/30">{r.content}</p>
                                         </div>
                                     ))}
                                 </div>
-                            </div>
-                        )}
+                            )}
+
+                            {/* Wanted */}
+                            {page === 'wanted' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {dbData.criminals.map(c => (
+                                        <div key={c.fid} className="glass-panel p-6 rounded-[25px] border-r-4 border-r-red-600 flex justify-between items-center group">
+                                            <div>
+                                                <h4 className="text-xl font-black text-red-500 uppercase tracking-tighter">{c.name}</h4>
+                                                <p className="text-xs font-bold text-slate-500">{c.crime}</p>
+                                            </div>
+                                            {isLeader(user) && <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "criminals", c.fid))} className="text-[10px] text-red-500 font-bold bg-red-500/10 px-4 py-2 rounded-full hover:bg-red-500 hover:text-white transition-all">إغلاق الملف</button>}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Admin */}
+                            {page === 'admin' && (
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                                    <div className="glass-panel p-8 rounded-[30px] border-r-4 border-r-amber-500">
+                                        <h3 className="font-bold mb-6 text-amber-500 uppercase text-xs tracking-widest">إدارة الموارد البشرية</h3>
+                                        <div className="space-y-3">
+                                            <input type="text" placeholder="الرقم العسكري" className="w-full bg-black/20 p-4 rounded-xl" onChange={e=>setForms({...forms, admin:{...forms.admin, id:e.target.value}})} />
+                                            <input type="text" placeholder="الاسم" className="w-full bg-black/20 p-4 rounded-xl" onChange={e=>setForms({...forms, admin:{...forms.admin, name:e.target.value}})} />
+                                            <input type="password" placeholder="كلمة المرور" className="w-full bg-black/20 p-4 rounded-xl" onChange={e=>setForms({...forms, admin:{...forms.admin, password:e.target.value}})} />
+                                            <select className="w-full bg-slate-900 p-4 rounded-xl" onChange={e=>setForms({...forms, admin:{...forms.admin, rank:e.target.value}})}>
+                                                {RANK_DATA.map(r => <option key={r.id} value={r.id}>{r.id}</option>)}
+                                            </select>
+                                            <button onClick={async()=>{
+                                                await window.fb.setDoc(window.fb.doc(window.fb.db, "users", forms.admin.id), forms.admin);
+                                                alert('تم التحديث');
+                                            }} className="w-full bg-amber-600 py-4 rounded-xl font-black shadow-lg">تحديث بيانات القوة</button>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {dbData.users.map(u => (
+                                            <div key={u.id} className="glass-panel p-4 rounded-2xl flex justify-between items-center text-xs">
+                                                <span>{u.name} <b className="text-blue-500 ml-2">{u.rank}</b></span>
+                                                <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="text-red-500 font-bold">حذف</button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </main>
                 </div>
             );
