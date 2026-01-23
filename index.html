@@ -42,7 +42,6 @@
             onSnapshot, deleteDoc, query, orderBy 
         } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
-        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyCYgffN2dA7IILMbI2i_1YfERkKWIrpHyA",
             authDomain: "ek-police.firebaseapp.com",
@@ -56,7 +55,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // تصدير الأدوات للنافذة العالمية ليستخدمها React
         window.fb = { db, collection, addDoc, setDoc, doc, onSnapshot, deleteDoc, query, orderBy };
     </script>
 
@@ -67,7 +65,7 @@
             const icons = {
                 shield: "🛡️", search: "🔍", plus: "➕", fileText: "📄", users: "👥",
                 home: "🏠", logout: "🚪", userCog: "⚙️", star: "⭐", userPlus: "👤➕",
-                bell: "🔔", megaphone: "📢", cloud: "☁️", trash: "🗑️"
+                bell: "🔔", megaphone: "📢", cloud: "☁️", trash: "🗑️", building: "🏢"
             };
             return <span className={className}>{icons[name] || "•"}</span>;
         };
@@ -78,30 +76,25 @@
             const [loading, setLoading] = useState(true);
             const [currentPage, setCurrentPage] = useState('dashboard');
             
-            // مجموعات البيانات
             const [users, setUsers] = useState([]);
             const [criminals, setCriminals] = useState([]);
             const [searchTerm, setSearchTerm] = useState('');
             
-            // النماذج
             const [loginForm, setLoginForm] = useState({ id: '', password: '' });
             const [newCriminal, setNewCriminal] = useState({ name: '', crime: '', danger: 'متوسط' });
             const [newUser, setNewUser] = useState({ 
                 id: '', password: '', name: '', role: 'جندي', rank: 'Cadet', department: '' 
             });
 
-            // المزامنة الحية مع Firebase
             useEffect(() => {
                 if (!window.fb) return;
 
-                // مزامنة المستخدمين
                 const unsubUsers = window.fb.onSnapshot(window.fb.collection(window.fb.db, "users"), (snapshot) => {
                     const items = snapshot.docs.map(doc => ({ ...doc.data(), fbId: doc.id }));
                     setUsers(items);
                     setLoading(false);
                 });
 
-                // مزامنة المجرمين
                 const q = window.fb.query(window.fb.collection(window.fb.db, "criminals"), window.fb.orderBy("timestamp", "desc"));
                 const unsubCriminals = window.fb.onSnapshot(q, (snapshot) => {
                     const items = snapshot.docs.map(doc => ({ ...doc.data(), fbId: doc.id }));
@@ -140,9 +133,10 @@
             };
 
             const addUser = async () => {
-                if (!newUser.id || !newUser.name || !newUser.password) return alert('أكمل بيانات الحساب');
+                if (!newUser.id || !newUser.name || !newUser.password || !newUser.department) {
+                    return alert('أكمل بيانات الحساب (تأكد من كتابة القسم)');
+                }
                 try {
-                    // نستخدم الرقم العسكري كـ ID للمستند في Firebase
                     await window.fb.setDoc(window.fb.doc(window.fb.db, "users", newUser.id), newUser);
                     setNewUser({ id: '', password: '', name: '', role: 'جندي', rank: 'Cadet', department: '' });
                     alert('✅ تم إضافة العسكري بنجاح');
@@ -181,12 +175,12 @@
                         <div className="space-y-5">
                             <div>
                                 <label className="block text-xs text-gray-400 mb-1 mr-1">الرقم العسكري</label>
-                                <input type="text" placeholder="Military ID" className="w-full p-4 rounded-xl bg-slate-900/50 border border-slate-700 focus:border-blue-500 outline-none transition-all"
+                                <input type="text" placeholder="Military ID" className="w-full p-4 rounded-xl bg-slate-900/50 border border-slate-700 focus:border-blue-500 outline-none transition-all text-white"
                                     onChange={e => setLoginForm({...loginForm, id: e.target.value})} />
                             </div>
                             <div>
                                 <label className="block text-xs text-gray-400 mb-1 mr-1">كلمة المرور</label>
-                                <input type="password" placeholder="••••••••" className="w-full p-4 rounded-xl bg-slate-900/50 border border-slate-700 focus:border-blue-500 outline-none transition-all"
+                                <input type="password" placeholder="••••••••" className="w-full p-4 rounded-xl bg-slate-900/50 border border-slate-700 focus:border-blue-500 outline-none transition-all text-white"
                                     onChange={e => setLoginForm({...loginForm, password: e.target.value})} 
                                     onKeyPress={e => e.key === 'Enter' && handleLogin()} />
                             </div>
@@ -213,7 +207,7 @@
                             <div className="flex items-center gap-4">
                                 <div className="text-left hidden md:block">
                                     <p className="text-sm font-bold">{currentUser.name}</p>
-                                    <p className="text-[10px] text-blue-400 text-right">{currentUser.rank} - {currentUser.role}</p>
+                                    <p className="text-[10px] text-blue-400 text-right">{currentUser.rank} - {currentUser.department || 'بدون قسم'}</p>
                                 </div>
                                 <button onClick={() => setIsLoggedIn(false)} className="bg-red-500/10 hover:bg-red-500/20 p-3 rounded-xl text-red-500 transition-colors"><Icon name="logout" /></button>
                             </div>
@@ -221,7 +215,6 @@
                     </header>
 
                     <main className="container mx-auto p-6 flex-grow">
-                        {/* القائمة العلوية */}
                         <div className="flex overflow-x-auto gap-3 mb-8 pb-2 no-scrollbar">
                             {[
                                 {id: 'dashboard', label: 'الرئيسية', icon: 'home'},
@@ -299,52 +292,66 @@
                         {currentPage === 'users' && currentUser.role === 'قائد' && (
                             <div className="max-w-4xl mx-auto space-y-6">
                                 <div className="glass-card p-6 rounded-3xl space-y-4">
-                                    <h2 className="text-xl font-bold text-purple-400">إضافة فرد للقوة</h2>
+                                    <h2 className="text-xl font-bold text-purple-400 flex items-center gap-2"><Icon name="userPlus" /> إضافة فرد للقوة</h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <input type="text" placeholder="الرقم العسكري" className="p-4 rounded-xl bg-slate-900/50 border border-slate-700" onChange={e=>setNewUser({...newUser, id: e.target.value})} />
-                                        <input type="text" placeholder="الاسم الثلاثي" className="p-4 rounded-xl bg-slate-900/50 border border-slate-700" onChange={e=>setNewUser({...newUser, name: e.target.value})} />
-                                        <input type="password" placeholder="كلمة المرور" className="p-4 rounded-xl bg-slate-900/50 border border-slate-700" onChange={e=>setNewUser({...newUser, password: e.target.value})} />
-                                        <select className="p-4 rounded-xl bg-slate-900" onChange={e=>setNewUser({...newUser, role: e.target.value})}>
-                                            <option value="جندي">جندي</option>
-                                            <option value="ضابط">ضابط</option>
-                                            <option value="قائد">قائد</option>
-                                        </select>
-                                        <select className="p-4 rounded-xl bg-slate-900 md:col-span-2" onChange={e=>setNewUser({...newUser, rank: e.target.value})}>
-                                            <option value="Cadet">Cadet</option>
-                                            <option value="Solo Cadet">Solo Cadet</option>
-                                            <option value="Officer">Officer</option>
-                                            <option value="Officer I">Officer I</option>
-                                            <option value="Officer II">Officer II</option>
-                                            <option value="Officer III">Officer III</option>
-                                            <option value="Senior Officer">Senior Officer</option>
-                                            <option value="Sergeant">Sergeant</option>
-                                            <option value="First Sergeant">First Sergeant</option>
-                                            <option value="Staff Sergeant">Staff Sergeant</option>
-                                            <option value="Lieutenant">Lieutenant</option>
-                                            <option value="First Lieutenant">First Lieutenant</option>
-                                            <option value="Captain">Captain</option>
-                                            <option value="Major">Major</option>
-                                            <option value="Colonel">Colonel</option>
-                                            <option value="Brigadier General">Brigadier General</option>
-                                            <option value="Major General">Major General</option>
-                                            <option value="Lieutenant General">Lieutenant General</option>
-                                            <option value="General">General</option>
-                                        </select>
-                                        <button onClick={addUser} className="md:col-span-2 bg-purple-600 hover:bg-purple-700 p-4 rounded-xl font-bold transition-all">اعتماد الفرد في القوة</button>
+                                        <input type="text" placeholder="الرقم العسكري" value={newUser.id} className="p-4 rounded-xl bg-slate-900/50 border border-slate-700" onChange={e=>setNewUser({...newUser, id: e.target.value})} />
+                                        <input type="text" placeholder="الاسم الثلاثي" value={newUser.name} className="p-4 rounded-xl bg-slate-900/50 border border-slate-700" onChange={e=>setNewUser({...newUser, name: e.target.value})} />
+                                        
+                                        {/* خانة القسم الجديدة */}
+                                        <input type="text" placeholder="القسم (مثلاً: البحث الجنائي / الدوريات)" value={newUser.department} className="p-4 rounded-xl bg-slate-900/50 border border-purple-900/50 focus:border-purple-500 outline-none" onChange={e=>setNewUser({...newUser, department: e.target.value})} />
+                                        
+                                        <input type="password" placeholder="كلمة المرور" value={newUser.password} className="p-4 rounded-xl bg-slate-900/50 border border-slate-700" onChange={e=>setNewUser({...newUser, password: e.target.value})} />
+                                        
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-[10px] text-gray-500 mr-2">الصلاحية</label>
+                                            <select className="p-4 rounded-xl bg-slate-900 border border-slate-700" value={newUser.role} onChange={e=>setNewUser({...newUser, role: e.target.value})}>
+                                                <option value="جندي">جندي</option>
+                                                <option value="ضابط">ضابط</option>
+                                                <option value="قائد">قائد</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-[10px] text-gray-500 mr-2">الرتبة العسكرية</label>
+                                            <select className="p-4 rounded-xl bg-slate-900 border border-slate-700" value={newUser.rank} onChange={e=>setNewUser({...newUser, rank: e.target.value})}>
+                                                <option value="Cadet">Cadet</option>
+                                                <option value="Solo Cadet">Solo Cadet</option>
+                                                <option value="Officer">Officer</option>
+                                                <option value="Officer I">Officer I</option>
+                                                <option value="Officer II">Officer II</option>
+                                                <option value="Officer III">Officer III</option>
+                                                <option value="Senior Officer">Senior Officer</option>
+                                                <option value="Sergeant">Sergeant</option>
+                                                <option value="First Sergeant">First Sergeant</option>
+                                                <option value="Staff Sergeant">Staff Sergeant</option>
+                                                <option value="Lieutenant">Lieutenant</option>
+                                                <option value="First Lieutenant">First Lieutenant</option>
+                                                <option value="Captain">Captain</option>
+                                                <option value="Major">Major</option>
+                                                <option value="Colonel">Colonel</option>
+                                                <option value="Brigadier General">Brigadier General</option>
+                                                <option value="Major General">Major General</option>
+                                                <option value="Lieutenant General">Lieutenant General</option>
+                                                <option value="General">General</option>
+                                            </select>
+                                        </div>
+
+                                        <button onClick={addUser} className="md:col-span-2 bg-purple-600 hover:bg-purple-700 p-4 rounded-xl font-bold transition-all shadow-lg shadow-purple-900/20">اعتماد الفرد في القوة</button>
                                     </div>
                                 </div>
 
                                 <div className="grid md:grid-cols-2 gap-4">
                                     {users.map(u => (
-                                        <div key={u.fbId} className="glass-card p-5 rounded-2xl flex justify-between items-center">
+                                        <div key={u.fbId} className="glass-card p-5 rounded-2xl flex justify-between items-center group transition-all hover:bg-slate-800/50">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold text-blue-400">{u.name[0]}</div>
+                                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center font-bold text-blue-400 border border-slate-600">{u.name[0]}</div>
                                                 <div>
-                                                    <p className="font-bold">{u.name}</p>
-                                                    <p className="text-[10px] text-gray-500 uppercase">{u.rank} | {u.id}</p>
+                                                    <p className="font-bold text-lg">{u.name}</p>
+                                                    <p className="text-[11px] text-blue-400 font-medium uppercase tracking-wider">{u.rank} • <span className="text-purple-400">{u.department || 'بدون قسم'}</span></p>
+                                                    <p className="text-[10px] text-gray-500">ID: {u.id} | ROLE: {u.role}</p>
                                                 </div>
                                             </div>
-                                            <button onClick={() => deleteUser(u.fbId)} className="text-red-500 p-2 hover:bg-red-500/10 rounded-lg"><Icon name="trash" /></button>
+                                            <button onClick={() => deleteUser(u.fbId)} className="text-red-500 p-3 opacity-0 group-hover:opacity-100 hover:bg-red-500/10 rounded-xl transition-all"><Icon name="trash" /></button>
                                         </div>
                                     ))}
                                 </div>
