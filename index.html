@@ -3,94 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ministry of Interior System | نظام وزارة الداخلية</title>
+    <title>MDT | نظام وزارة الداخلية المطور</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100;400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@300;500;700;900&display=swap');
         
-        :root {
-            --primary: #0f172a;
-            --secondary: #1e293b;
-            --accent: #3b82f6;
-            --supreme: #fbbf24;
-        }
-
         body { 
             font-family: 'Noto Kufi Arabic', sans-serif; 
-            background-color: #020617;
-            color: #e2e8f0;
             margin: 0;
+            overflow: hidden;
+            background: #f0f4f8;
+            height: 100vh;
         }
 
-        .sidebar {
-            width: 260px;
-            background: var(--primary);
-            border-left: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.3s ease;
+        /* حاوية الخلفية المتحركة */
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
+            z-index: -1;
         }
 
-        .main-content {
-            background: #0a0f1d;
-            background-image: radial-gradient(#1e293b 0.5px, transparent 0.5px);
-            background-size: 24px 24px;
+        /* تأثير الزجاج الفاخر */
+        .glass-ui {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 28px;
         }
 
-        .tactical-panel {
-            background: var(--secondary);
-            border: 1px solid rgba(59, 130, 246, 0.1);
-            border-right: 4px solid var(--accent);
+        .sidebar-container {
+            margin: 20px;
+            height: calc(100vh - 40px);
+            width: 280px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
         }
 
-        .supreme-panel {
-            border-right: 4px solid var(--supreme);
-            background: linear-gradient(90deg, rgba(251, 191, 36, 0.05) 0%, transparent 100%);
+        .main-container {
+            margin: 20px 20px 20px 0;
+            height: calc(100vh - 40px);
+            overflow-y: auto;
+            scrollbar-width: none;
         }
 
-        .nav-link {
-            transition: all 0.2s;
-            border-radius: 8px;
-            margin: 4px 12px;
+        .nav-btn {
+            transition: all 0.4s ease;
+            margin: 10px 20px;
+            border-radius: 20px;
+            color: #475569;
         }
 
-        .nav-link:hover {
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--accent);
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: scale(1.05);
+            color: #4f46e5;
         }
 
         .nav-active {
-            background: var(--accent) !important;
-            color: white !important;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            background: white !important;
+            color: #4f46e5 !important;
+            font-weight: 900;
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.15);
         }
 
+        .card-stat {
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .card-stat:hover {
+            transform: translateY(-10px);
+        }
+
+        /* تخصيص المدخلات */
         input, select {
-            background: #0f172a !important;
-            border: 1px solid #334155 !important;
-            color: white !important;
+            background: rgba(255, 255, 255, 0.7) !important;
+            border: 1px solid rgba(79, 70, 229, 0.1) !important;
+            border-radius: 16px !important;
+            padding: 12px 20px !important;
+            transition: all 0.3s !important;
         }
 
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-left: 8px;
-            animation: pulse 2s infinite;
+        input:focus {
+            background: white !important;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1) !important;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(0.95); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.5; }
-            100% { transform: scale(0.95); opacity: 1; }
+        .action-btn {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border-radius: 18px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
         }
     </style>
 </head>
 <body>
+    <div id="particles-js"></div>
     <div id="root"></div>
 
     <script type="module">
@@ -110,6 +126,25 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         window.fb = { db, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc };
+
+        // تهيئة الخلفية التفاعلية
+        particlesJS("particles-js", {
+            "particles": {
+                "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": "#4f46e5" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.2, "random": false },
+                "size": { "value": 3, "random": true },
+                "line_linked": { "enable": true, "distance": 150, "color": "#4f46e5", "opacity": 0.1, "width": 1 },
+                "move": { "enable": true, "speed": 2, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" }, "resize": true },
+                "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 1 } }, "push": { "particles_nb": 4 } }
+            },
+            "retina_detect": true
+        });
     </script>
 
     <script type="text/babel">
@@ -136,7 +171,6 @@
             const [criminals, setCriminals] = useState([]);
             const [isEditing, setIsEditing] = useState(false);
 
-            // Forms
             const [loginForm, setLoginForm] = useState({ id: '', password: '' });
             const [newUser, setNewUser] = useState({ id: '', password: '', name: '', role: 'رتبة فرد', rank: 'Cadet', department: '' });
             const [newCriminal, setNewCriminal] = useState({ name: '', crime: '', danger: 'متوسط' });
@@ -152,154 +186,128 @@
                 return () => { unsubU(); unsubC(); };
             }, []);
 
-            const isSupreme = (user) => user?.id === '1001';
-            const isCommand = (user) => isSupreme(user) || user?.role === 'رتبة قيادية';
-            const isOfficer = (user) => isCommand(user) || user?.role === 'رتبة ضابط';
-
-            const sortedUsers = useMemo(() => {
-                return [...users].sort((a, b) => {
-                    if (a.id === '1001') return -1;
-                    if (b.id === '1001') return 1;
-                    const wA = RANK_HIERARCHY.find(r => r.id === a.rank)?.weight || 0;
-                    const wB = RANK_HIERARCHY.find(r => r.id === b.rank)?.weight || 0;
-                    return wB - wA;
-                });
-            }, [users]);
+            const isCommand = (u) => u?.id === '1001' || u?.role === 'رتبة قيادية';
+            const isOfficer = (u) => isCommand(u) || u?.role === 'رتبة ضابط';
 
             const handleLogin = () => {
                 const u = users.find(x => x.id === loginForm.id && x.password === loginForm.password);
-                if (u) { setCurrentUser(u); setIsLoggedIn(true); } else alert('خطأ في البيانات');
-            };
-
-            const saveUser = async () => {
-                await window.fb.setDoc(window.fb.doc(window.fb.db, "users", newUser.id), newUser);
-                setIsEditing(false);
-                setNewUser({ id: '', password: '', name: '', role: 'رتبة فرد', rank: 'Cadet', department: '' });
-                alert('تم التحديث');
+                if (u) { setCurrentUser(u); setIsLoggedIn(true); } else alert('بيانات الدخول غير صحيحة');
             };
 
             if (!isLoggedIn) return (
-                <div className="h-screen w-full flex items-center justify-center bg-[#020617] p-4">
-                    <div className="w-full max-w-md p-8 bg-[#0f172a] border border-blue-500/20 rounded-lg shadow-2xl">
-                        <div className="text-center mb-8">
-                            <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-900/40">
-                                <span className="text-4xl">🛡️</span>
-                            </div>
-                            <h1 className="text-2xl font-black tracking-tighter"> MDT | POLICE  </h1>
-                            <p className="text-blue-500 text-[10px] font-bold uppercase mt-1">Authorized Personnel Only</p>
+                <div className="h-screen w-full flex items-center justify-center p-6 relative">
+                    <div className="glass-ui w-full max-w-md p-10 text-center shadow-2xl">
+                        <div className="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl animate-bounce">
+                            <span className="text-4xl text-white">🛡️</span>
                         </div>
+                        <h1 className="text-3xl font-black text-slate-800 mb-6">بوابة الصقر الأمنية</h1>
                         <div className="space-y-4">
-                            <input type="text" placeholder="الرقم العسكري" className="w-full p-4 rounded bg-transparent border border-slate-700 outline-none focus:border-blue-500" onChange={e=>setLoginForm({...loginForm, id: e.target.value})} />
-                            <input type="password" placeholder="كلمة المرور" className="w-full p-4 rounded bg-transparent border border-slate-700 outline-none focus:border-blue-500" onChange={e=>setLoginForm({...loginForm, password: e.target.value})} onKeyPress={e=>e.key==='Enter'&&handleLogin()} />
-                            <button onClick={handleLogin} className="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded font-bold uppercase tracking-widest transition-all">الولوج للنظام</button>
+                            <input type="text" placeholder="الرقم العسكري" className="w-full" onChange={e=>setLoginForm({...loginForm, id: e.target.value})} />
+                            <input type="password" placeholder="كلمة المرور" className="w-full" onChange={e=>setLoginForm({...loginForm, password: e.target.value})} onKeyPress={e=>e.key==='Enter'&&handleLogin()} />
+                            <button onClick={handleLogin} className="w-full action-btn py-4 text-lg">دخول النظام</button>
                         </div>
                     </div>
                 </div>
             );
 
             return (
-                <div className="flex h-screen overflow-hidden">
+                <div className="flex h-screen relative z-10">
                     {/* Sidebar */}
-                    <aside className="sidebar flex flex-col h-full shadow-2xl z-50">
-                        <div className="p-6 text-center border-b border-white/5">
-                            <h2 className="text-xl font-black text-white">وزارة الداخلية</h2>
-                            <p className="text-[10px] text-gray-500 tracking-tighter">Ministry of Interior System</p>
+                    <aside className="glass-ui sidebar-container flex flex-col overflow-hidden">
+                        <div className="p-8 text-center border-b border-white/20">
+                            <div className="text-2xl font-black text-indigo-700">وزارة الداخلية</div>
+                            <div className="text-[10px] text-slate-500 font-bold uppercase mt-1">Republic of Interior</div>
                         </div>
                         
-                        <nav className="flex-grow mt-6">
-                            <button onClick={()=>setCurrentPage('dashboard')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='dashboard'?'nav-active':''}`}>
-                                <span className="ml-3">📊</span> لوحة التحكم
+                        <nav className="flex-grow pt-6 overflow-y-auto">
+                            <button onClick={()=>setCurrentPage('dashboard')} className={`flex items-center w-[240px] p-4 nav-btn ${currentPage==='dashboard'?'nav-active':''}`}>
+                                <span className="ml-3">🏛️</span> لوحة التحكم
                             </button>
-                            <button onClick={()=>setCurrentPage('schedule')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='schedule'?'nav-active':''}`}>
-                                <span className="ml-3">📋</span> الجدول العسكري
+                            <button onClick={()=>setCurrentPage('schedule')} className={`flex items-center w-[240px] p-4 nav-btn ${currentPage==='schedule'?'nav-active':''}`}>
+                                <span className="ml-3">📋</span> سجل الأفراد
                             </button>
-                            <button onClick={()=>setCurrentPage('criminals')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='criminals'?'nav-active':''}`}>
-                                <span className="ml-3">⚖️</span> المطلوبين للعدالة
+                            <button onClick={()=>setCurrentPage('criminals')} className={`flex items-center w-[240px] p-4 nav-btn ${currentPage==='criminals'?'nav-active':''}`}>
+                                <span className="ml-3">⚖️</span> المطلوبين
                             </button>
                             {isCommand(currentUser) && (
-                                <button onClick={()=>setCurrentPage('users')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='users'?'nav-active bg-amber-600 shadow-amber-900/20':'text-amber-500'}`}>
-                                    <span className="ml-3">🛠️</span> إدارة العساكر
+                                <button onClick={()=>setCurrentPage('users')} className={`flex items-center w-[240px] p-4 nav-btn ${currentPage==='users'?'nav-active text-amber-600':''}`}>
+                                    <span className="ml-3">⚙️</span> إدارة النظام
                                 </button>
                             )}
                         </nav>
 
-                        <div className="p-4 border-t border-white/5">
-                            <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg mb-4">
-                                <div className="w-10 h-10 rounded bg-blue-600 flex items-center justify-center font-bold">
-                                    {isSupreme(currentUser) ? '👑' : currentUser.name[0]}
+                        <div className="p-6 bg-white/20">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
+                                    {currentUser.id === '1001' ? '👑' : currentUser.name[0]}
                                 </div>
-                                <div className="overflow-hidden">
-                                    <p className="text-xs font-bold truncate">{currentUser.name}</p>
-                                    <p className="text-[10px] text-blue-400 font-bold uppercase">{currentUser.id}</p>
+                                <div className="text-right">
+                                    <p className="text-xs font-black text-slate-800">{currentUser.name}</p>
+                                    <p className="text-[10px] text-indigo-600 font-bold uppercase">{currentUser.rank}</p>
                                 </div>
                             </div>
-                            <button onClick={()=>setIsLoggedIn(false)} className="w-full p-3 bg-red-600/10 text-red-500 rounded-lg hover:bg-red-600 hover:text-white transition-all text-sm font-bold">تسجيل الخروج</button>
+                            <button onClick={()=>setIsLoggedIn(false)} className="w-full p-2 text-red-500 hover:bg-red-50 rounded-xl text-xs font-bold transition-all">تسجيل الخروج</button>
                         </div>
                     </aside>
 
                     {/* Main Content */}
-                    <main className="flex-grow main-content overflow-y-auto p-8">
-                        <header className="flex justify-between items-end mb-10 border-b border-white/10 pb-6">
+                    <main className="glass-ui flex-grow main-container p-10">
+                        <div className="flex justify-between items-start mb-10">
                             <div>
-                                <h1 className="text-4xl font-black tracking-tight uppercase">
-                                    {currentPage === 'dashboard' && 'نظرة عامة'}
-                                    {currentPage === 'schedule' && 'جدول افراد الشرطة'}
-                                    {currentPage === 'criminals' && 'تعميمات أمنية'}
-                                    {currentPage === 'users' && 'ادارة الموظفين'}
-                                </h1>
-                                <p className="text-blue-500 text-sm font-bold mt-2">
-                                    <span className="status-dot bg-green-500"></span> النظام متصل بالخادم الرئيسي
+                                <h2 className="text-4xl font-black text-slate-800">
+                                    {currentPage === 'dashboard' && 'الإحصائيات العامة'}
+                                    {currentPage === 'schedule' && 'سجل القوة البشرية'}
+                                    {currentPage === 'criminals' && 'قائمة التعميمات'}
+                                    {currentPage === 'users' && 'إدارة الموارد البشرية'}
+                                </h2>
+                                <p className="text-indigo-600 font-bold text-sm mt-2 flex items-center">
+                                    <span className="w-2 h-2 bg-green-500 rounded-full ml-2 animate-ping"></span>
+                                    بث مباشر من المركز الرئيسي
                                 </p>
                             </div>
-                            <div className="text-left font-mono text-sm opacity-30">
+                            <div className="text-slate-400 font-mono text-sm bg-white/50 px-4 py-2 rounded-full border border-white">
                                 {new Date().toLocaleDateString('ar-SA')}
                             </div>
-                        </header>
+                        </div>
 
-                        {/* DASHBOARD PAGE */}
                         {currentPage === 'dashboard' && (
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                <div className="tactical-panel p-8">
-                                    <p className="text-gray-500 font-bold text-xs uppercase mb-1">تعداد الأفراد</p>
-                                    <h3 className="text-5xl font-black">{users.length}</h3>
-                                </div>
-                                <div className="tactical-panel p-8 border-right-red">
-                                    <p className="text-gray-500 font-bold text-xs uppercase mb-1">أهداف مطلوبة</p>
-                                    <h3 className="text-5xl font-black text-red-500">{criminals.length}</h3>
-                                </div>
-                                <div className="tactical-panel p-8 border-right-blue">
-                                    <p className="text-gray-500 font-bold text-xs uppercase mb-1">رتبك الحالية</p>
-                                    <h3 className="text-xl font-black text-blue-400 mt-2">{currentUser.rank}</h3>
-                                </div>
-                                <div className="tactical-panel p-8 border-right-amber">
-                                    <p className="text-gray-500 font-bold text-xs uppercase mb-1">آخر تحديث</p>
-                                    <h3 className="text-xl font-black text-amber-500 mt-2">Active</h3>
-                                </div>
+                                {[
+                                    { t: 'إجمالي القوة', v: users.length, i: '👮', c: 'text-indigo-600' },
+                                    { t: 'تعميمات نشطة', v: criminals.length, i: '🚨', c: 'text-red-500' },
+                                    { t: 'المهمات', v: '12', i: '🎯', c: 'text-amber-500' },
+                                    { t: 'استقرار النظام', v: '99%', i: '🛡️', c: 'text-green-600' }
+                                ].map((s, idx) => (
+                                    <div key={idx} className="glass-ui p-8 card-stat cursor-default shadow-sm bg-white/30">
+                                        <div className="text-3xl mb-4">{s.i}</div>
+                                        <div className="text-xs font-black text-slate-400 uppercase mb-1">{s.t}</div>
+                                        <div className={`text-4xl font-black ${s.c}`}>{s.v}</div>
+                                    </div>
+                                ))}
                             </div>
                         )}
 
-                        {/* SCHEDULE PAGE */}
                         {currentPage === 'schedule' && (
-                            <div className="tactical-panel overflow-hidden border-right-blue">
+                            <div className="glass-ui overflow-hidden bg-white/20">
                                 <table className="w-full text-right">
                                     <thead>
-                                        <tr className="bg-slate-900 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-white/5">
-                                            <th className="p-6">الاسم والصفة العسكرية</th>
-                                            <th className="p-6">الرتبة</th>
-                                            <th className="p-6">القسم</th>
+                                        <tr className="bg-indigo-600/5 text-slate-500 text-xs font-black uppercase border-b border-white/30">
+                                            <th className="p-6">العنصر الأمنـي</th>
+                                            <th className="p-6">الرتبة العسكرية</th>
+                                            <th className="p-6">القطاع</th>
                                             <th className="p-6">الرقم</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-white/5">
-                                        {sortedUsers.map(u => (
-                                            <tr key={u.id} className={`hover:bg-white/5 transition-all ${isSupreme(u) ? 'bg-amber-500/5' : ''}`}>
+                                    <tbody className="divide-y divide-white/20">
+                                        {users.map(u => (
+                                            <tr key={u.id} className="hover:bg-white/40 transition-colors">
                                                 <td className="p-6 flex items-center gap-3">
-                                                    {isSupreme(u) ? '👑' : '⭐'} 
-                                                    <span className={`font-bold ${isSupreme(u) ? 'text-amber-500' : 'text-white'}`}>{u.name}</span>
+                                                    <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">👮</div>
+                                                    <span className="font-bold text-slate-800">{u.name}</span>
                                                 </td>
-                                                <td className="p-6 font-mono text-xs">{u.rank}</td>
-                                                <td className="p-6 text-gray-400 text-sm font-bold">{u.department}</td>
-                                                <td className="p-6 font-mono text-gray-500 text-xs">{u.id}</td>
+                                                <td className="p-6 text-sm font-bold text-indigo-700">{u.rank}</td>
+                                                <td className="p-6 text-slate-500 text-sm">{u.department}</td>
+                                                <td className="p-6 font-mono text-slate-400 text-xs">{u.id}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -307,47 +315,41 @@
                             </div>
                         )}
 
-                        {/* USERS ADMIN PAGE */}
                         {currentPage === 'users' && isCommand(currentUser) && (
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 <div className="lg:col-span-1">
-                                    <div className="tactical-panel p-6 supreme-panel">
-                                        <h3 className="text-xl font-black mb-6 flex items-center gap-2">
-                                            {isEditing ? 'تعديل البيانات' : 'إضافة ملف جديد'}
-                                        </h3>
+                                    <div className="glass-ui p-8 shadow-xl bg-white/40 border-t-4 border-t-indigo-600">
+                                        <h3 className="text-xl font-black mb-6">تعديل قاعدة البيانات</h3>
                                         <div className="space-y-4">
-                                            <input type="text" placeholder="الرقم العسكري" disabled={isEditing} value={newUser.id} className="w-full p-4 rounded outline-none" onChange={e=>setNewUser({...newUser, id: e.target.value})} />
-                                            <input type="text" placeholder="الاسم الكامل" value={newUser.name} className="w-full p-4 rounded outline-none" onChange={e=>setNewUser({...newUser, name: e.target.value})} />
-                                            <input type="text" placeholder="القسم" value={newUser.department} className="w-full p-4 rounded outline-none" onChange={e=>setNewUser({...newUser, department: e.target.value})} />
-                                            <input type="text" placeholder="كلمة المرور" value={newUser.password} className="w-full p-4 rounded outline-none" onChange={e=>setNewUser({...newUser, password: e.target.value})} />
-                                            <select className="w-full p-4 rounded" value={newUser.role} onChange={e=>setNewUser({...newUser, role: e.target.value})}>
-                                                <option>رتبة فرد</option><option>رتبة ضابط</option><option>رتبة قيادية</option>
-                                            </select>
-                                            <select className="w-full p-4 rounded" value={newUser.rank} onChange={e=>setNewUser({...newUser, rank: e.target.value})}>
+                                            <input type="text" placeholder="الرقم العسكري" disabled={isEditing} value={newUser.id} className="w-full" onChange={e=>setNewUser({...newUser, id: e.target.value})} />
+                                            <input type="text" placeholder="الاسم الكامل" value={newUser.name} className="w-full" onChange={e=>setNewUser({...newUser, name: e.target.value})} />
+                                            <input type="text" placeholder="القسم" value={newUser.department} className="w-full" onChange={e=>setNewUser({...newUser, department: e.target.value})} />
+                                            <input type="text" placeholder="كلمة المرور" value={newUser.password} className="w-full" onChange={e=>setNewUser({...newUser, password: e.target.value})} />
+                                            <select className="w-full" value={newUser.rank} onChange={e=>setNewUser({...newUser, rank: e.target.value})}>
                                                 {RANK_HIERARCHY.map(r => <option key={r.id} value={r.id}>{r.id}</option>)}
                                             </select>
-                                            <button onClick={saveUser} className="w-full bg-blue-600 py-4 rounded font-bold shadow-lg shadow-blue-900/40">تحديث النظام المركزي</button>
-                                            {isEditing && <button onClick={()=>setIsEditing(false)} className="w-full bg-slate-800 py-2 rounded text-xs">إلغاء التعديل</button>}
+                                            <button onClick={async() => {
+                                                await window.fb.setDoc(window.fb.doc(window.fb.db, "users", newUser.id), newUser);
+                                                setIsEditing(false); alert('تمت العملية بنجاح');
+                                            }} className="w-full action-btn py-4">تثبيت البيانات</button>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="lg:col-span-2 space-y-4">
+                                <div className="lg:col-span-2 space-y-4 overflow-y-auto max-h-[600px] pr-2">
                                     {users.map(u => (
-                                        <div key={u.id} className="tactical-panel p-5 flex justify-between items-center group">
+                                        <div key={u.id} className="glass-ui p-6 flex justify-between items-center bg-white/20 hover:bg-white/50 transition-all group">
                                             <div className="flex items-center gap-4">
-                                                <div className={`w-12 h-12 flex items-center justify-center font-bold ${isSupreme(u) ? 'bg-amber-500 text-black' : 'bg-slate-800'}`}>
-                                                    {isSupreme(u) ? '1001' : u.id.slice(-2)}
+                                                <div className="w-14 h-14 rounded-2xl bg-indigo-600/10 text-indigo-600 flex items-center justify-center font-black text-xl">
+                                                    {u.id.slice(-2)}
                                                 </div>
                                                 <div>
-                                                    <p className="font-bold">{u.name} {isSupreme(u) && '👑'}</p>
-                                                    <p className="text-[10px] text-gray-500 uppercase">{u.rank} | {u.role}</p>
+                                                    <p className="font-black text-slate-800">{u.name}</p>
+                                                    <p className="text-[10px] text-indigo-500 font-bold uppercase">{u.rank} • {u.role}</p>
                                                 </div>
                                             </div>
                                             <div className="flex gap-2">
-                                                <button onClick={()=>{setNewUser(u); setIsEditing(true);}} className="p-3 bg-blue-500/10 text-blue-500 rounded hover:bg-blue-500 hover:text-white transition-all">تعديل</button>
-                                                {u.id !== '1001' && (
-                                                    <button onClick={async()=>confirm('حذف؟')&&await window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="p-3 bg-red-500/10 text-red-500 rounded hover:bg-red-500 hover:text-white transition-all">حذف</button>
-                                                )}
+                                                <button onClick={()=>{setNewUser(u); setIsEditing(true);}} className="p-3 hover:bg-white rounded-xl transition-all">📝</button>
+                                                {u.id !== '1001' && <button onClick={async()=>confirm('حذف؟')&&await window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="p-3 text-red-500 hover:bg-red-50 rounded-xl">🗑️</button>}
                                             </div>
                                         </div>
                                     ))}
@@ -355,32 +357,32 @@
                             </div>
                         )}
 
-                        {/* CRIMINALS PAGE */}
                         {currentPage === 'criminals' && (
                             <div className="max-w-4xl mx-auto space-y-8">
                                 {isOfficer(currentUser) && (
-                                    <div className="tactical-panel p-8 border-r-4 border-r-red-600">
-                                        <h3 className="text-xl font-black text-red-500 mb-6 uppercase">إصدار مذكرة تعميم</h3>
+                                    <div className="glass-ui p-8 border-r-8 border-r-red-500 bg-red-50/10">
+                                        <h3 className="text-xl font-black text-slate-800 mb-6 uppercase">إصدار تعميم عاجل</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <input type="text" placeholder="الاسم" className="p-4 rounded" value={newCriminal.name} onChange={e=>setNewCriminal({...newCriminal, name: e.target.value})} />
-                                            <input type="text" placeholder="التهمة" className="p-4 rounded" value={newCriminal.crime} onChange={e=>setNewCriminal({...newCriminal, crime: e.target.value})} />
+                                            <input type="text" placeholder="اسم الهدف" className="p-4" value={newCriminal.name} onChange={e=>setNewCriminal({...newCriminal, name: e.target.value})} />
+                                            <input type="text" placeholder="نوع الجرم" className="p-4" value={newCriminal.crime} onChange={e=>setNewCriminal({...newCriminal, crime: e.target.value})} />
                                             <button onClick={async()=>{
                                                 if(!newCriminal.name) return;
-                                                await window.fb.addDoc(window.fb.collection(window.fb.db, "criminals"), {...newCriminal, timestamp: new Date().getTime()});
+                                                await window.fb.addDoc(window.fb.collection(window.fb.db, "criminals"), {...newCriminal});
                                                 setNewCriminal({name:'', crime:'', danger:'متوسط'});
-                                            }} className="bg-red-600 p-4 rounded font-bold shadow-lg shadow-red-900/30 hover:scale-[1.02] transition-all">اعلان التعميم</button>
+                                            }} className="bg-red-600 text-white p-4 rounded-xl font-bold shadow-lg hover:bg-red-700">تعميم الآن</button>
                                         </div>
                                     </div>
                                 )}
-                                <div className="grid gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {criminals.map(c => (
-                                        <div key={c.fbId} className="tactical-panel p-6 border-r-4 border-r-red-600 flex justify-between items-center group">
+                                        <div key={c.fbId} className="glass-ui p-8 flex justify-between items-center border border-red-200 bg-white/40 group">
                                             <div>
-                                                <h4 className="text-2xl font-black text-red-500">{c.name}</h4>
-                                                <p className="text-sm font-bold opacity-60 mt-1 uppercase tracking-widest">{c.crime}</p>
+                                                <div className="bg-red-100 text-red-600 text-[10px] px-2 py-1 rounded inline-block font-black mb-2">TARGET</div>
+                                                <h4 className="text-2xl font-black text-slate-800">{c.name}</h4>
+                                                <p className="text-sm font-bold text-red-500/70 mt-1">{c.crime}</p>
                                             </div>
                                             {isOfficer(currentUser) && (
-                                                <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "criminals", c.fbId))} className="p-4 text-red-500 opacity-20 group-hover:opacity-100 transition-all font-bold">إغلاق الملف</button>
+                                                <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "criminals", c.fbId))} className="w-12 h-12 flex items-center justify-center bg-red-50 text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-all">✖</button>
                                             )}
                                         </div>
                                     ))}
