@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MDT | POLICE </title>
+    <title>MOI Tactical System | نظام العمليات المطور</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -11,22 +11,83 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap');
-        * { font-family: 'Cairo', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100;400;700;900&display=swap');
+        
+        :root {
+            --primary: #0f172a;
+            --secondary: #1e293b;
+            --accent: #3b82f6;
+            --supreme: #fbbf24;
+        }
+
         body { 
-            background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
-            min-height: 100vh;
-            color: white;
+            font-family: 'Noto Kufi Arabic', sans-serif; 
+            background-color: #020617;
+            color: #e2e8f0;
+            margin: 0;
         }
-        .glass-card {
-            background: rgba(30, 41, 59, 0.4);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+
+        .sidebar {
+            width: 260px;
+            background: var(--primary);
+            border-left: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
         }
-        .supreme-border { border: 2px solid #fbbf24 !important; box-shadow: 0 0 20px rgba(251, 191, 36, 0.2); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+
+        .main-content {
+            background: #0a0f1d;
+            background-image: radial-gradient(#1e293b 0.5px, transparent 0.5px);
+            background-size: 24px 24px;
+        }
+
+        .tactical-panel {
+            background: var(--secondary);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-right: 4px solid var(--accent);
+        }
+
+        .supreme-panel {
+            border-right: 4px solid var(--supreme);
+            background: linear-gradient(90deg, rgba(251, 191, 36, 0.05) 0%, transparent 100%);
+        }
+
+        .nav-link {
+            transition: all 0.2s;
+            border-radius: 8px;
+            margin: 4px 12px;
+        }
+
+        .nav-link:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent);
+        }
+
+        .nav-active {
+            background: var(--accent) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        input, select {
+            background: #0f172a !important;
+            border: 1px solid #334155 !important;
+            color: white !important;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.5; }
+            100% { transform: scale(0.95); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -55,45 +116,26 @@
         const { useState, useEffect, useMemo } = React;
 
         const RANK_HIERARCHY = [
-            { id: 'General', label: 'General', weight: 19 },
-            { id: 'Lieutenant General', label: 'Lieutenant General', weight: 18 },
-            { id: 'Major General', label: 'Major General', weight: 17 },
-            { id: 'Brigadier General', label: 'Brigadier General', weight: 16 },
-            { id: 'Colonel', label: 'Colonel', weight: 15 },
-            { id: 'Major', label: 'Major', weight: 14 },
-            { id: 'Captain', label: 'Captain', weight: 13 },
-            { id: 'First Lieutenant', label: 'First Lieutenant', weight: 12 },
-            { id: 'Lieutenant', label: 'Lieutenant', weight: 11 },
-            { id: 'Staff Sergeant', label: 'Staff Sergeant', weight: 10 },
-            { id: 'First Sergeant', label: 'First Sergeant', weight: 9 },
-            { id: 'Sergeant', label: 'Sergeant', weight: 8 },
-            { id: 'Senior Officer', label: 'Senior Officer', weight: 7 },
-            { id: 'Officer III', label: 'Officer III', weight: 6 },
-            { id: 'Officer II', label: 'Officer II', weight: 5 },
-            { id: 'Officer I', label: 'Officer I', weight: 4 },
-            { id: 'Officer', label: 'Officer', weight: 3 },
-            { id: 'Solo Cadet', label: 'Solo Cadet', weight: 2 },
-            { id: 'Cadet', label: 'Cadet', weight: 1 }
+            { id: 'General', weight: 19 }, { id: 'Lieutenant General', weight: 18 },
+            { id: 'Major General', weight: 17 }, { id: 'Brigadier General', weight: 16 },
+            { id: 'Colonel', weight: 15 }, { id: 'Major', weight: 14 },
+            { id: 'Captain', weight: 13 }, { id: 'First Lieutenant', weight: 12 },
+            { id: 'Lieutenant', weight: 11 }, { id: 'Staff Sergeant', weight: 10 },
+            { id: 'First Sergeant', weight: 9 }, { id: 'Sergeant', weight: 8 },
+            { id: 'Senior Officer', weight: 7 }, { id: 'Officer III', weight: 6 },
+            { id: 'Officer II', weight: 5 }, { id: 'Officer I', weight: 4 },
+            { id: 'Officer', weight: 3 }, { id: 'Solo Cadet', weight: 2 },
+            { id: 'Cadet', weight: 1 }
         ];
-
-        const Icon = ({ name, className = "" }) => {
-            const icons = {
-                shield: "🛡️", table: "📅", users: "👥", userCog: "⚙️", logout: "🚪", 
-                plus: "➕", edit: "✏️", trash: "🗑️", home: "🏠", alert: "⚠️", crown: "👑", star: "⭐"
-            };
-            return <span className={className}>{icons[name] || "•"}</span>;
-        };
 
         const App = () => {
             const [isLoggedIn, setIsLoggedIn] = useState(false);
             const [currentUser, setCurrentUser] = useState(null);
-            const [loading, setLoading] = useState(true);
             const [currentPage, setCurrentPage] = useState('dashboard');
-            
             const [users, setUsers] = useState([]);
             const [criminals, setCriminals] = useState([]);
             const [isEditing, setIsEditing] = useState(false);
-            
+
             // Forms
             const [loginForm, setLoginForm] = useState({ id: '', password: '' });
             const [newUser, setNewUser] = useState({ id: '', password: '', name: '', role: 'رتبة فرد', rank: 'Cadet', department: '' });
@@ -103,7 +145,6 @@
                 if (!window.fb) return;
                 const unsubU = window.fb.onSnapshot(window.fb.collection(window.fb.db, "users"), (snap) => {
                     setUsers(snap.docs.map(d => ({ ...d.data(), fbId: d.id })));
-                    setLoading(false);
                 });
                 const unsubC = window.fb.onSnapshot(window.fb.collection(window.fb.db, "criminals"), (snap) => {
                     setCriminals(snap.docs.map(d => ({ ...d.data(), fbId: d.id })));
@@ -111,202 +152,201 @@
                 return () => { unsubU(); unsubC(); };
             }, []);
 
-            // منطق الصلاحيات المحدث
             const isSupreme = (user) => user?.id === '1001';
             const isCommand = (user) => isSupreme(user) || user?.role === 'رتبة قيادية';
             const isOfficer = (user) => isCommand(user) || user?.role === 'رتبة ضابط';
 
             const sortedUsers = useMemo(() => {
                 return [...users].sort((a, b) => {
-                    if (a.id === '1001') return -1; // المالك دائماً أول واحد
+                    if (a.id === '1001') return -1;
                     if (b.id === '1001') return 1;
-                    const weightA = RANK_HIERARCHY.find(r => r.id === a.rank)?.weight || 0;
-                    const weightB = RANK_HIERARCHY.find(r => r.id === b.rank)?.weight || 0;
-                    return weightB - weightA;
+                    const wA = RANK_HIERARCHY.find(r => r.id === a.rank)?.weight || 0;
+                    const wB = RANK_HIERARCHY.find(r => r.id === b.rank)?.weight || 0;
+                    return wB - wA;
                 });
             }, [users]);
 
             const handleLogin = () => {
-                const user = users.find(u => u.id === loginForm.id && u.password === loginForm.password);
-                if (user) { setCurrentUser(user); setIsLoggedIn(true); } 
-                else { alert('الرقم العسكري أو كلمة المرور غير صحيحة'); }
+                const u = users.find(x => x.id === loginForm.id && x.password === loginForm.password);
+                if (u) { setCurrentUser(u); setIsLoggedIn(true); } else alert('خطأ في البيانات');
             };
 
             const saveUser = async () => {
-                if (!newUser.id || !newUser.name) return alert('أكمل البيانات');
                 await window.fb.setDoc(window.fb.doc(window.fb.db, "users", newUser.id), newUser);
-                setNewUser({ id: '', password: '', name: '', role: 'رتبة فرد', rank: 'Cadet', department: '' });
                 setIsEditing(false);
-                alert('✅ تم الحفظ بنجاح');
+                setNewUser({ id: '', password: '', name: '', role: 'رتبة فرد', rank: 'Cadet', department: '' });
+                alert('تم التحديث');
             };
-
-            const startEdit = (user) => {
-                setNewUser(user);
-                setIsEditing(true);
-                setCurrentPage('users');
-            };
-
-            const deleteUser = async (id) => {
-                if (id === '1001') return alert('لا يمكن حذف حساب المالك الأساسي للنظام');
-                if (id === currentUser.id) return alert('لا يمكنك حذف نفسك');
-                if (confirm('هل أنت متأكد من حذف هذا العسكري؟')) {
-                    await window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", id));
-                }
-            };
-
-            if (loading) return <div className="h-screen flex items-center justify-center text-blue-500 font-bold animate-pulse">جاري تشغيل الأنظمة المركزية...</div>;
 
             if (!isLoggedIn) return (
-                <div className="min-h-screen flex items-center justify-center p-6">
-                    <div className="glass-card p-10 rounded-[2.5rem] w-full max-w-md border-t-2 border-blue-500 shadow-2xl">
+                <div className="h-screen w-full flex items-center justify-center bg-[#020617] p-4">
+                    <div className="w-full max-w-md p-8 bg-[#0f172a] border border-blue-500/20 rounded-lg shadow-2xl">
                         <div className="text-center mb-8">
-                            <Icon name="shield" className="text-7xl mb-4 inline-block drop-shadow-2xl" />
-                            <h1 className="text-3xl font-black tracking-tight">وزارة الداخلية</h1>
-                            <p className="text-gray-500 text-[10px] tracking-[0.4em] uppercase mt-2">Central Security System</p>
+                            <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-900/40">
+                                <span className="text-4xl">🛡️</span>
+                            </div>
+                            <h1 className="text-2xl font-black tracking-tighter">مركز الدخول الموحد</h1>
+                            <p className="text-blue-500 text-[10px] font-bold uppercase mt-1">Authorized Personnel Only</p>
                         </div>
                         <div className="space-y-4">
-                            <input type="text" placeholder="الرقم العسكري" className="w-full p-4 rounded-2xl bg-slate-900/50 border border-white/10 outline-none focus:border-blue-500 transition-all" onChange={e=>setLoginForm({...loginForm, id: e.target.value})} />
-                            <input type="password" placeholder="كلمة المرور" className="w-full p-4 rounded-2xl bg-slate-900/50 border border-white/10 outline-none focus:border-blue-500 transition-all" onChange={e=>setLoginForm({...loginForm, password: e.target.value})} onKeyPress={e=>e.key==='Enter'&&handleLogin()} />
-                            <button onClick={handleLogin} className="w-full bg-blue-600 py-4 rounded-2xl font-black text-lg hover:bg-blue-700 active:scale-95 transition-all shadow-lg shadow-blue-900/20">دخول النظام</button>
+                            <input type="text" placeholder="الرقم العسكري" className="w-full p-4 rounded bg-transparent border border-slate-700 outline-none focus:border-blue-500" onChange={e=>setLoginForm({...loginForm, id: e.target.value})} />
+                            <input type="password" placeholder="كلمة المرور" className="w-full p-4 rounded bg-transparent border border-slate-700 outline-none focus:border-blue-500" onChange={e=>setLoginForm({...loginForm, password: e.target.value})} onKeyPress={e=>e.key==='Enter'&&handleLogin()} />
+                            <button onClick={handleLogin} className="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded font-bold uppercase tracking-widest transition-all">الولوج للنظام</button>
                         </div>
                     </div>
                 </div>
             );
 
             return (
-                <div className="min-h-screen flex flex-col">
-                    <header className="glass-card p-5 border-b border-white/5 sticky top-0 z-50">
-                        <div className="container mx-auto flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <Icon name="shield" className="text-3xl text-blue-500" />
-                                <h1 className="font-black text-xl tracking-tighter">MDT | System </h1>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <div className="text-left">
-                                    <p className="font-bold flex items-center gap-1">{currentUser.name} {isSupreme(currentUser) && <Icon name="crown" className="text-amber-400 text-sm"/>}</p>
-                                    <p className="text-[10px] text-blue-400 font-bold uppercase">{isSupreme(currentUser) ? 'Supreme Command' : currentUser.role}</p>
-                                </div>
-                                <button onClick={()=>setIsLoggedIn(false)} className="bg-red-500/10 text-red-500 p-2.5 rounded-xl hover:bg-red-600 hover:text-white transition-all"><Icon name="logout"/></button>
-                            </div>
+                <div className="flex h-screen overflow-hidden">
+                    {/* Sidebar */}
+                    <aside className="sidebar flex flex-col h-full shadow-2xl z-50">
+                        <div className="p-6 text-center border-b border-white/5">
+                            <h2 className="text-xl font-black text-white">وزارة الداخلية</h2>
+                            <p className="text-[10px] text-gray-500 tracking-tighter">إدارة العمليات المركزية</p>
                         </div>
-                    </header>
+                        
+                        <nav className="flex-grow mt-6">
+                            <button onClick={()=>setCurrentPage('dashboard')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='dashboard'?'nav-active':''}`}>
+                                <span className="ml-3">📊</span> لوحة التحكم
+                            </button>
+                            <button onClick={()=>setCurrentPage('schedule')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='schedule'?'nav-active':''}`}>
+                                <span className="ml-3">📋</span> الجدول العسكري
+                            </button>
+                            <button onClick={()=>setCurrentPage('criminals')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='criminals'?'nav-active':''}`}>
+                                <span className="ml-3">⚖️</span> السجل الجنائي
+                            </button>
+                            {isCommand(currentUser) && (
+                                <button onClick={()=>setCurrentPage('users')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='users'?'nav-active bg-amber-600 shadow-amber-900/20':'text-amber-500'}`}>
+                                    <span className="ml-3">🛠️</span> إدارة القوة
+                                </button>
+                            )}
+                        </nav>
 
-                    <nav className="container mx-auto p-4 flex gap-3 overflow-x-auto no-scrollbar">
-                        <button onClick={()=>setCurrentPage('dashboard')} className={`px-6 py-3 rounded-2xl whitespace-nowrap transition-all ${currentPage==='dashboard'?'bg-blue-600 shadow-blue-600/30 shadow-lg':'glass-card opacity-60'}`}>الرئيسية</button>
-                        <button onClick={()=>setCurrentPage('schedule')} className={`px-6 py-3 rounded-2xl whitespace-nowrap transition-all ${currentPage==='schedule'?'bg-blue-600 shadow-blue-600/30 shadow-lg':'glass-card opacity-60'}`}>الجدول العسكري</button>
-                        <button onClick={()=>setCurrentPage('criminals')} className={`px-6 py-3 rounded-2xl whitespace-nowrap transition-all ${currentPage==='criminals'?'bg-blue-600 shadow-blue-600/30 shadow-lg':'glass-card opacity-60'}`}>المطلوبين أمنياً</button>
-                        {isCommand(currentUser) && (
-                            <button onClick={()=>setCurrentPage('users')} className={`px-6 py-3 rounded-2xl whitespace-nowrap transition-all ${currentPage==='users'?'bg-amber-500 shadow-amber-500/30 shadow-lg text-black font-bold':'glass-card opacity-60'}`}>إدارة العساكر </button>
-                        )}
-                    </nav>
+                        <div className="p-4 border-t border-white/5">
+                            <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg mb-4">
+                                <div className="w-10 h-10 rounded bg-blue-600 flex items-center justify-center font-bold">
+                                    {isSupreme(currentUser) ? '👑' : currentUser.name[0]}
+                                </div>
+                                <div className="overflow-hidden">
+                                    <p className="text-xs font-bold truncate">{currentUser.name}</p>
+                                    <p className="text-[10px] text-blue-400 font-bold uppercase">{currentUser.id}</p>
+                                </div>
+                            </div>
+                            <button onClick={()=>setIsLoggedIn(false)} className="w-full p-3 bg-red-600/10 text-red-500 rounded-lg hover:bg-red-600 hover:text-white transition-all text-sm font-bold">تسجيل الخروج</button>
+                        </div>
+                    </aside>
 
-                    <main className="container mx-auto p-4 flex-grow">
-                        {/* Dashboard */}
+                    {/* Main Content */}
+                    <main className="flex-grow main-content overflow-y-auto p-8">
+                        <header className="flex justify-between items-end mb-10 border-b border-white/10 pb-6">
+                            <div>
+                                <h1 className="text-4xl font-black tracking-tight uppercase">
+                                    {currentPage === 'dashboard' && 'نظرة عامة'}
+                                    {currentPage === 'schedule' && 'القوة العسكرية'}
+                                    {currentPage === 'criminals' && 'تعميمات أمنية'}
+                                    {currentPage === 'users' && 'مركز التحكم'}
+                                </h1>
+                                <p className="text-blue-500 text-sm font-bold mt-2">
+                                    <span className="status-dot bg-green-500"></span> النظام متصل بالخادم الرئيسي
+                                </p>
+                            </div>
+                            <div className="text-left font-mono text-sm opacity-30">
+                                {new Date().toLocaleDateString('ar-SA')}
+                            </div>
+                        </header>
+
+                        {/* DASHBOARD PAGE */}
                         {currentPage === 'dashboard' && (
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className={`glass-card p-10 rounded-[2.5rem] border-b-4 border-blue-600 relative overflow-hidden ${isSupreme(currentUser) ? 'supreme-border' : ''}`}>
-                                    <h3 className="text-gray-400 font-bold mb-2">Total employees</h3>
-                                    <p className="text-7xl font-black">{users.length}</p>
-                                    <Icon name="users" className="text-9xl absolute -bottom-10 -right-10 opacity-5" />
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                <div className="tactical-panel p-8">
+                                    <p className="text-gray-500 font-bold text-xs uppercase mb-1">تعداد الأفراد</p>
+                                    <h3 className="text-5xl font-black">{users.length}</h3>
                                 </div>
-                                <div className="glass-card p-10 rounded-[2.5rem] border-b-4 border-red-600">
-                                    <h3 className="text-gray-400 font-bold mb-2">Identified targets</h3>
-                                    <p className="text-7xl font-black text-red-500">{criminals.length}</p>
+                                <div className="tactical-panel p-8 border-right-red">
+                                    <p className="text-gray-500 font-bold text-xs uppercase mb-1">أهداف مطلوبة</p>
+                                    <h3 className="text-5xl font-black text-red-500">{criminals.length}</h3>
                                 </div>
-                                <div className="glass-card p-10 rounded-[2.5rem] border-b-4 border-amber-500">
-                                    <h3 className="text-gray-400 font-bold mb-2">Access range</h3>
-                                    <p className="text-2xl font-black text-amber-500">{isSupreme(currentUser) ? 'كامل الصلاحيات (1001)' : currentUser.role}</p>
+                                <div className="tactical-panel p-8 border-right-blue">
+                                    <p className="text-gray-500 font-bold text-xs uppercase mb-1">رتبك الحالية</p>
+                                    <h3 className="text-xl font-black text-blue-400 mt-2">{currentUser.rank}</h3>
+                                </div>
+                                <div className="tactical-panel p-8 border-right-amber">
+                                    <p className="text-gray-500 font-bold text-xs uppercase mb-1">آخر تحديث</p>
+                                    <h3 className="text-xl font-black text-amber-500 mt-2">Active</h3>
                                 </div>
                             </div>
                         )}
 
-                        {/* Schedule - Sorted with 1001 at top */}
+                        {/* SCHEDULE PAGE */}
                         {currentPage === 'schedule' && (
-                            <div className="max-w-6xl mx-auto">
-                                <div className="glass-card rounded-[3rem] overflow-hidden shadow-2xl border border-white/5">
-                                    <table className="w-full text-right">
-                                        <thead>
-                                            <tr className="bg-slate-900/80 text-gray-500 text-[10px] uppercase tracking-widest">
-                                                <th className="p-6">العسكري</th>
-                                                <th className="p-6">الرتبة</th>
-                                                <th className="p-6">القسم</th>
-                                                <th className="p-6">الكود العسكري</th>
+                            <div className="tactical-panel overflow-hidden border-right-blue">
+                                <table className="w-full text-right">
+                                    <thead>
+                                        <tr className="bg-slate-900 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-white/5">
+                                            <th className="p-6">الاسم والصفة العسكرية</th>
+                                            <th className="p-6">الرتبة</th>
+                                            <th className="p-6">القسم</th>
+                                            <th className="p-6">الرقم</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {sortedUsers.map(u => (
+                                            <tr key={u.id} className={`hover:bg-white/5 transition-all ${isSupreme(u) ? 'bg-amber-500/5' : ''}`}>
+                                                <td className="p-6 flex items-center gap-3">
+                                                    {isSupreme(u) ? '👑' : '⭐'} 
+                                                    <span className={`font-bold ${isSupreme(u) ? 'text-amber-500' : 'text-white'}`}>{u.name}</span>
+                                                </td>
+                                                <td className="p-6 font-mono text-xs">{u.rank}</td>
+                                                <td className="p-6 text-gray-400 text-sm font-bold">{u.department}</td>
+                                                <td className="p-6 font-mono text-gray-500 text-xs">{u.id}</td>
                                             </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-white/5">
-                                            {sortedUsers.map(u => (
-                                                <tr key={u.id} className={`hover:bg-blue-600/5 transition-all ${u.id === '1001' ? 'bg-amber-500/5' : ''}`}>
-                                                    <td className="p-6">
-                                                        <div className="flex items-center gap-3">
-                                                            {u.id === '1001' ? <Icon name="crown" className="text-amber-400"/> : <Icon name="star" className="text-blue-500 text-xs"/>}
-                                                            <span className={`font-black text-lg ${u.id === '1001' ? 'text-amber-400' : ''}`}>{u.name}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-6"><span className="bg-slate-800 text-gray-300 px-3 py-1 rounded-lg text-xs font-bold border border-white/5">{u.rank}</span></td>
-                                                    <td className="p-6 font-bold text-gray-400">{u.department}</td>
-                                                    <td className="p-6 font-mono text-sm">{u.id}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         )}
 
-                        {/* User Management (Command/1001) */}
+                        {/* USERS ADMIN PAGE */}
                         {currentPage === 'users' && isCommand(currentUser) && (
-                            <div className="max-w-4xl mx-auto space-y-6">
-                                <div className={`glass-card p-8 rounded-[2.5rem] ${isEditing ? 'border-amber-500/50' : ''}`}>
-                                    <h2 className="text-2xl font-black mb-6 flex items-center gap-2">
-                                        {isEditing ? <Icon name="edit" className="text-amber-500"/> : <Icon name="plus" className="text-blue-500"/>}
-                                        {isEditing ? `تعديل ملف العسكري: ${newUser.id}` : 'إضافة فرد جديد لوزارة الداخلية'}
-                                    </h2>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                        <input type="text" placeholder="الرقم العسكري" disabled={isEditing} value={newUser.id} className="p-4 rounded-2xl bg-slate-950 border border-white/10 outline-none focus:border-blue-500" onChange={e=>setNewUser({...newUser, id: e.target.value})} />
-                                        <input type="text" placeholder="الاسم الكامل" value={newUser.name} className="p-4 rounded-2xl bg-slate-950 border border-white/10 outline-none focus:border-blue-500" onChange={e=>setNewUser({...newUser, name: e.target.value})} />
-                                        <input type="text" placeholder="القسم" value={newUser.department} className="p-4 rounded-2xl bg-slate-950 border border-white/10 outline-none focus:border-blue-500" onChange={e=>setNewUser({...newUser, department: e.target.value})} />
-                                        <input type="text" placeholder="كلمة المرور" value={newUser.password} className="p-4 rounded-2xl bg-slate-950 border border-white/10 outline-none focus:border-blue-500" onChange={e=>setNewUser({...newUser, password: e.target.value})} />
-                                        
-                                        <div className="flex flex-col gap-1">
-                                            <label className="text-[10px] text-gray-500 mr-2">مستوى الصلاحية</label>
-                                            <select className="p-4 rounded-2xl bg-slate-950 border border-white/10" value={newUser.role} onChange={e=>setNewUser({...newUser, role: e.target.value})}>
-                                                <option value="رتبة فرد">رتبة فرد (عرض فقط)</option>
-                                                <option value="رتبة ضابط">رتبة ضابط (إدارة المطلوبين)</option>
-                                                <option value="رتبة قيادية">رتبة قيادية (تحكم كامل)</option>
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                                <div className="lg:col-span-1">
+                                    <div className="tactical-panel p-6 supreme-panel">
+                                        <h3 className="text-xl font-black mb-6 flex items-center gap-2">
+                                            {isEditing ? 'تعديل البيانات' : 'إضافة ملف جديد'}
+                                        </h3>
+                                        <div className="space-y-4">
+                                            <input type="text" placeholder="الرقم العسكري" disabled={isEditing} value={newUser.id} className="w-full p-4 rounded outline-none" onChange={e=>setNewUser({...newUser, id: e.target.value})} />
+                                            <input type="text" placeholder="الاسم الكامل" value={newUser.name} className="w-full p-4 rounded outline-none" onChange={e=>setNewUser({...newUser, name: e.target.value})} />
+                                            <input type="text" placeholder="القسم" value={newUser.department} className="w-full p-4 rounded outline-none" onChange={e=>setNewUser({...newUser, department: e.target.value})} />
+                                            <input type="text" placeholder="كلمة المرور" value={newUser.password} className="w-full p-4 rounded outline-none" onChange={e=>setNewUser({...newUser, password: e.target.value})} />
+                                            <select className="w-full p-4 rounded" value={newUser.role} onChange={e=>setNewUser({...newUser, role: e.target.value})}>
+                                                <option>رتبة فرد</option><option>رتبة ضابط</option><option>رتبة قيادية</option>
                                             </select>
-                                        </div>
-
-                                        <div className="flex flex-col gap-1">
-                                            <label className="text-[10px] text-gray-500 mr-2">الرتبة العسكرية</label>
-                                            <select className="p-4 rounded-2xl bg-slate-950 border border-white/10" value={newUser.rank} onChange={e=>setNewUser({...newUser, rank: e.target.value})}>
-                                                {RANK_HIERARCHY.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+                                            <select className="w-full p-4 rounded" value={newUser.rank} onChange={e=>setNewUser({...newUser, rank: e.target.value})}>
+                                                {RANK_HIERARCHY.map(r => <option key={r.id} value={r.id}>{r.id}</option>)}
                                             </select>
+                                            <button onClick={saveUser} className="w-full bg-blue-600 py-4 rounded font-bold shadow-lg shadow-blue-900/40">تحديث النظام المركزي</button>
+                                            {isEditing && <button onClick={()=>setIsEditing(false)} className="w-full bg-slate-800 py-2 rounded text-xs">إلغاء التعديل</button>}
                                         </div>
-
-                                        <button onClick={saveUser} className="md:col-span-2 bg-blue-600 py-4 rounded-2xl font-black shadow-lg hover:bg-blue-700 transition-all">اعتماد البيانات في القاعدة المركزية</button>
-                                        {isEditing && (
-                                            <button onClick={()=>{setIsEditing(false); setNewUser({id:'', name:'', department:'', password:'', role:'رتبة فرد', rank:'Cadet'})}} className="md:col-span-2 bg-slate-800 py-4 rounded-2xl opacity-50">إلغاء التعديل</button>
-                                        )}
                                     </div>
                                 </div>
-
-                                <div className="space-y-3">
-                                    <h3 className="text-xs font-bold text-gray-500 px-4 uppercase tracking-[0.2em]">قائمة الافراد </h3>
+                                <div className="lg:col-span-2 space-y-4">
                                     {users.map(u => (
-                                        <div key={u.id} className="glass-card p-5 rounded-3xl flex justify-between items-center group hover:bg-white/5 transition-all">
+                                        <div key={u.id} className="tactical-panel p-5 flex justify-between items-center group">
                                             <div className="flex items-center gap-4">
-                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black ${u.id === '1001' ? 'bg-amber-500 text-black' : 'bg-slate-800 text-blue-500'}`}>
-                                                    {u.id === '1001' ? <Icon name="crown"/> : u.name[0]}
+                                                <div className={`w-12 h-12 flex items-center justify-center font-bold ${isSupreme(u) ? 'bg-amber-500 text-black' : 'bg-slate-800'}`}>
+                                                    {isSupreme(u) ? '1001' : u.id.slice(-2)}
                                                 </div>
                                                 <div>
-                                                    <p className="font-black text-lg">{u.name} {u.id === '1001' && <span className="text-[10px] bg-amber-500 text-black px-2 py-0.5 rounded-full ml-2">SYSTEM OWNER</span>}</p>
-                                                    <p className="text-xs text-gray-500 uppercase font-bold">{u.rank} • {u.department}</p>
+                                                    <p className="font-bold">{u.name} {isSupreme(u) && '👑'}</p>
+                                                    <p className="text-[10px] text-gray-500 uppercase">{u.rank} | {u.role}</p>
                                                 </div>
                                             </div>
                                             <div className="flex gap-2">
-                                                <button onClick={()=>startEdit(u)} className="p-3 bg-blue-500/10 text-blue-500 rounded-xl hover:bg-blue-500 hover:text-white transition-all"><Icon name="edit"/></button>
+                                                <button onClick={()=>{setNewUser(u); setIsEditing(true);}} className="p-3 bg-blue-500/10 text-blue-500 rounded hover:bg-blue-500 hover:text-white transition-all">تعديل</button>
                                                 {u.id !== '1001' && (
-                                                    <button onClick={()=>deleteUser(u.id)} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"><Icon name="trash"/></button>
+                                                    <button onClick={async()=>confirm('حذف؟')&&await window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="p-3 bg-red-500/10 text-red-500 rounded hover:bg-red-500 hover:text-white transition-all">حذف</button>
                                                 )}
                                             </div>
                                         </div>
@@ -315,36 +355,32 @@
                             </div>
                         )}
 
-                        {/* Criminals (Officer/Command/1001) */}
+                        {/* CRIMINALS PAGE */}
                         {currentPage === 'criminals' && (
-                            <div className="max-w-4xl mx-auto space-y-6">
+                            <div className="max-w-4xl mx-auto space-y-8">
                                 {isOfficer(currentUser) && (
-                                    <div className="glass-card p-8 rounded-[2.5rem] border-r-4 border-r-red-600 shadow-xl">
-                                        <h2 className="text-xl font-black text-red-500 mb-4 flex items-center gap-2">إصدار مذكرة تعميم أمنية</h2>
+                                    <div className="tactical-panel p-8 border-r-4 border-r-red-600">
+                                        <h3 className="text-xl font-black text-red-500 mb-6 uppercase">إصدار مذكرة جلب</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <input type="text" placeholder="اسم الهدف" className="p-4 rounded-2xl bg-slate-950 border border-white/10" value={newCriminal.name} onChange={e=>setNewCriminal({...newCriminal, name: e.target.value})} />
-                                            <input type="text" placeholder="الجرم المرصود" className="p-4 rounded-2xl bg-slate-950 border border-white/10" value={newCriminal.crime} onChange={e=>setNewCriminal({...newCriminal, crime: e.target.value})} />
-                                            <select className="p-4 rounded-2xl bg-slate-950 border border-white/10" onChange={e=>setNewCriminal({...newCriminal, danger: e.target.value})}>
-                                                <option>متوسط</option><option>عالي الخطورة</option><option>إرهاب</option>
-                                            </select>
-                                            <button onClick={async ()=>{
+                                            <input type="text" placeholder="الاسم" className="p-4 rounded" value={newCriminal.name} onChange={e=>setNewCriminal({...newCriminal, name: e.target.value})} />
+                                            <input type="text" placeholder="التهمة" className="p-4 rounded" value={newCriminal.crime} onChange={e=>setNewCriminal({...newCriminal, crime: e.target.value})} />
+                                            <button onClick={async()=>{
                                                 if(!newCriminal.name) return;
-                                                await window.fb.addDoc(window.fb.collection(window.fb.db, "criminals"), {...newCriminal, timestamp: new Date().getTime(), date: new Date().toLocaleDateString('ar-SA')});
+                                                await window.fb.addDoc(window.fb.collection(window.fb.db, "criminals"), {...newCriminal, timestamp: new Date().getTime()});
                                                 setNewCriminal({name:'', crime:'', danger:'متوسط'});
-                                            }} className="md:col-span-3 bg-red-600 py-4 rounded-2xl font-black shadow-lg shadow-red-900/20">تفعيل التعميم فوراً</button>
+                                            }} className="bg-red-600 p-4 rounded font-bold shadow-lg shadow-red-900/30 hover:scale-[1.02] transition-all">تفعيل المذكرة</button>
                                         </div>
                                     </div>
                                 )}
                                 <div className="grid gap-4">
                                     {criminals.map(c => (
-                                        <div key={c.fbId} className="glass-card p-6 rounded-3xl flex justify-between items-center group border-l-4 border-l-red-600">
+                                        <div key={c.fbId} className="tactical-panel p-6 border-r-4 border-r-red-600 flex justify-between items-center group">
                                             <div>
-                                                <h3 className="font-black text-xl text-red-500">{c.name}</h3>
-                                                <p className="text-sm text-gray-400 font-bold">{c.crime} • <span className="underline">{c.danger}</span></p>
-                                                <p className="text-[10px] text-gray-600 mt-1 uppercase tracking-widest font-mono">Date: {c.date}</p>
+                                                <h4 className="text-2xl font-black text-red-500">{c.name}</h4>
+                                                <p className="text-sm font-bold opacity-60 mt-1 uppercase tracking-widest">{c.crime}</p>
                                             </div>
                                             {isOfficer(currentUser) && (
-                                                <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "criminals", c.fbId))} className="p-3 text-red-500 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/10 rounded-xl"><Icon name="trash"/></button>
+                                                <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "criminals", c.fbId))} className="p-4 text-red-500 opacity-20 group-hover:opacity-100 transition-all font-bold">إغلاق الملف</button>
                                             )}
                                         </div>
                                     ))}
@@ -352,10 +388,6 @@
                             </div>
                         )}
                     </main>
-
-                    <footer className="mt-auto p-10 text-center text-gray-700 text-[10px] tracking-[0.5em] uppercase font-bold">
-                        Supreme Command System • Authorized for 1001 • 2026
-                    </footer>
                 </div>
             );
         };
