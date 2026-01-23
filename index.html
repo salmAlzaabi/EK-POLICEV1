@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ministry of Interior System | نظام وزارة الداخلية</title>
+    <title>نظام وزارة الداخلية المتكامل | MOI MDT v2.0</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -13,89 +13,35 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100;400;700;900&display=swap');
         
-        :root {
-            --primary: #0f172a;
-            --secondary: #1e293b;
-            --accent: #3b82f6;
-            --supreme: #fbbf24;
+        :root { --primary: #0f172a; --secondary: #1e293b; --accent: #3b82f6; --supreme: #fbbf24; }
+        body { font-family: 'Noto Kufi Arabic', sans-serif; background-color: #020617; color: #e2e8f0; margin: 0; overflow-x: hidden; }
+
+        /* تنسيق الطباعة الرسمي */
+        @media print {
+            body * { visibility: hidden; }
+            #official-report-print, #official-report-print * { visibility: visible; }
+            #official-report-print {
+                position: absolute; left: 0; top: 0; width: 210mm; height: 297mm;
+                background-image: url('https://i.postimg.net/4xk9Z0P9/White-Black-Gray-Minimalist-A4-Stationery-Paper-Document.png') !important;
+                background-size: cover !important; -webkit-print-color-adjust: exact;
+            }
+            .no-print { display: none !important; }
         }
 
-        body { 
-            font-family: 'Noto Kufi Arabic', sans-serif; 
-            background-color: #020617;
-            color: #e2e8f0;
-            margin: 0;
+        .report-preview-box {
+            width: 210mm; height: 297mm;
+            background-image: url('https://i.postimg.net/4xk9Z0P9/White-Black-Gray-Minimalist-A4-Stationery-Paper-Document.png');
+            background-size: cover; position: relative; color: #1e293b;
+            box-shadow: 0 0 40px rgba(0,0,0,0.7); margin: auto; transform: scale(0.5); transform-origin: top center;
         }
 
-        .sidebar {
-            width: 260px;
-            background: var(--primary);
-            border-left: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.3s ease;
-        }
-
-        .main-content {
-            background: #0a0f1d;
-            background-image: radial-gradient(#1e293b 0.5px, transparent 0.5px);
-            background-size: 24px 24px;
-        }
-
-        .tactical-panel {
-            background: var(--secondary);
-            border: 1px solid rgba(59, 130, 246, 0.1);
-            border-right: 4px solid var(--accent);
-        }
-
-        .supreme-panel {
-            border-right: 4px solid var(--supreme);
-            background: linear-gradient(90deg, rgba(251, 191, 36, 0.05) 0%, transparent 100%);
-        }
-
-        .nav-link {
-            transition: all 0.2s;
-            border-radius: 8px;
-            margin: 4px 12px;
-        }
-
-        .nav-link:hover {
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--accent);
-        }
-
-        .nav-active {
-            background: var(--accent) !important;
-            color: white !important;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        input, select, textarea {
-            background: #0f172a !important;
-            border: 1px solid #334155 !important;
-            color: white !important;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-left: 8px;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(0.95); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.5; }
-            100% { transform: scale(0.95); opacity: 1; }
-        }
-
-        /* تحسين شكل التقرير */
-        .report-card {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: 0.3s;
-        }
-        .report-card:hover { border-color: var(--accent); }
+        .sidebar { width: 260px; background: var(--primary); border-left: 1px solid rgba(255,255,255,0.05); }
+        .tactical-panel { background: var(--secondary); border: 1px solid rgba(59, 130, 246, 0.1); border-right: 4px solid var(--accent); border-radius: 8px; }
+        .nav-link { transition: 0.2s; border-radius: 8px; margin: 4px 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 12px; }
+        .nav-active { background: var(--accent) !important; color: white !important; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        input, textarea, select { background: #0f172a !important; border: 1px solid #334155 !important; color: white !important; padding: 10px; border-radius: 6px; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 8px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(0.95); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.5; } 100% { transform: scale(0.95); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -142,91 +88,63 @@
             const [users, setUsers] = useState([]);
             const [criminals, setCriminals] = useState([]);
             const [reports, setReports] = useState([]);
+            const [officialArchive, setOfficialArchive] = useState([]);
             
-            const [isEditing, setIsEditing] = useState(false);
-            const [reportInput, setReportInput] = useState('');
-            const [editingReportId, setEditingReportId] = useState(null);
-
             // Forms
             const [loginForm, setLoginForm] = useState({ id: '', password: '' });
+            const [reportInput, setReportInput] = useState('');
+            const [officialData, setOfficialData] = useState({ recipient: '', title: '', content: '', showSignature: true });
             const [newUser, setNewUser] = useState({ id: '', password: '', name: '', role: 'رتبة فرد', rank: 'Cadet', department: '' });
             const [newCriminal, setNewCriminal] = useState({ name: '', crime: '', danger: 'متوسط' });
 
             useEffect(() => {
                 if (!window.fb) return;
-                const unsubU = window.fb.onSnapshot(window.fb.collection(window.fb.db, "users"), (snap) => {
-                    setUsers(snap.docs.map(d => ({ ...d.data(), fbId: d.id })));
-                });
-                const unsubC = window.fb.onSnapshot(window.fb.collection(window.fb.db, "criminals"), (snap) => {
-                    setCriminals(snap.docs.map(d => ({ ...d.data(), fbId: d.id })));
-                });
-                const qReports = window.fb.query(window.fb.collection(window.fb.db, "reports"), window.fb.orderBy("timestamp", "desc"));
-                const unsubR = window.fb.onSnapshot(qReports, (snap) => {
-                    setReports(snap.docs.map(d => ({ ...d.data(), fbId: d.id })));
-                });
+                window.fb.onSnapshot(window.fb.collection(window.fb.db, "users"), (snap) => setUsers(snap.docs.map(d => ({ ...d.data(), fbId: d.id }))));
+                window.fb.onSnapshot(window.fb.collection(window.fb.db, "criminals"), (snap) => setCriminals(snap.docs.map(d => ({ ...d.data(), fbId: d.id }))));
+                
+                const qR = window.fb.query(window.fb.collection(window.fb.db, "reports"), window.fb.orderBy("timestamp", "desc"));
+                window.fb.onSnapshot(qR, (snap) => setReports(snap.docs.map(d => ({ ...d.data(), fbId: d.id }))));
 
-                return () => { unsubU(); unsubC(); unsubR(); };
+                const qO = window.fb.query(window.fb.collection(window.fb.db, "official_reports"), window.fb.orderBy("timestamp", "desc"));
+                window.fb.onSnapshot(qO, (snap) => setOfficialArchive(snap.docs.map(d => ({ ...d.data(), fbId: d.id }))));
             }, []);
 
             const isSupreme = (user) => user?.id === '1001';
             const isCommand = (user) => isSupreme(user) || user?.role === 'رتبة قيادية';
             const isOfficer = (user) => isCommand(user) || user?.role === 'رتبة ضابط';
 
-            const sortedUsers = useMemo(() => {
-                return [...users].sort((a, b) => {
-                    if (a.id === '1001') return -1;
-                    if (b.id === '1001') return 1;
-                    const wA = RANK_HIERARCHY.find(r => r.id === a.rank)?.weight || 0;
-                    const wB = RANK_HIERARCHY.find(r => r.id === b.rank)?.weight || 0;
-                    return wB - wA;
-                });
-            }, [users]);
-
             const handleLogin = () => {
                 const u = users.find(x => x.id === loginForm.id && x.password === loginForm.password);
-                if (u) { setCurrentUser(u); setIsLoggedIn(true); } else alert('خطأ في البيانات');
+                if (u) { setCurrentUser(u); setIsLoggedIn(true); } else alert('خطأ في البيانات العسكرية');
             };
 
-            const saveReport = async () => {
+            const saveQuickReport = async () => {
                 if (!reportInput.trim()) return;
-                if (editingReportId) {
-                    await window.fb.updateDoc(window.fb.doc(window.fb.db, "reports", editingReportId), {
-                        content: reportInput,
-                        editedAt: window.fb.serverTimestamp()
-                    });
-                    setEditingReportId(null);
-                } else {
-                    await window.fb.addDoc(window.fb.collection(window.fb.db, "reports"), {
-                        userName: currentUser.name,
-                        userId: currentUser.id,
-                        content: reportInput,
-                        timestamp: window.fb.serverTimestamp()
-                    });
-                }
+                await window.fb.addDoc(window.fb.collection(window.fb.db, "reports"), {
+                    userName: currentUser.name, userId: currentUser.id, content: reportInput, timestamp: window.fb.serverTimestamp()
+                });
                 setReportInput('');
             };
 
-            const saveUser = async () => {
-                await window.fb.setDoc(window.fb.doc(window.fb.db, "users", newUser.id), newUser);
-                setIsEditing(false);
-                setNewUser({ id: '', password: '', name: '', role: 'رتبة فرد', rank: 'Cadet', department: '' });
-                alert('تم التحديث');
+            const saveAndPrintOfficial = async () => {
+                if (!officialData.title || !officialData.content) return alert("أكمل بيانات التقرير الرسمي");
+                await window.fb.addDoc(window.fb.collection(window.fb.db, "official_reports"), {
+                    ...officialData, issuerName: currentUser.name, issuerId: currentUser.id, issuerRank: currentUser.rank,
+                    timestamp: window.fb.serverTimestamp(), dateStr: new Date().toLocaleDateString('ar-SA')
+                });
+                setTimeout(() => { window.print(); }, 500);
             };
 
             if (!isLoggedIn) return (
-                <div className="h-screen w-full flex items-center justify-center bg-[#020617] p-4">
-                    <div className="w-full max-w-md p-8 bg-[#0f172a] border border-blue-500/20 rounded-lg shadow-2xl">
-                        <div className="text-center mb-8">
-                            <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-900/40">
-                                <span className="text-4xl">🛡️</span>
-                            </div>
-                            <h1 className="text-2xl font-black tracking-tighter"> MDT | POLICE </h1>
-                            <p className="text-blue-500 text-[10px] font-bold uppercase mt-1">Authorized Personnel Only</p>
-                        </div>
+                <div className="h-screen w-full flex items-center justify-center bg-[#020617]">
+                    <div className="w-full max-w-md p-10 bg-[#0f172a] border border-blue-500/20 rounded-2xl shadow-2xl text-center">
+                        <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-900/40 text-5xl">🛡️</div>
+                        <h1 className="text-2xl font-black mb-2">نظام الإدارة الأمنية</h1>
+                        <p className="text-blue-500 text-[10px] font-bold uppercase mb-8 tracking-widest">MINISTRY OF INTERIOR</p>
                         <div className="space-y-4">
-                            <input type="text" placeholder="الرقم العسكري" className="w-full p-4 rounded outline-none focus:border-blue-500" onChange={e=>setLoginForm({...loginForm, id: e.target.value})} />
-                            <input type="password" placeholder="كلمة المرور" className="w-full p-4 rounded outline-none focus:border-blue-500" onChange={e=>setLoginForm({...loginForm, password: e.target.value})} onKeyPress={e=>e.key==='Enter'&&handleLogin()} />
-                            <button onClick={handleLogin} className="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded font-bold uppercase tracking-widest transition-all">الولوج للنظام</button>
+                            <input type="text" placeholder="الرقم العسكري" className="w-full" onChange={e=>setLoginForm({...loginForm, id: e.target.value})} />
+                            <input type="password" placeholder="كلمة المرور" className="w-full" onChange={e=>setLoginForm({...loginForm, password: e.target.value})} onKeyPress={e=>e.key==='Enter'&&handleLogin()} />
+                            <button onClick={handleLogin} className="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-lg font-bold transition-all">دخول النظام</button>
                         </div>
                     </div>
                 </div>
@@ -235,238 +153,173 @@
             return (
                 <div className="flex h-screen overflow-hidden">
                     {/* Sidebar */}
-                    <aside className="sidebar flex flex-col h-full shadow-2xl z-50">
-                        <div className="p-6 text-center border-b border-white/5">
+                    <aside className="sidebar no-print flex flex-col h-full">
+                        <div className="p-8 text-center border-b border-white/5">
                             <h2 className="text-xl font-black text-white">وزارة الداخلية</h2>
-                            <p className="text-[10px] text-gray-500 tracking-tighter">Ministry of Interior System</p>
+                            <p className="text-[9px] text-blue-400 font-bold uppercase mt-1">MDT SYSTEM v2.0</p>
                         </div>
-                        
-                        <nav className="flex-grow mt-6">
-                            <button onClick={()=>setCurrentPage('dashboard')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='dashboard'?'nav-active':''}`}>
-                                <span className="ml-3">📊</span> لوحة التحكم
-                            </button>
-                            <button onClick={()=>setCurrentPage('reports')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='reports'?'nav-active':''}`}>
-                                <span className="ml-3">📝</span> المباشرة الميدانية
-                            </button>
-                            <button onClick={()=>setCurrentPage('schedule')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='schedule'?'nav-active':''}`}>
-                                <span className="ml-3">📋</span> الجدول العسكري
-                            </button>
-                            <button onClick={()=>setCurrentPage('criminals')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='criminals'?'nav-active':''}`}>
-                                <span className="ml-3">⚖️</span> المطلوبين للعدالة
-                            </button>
+                        <nav className="flex-grow py-6 overflow-y-auto">
+                            <div onClick={()=>setCurrentPage('dashboard')} className={`nav-link ${currentPage==='dashboard'?'nav-active':''}`}>📊 نظرة عامة</div>
+                            <div onClick={()=>setCurrentPage('reports')} className={`nav-link ${currentPage==='reports'?'nav-active':''}`}>📝 المباشرة الميدانية</div>
+                            <div onClick={()=>setCurrentPage('print-center')} className={`nav-link ${currentPage==='print-center'?'nav-active':''}`}>🖨️ طباعة تقرير رسمي</div>
+                            <div onClick={()=>setCurrentPage('criminals')} className={`nav-link ${currentPage==='criminals'?'nav-active':''}`}>⚖️ المطلوبين أمنياً</div>
+                            <div onClick={()=>setCurrentPage('schedule')} className={`nav-link ${currentPage==='schedule'?'nav-active':''}`}>📅 الجدول العسكري</div>
                             {isCommand(currentUser) && (
-                                <button onClick={()=>setCurrentPage('users')} className={`flex items-center w-[236px] p-4 nav-link ${currentPage==='users'?'nav-active bg-amber-600 shadow-amber-900/20':'text-amber-500'}`}>
-                                    <span className="ml-3">🛠️</span> إدارة العساكر
-                                </button>
+                                <div onClick={()=>setCurrentPage('users')} className={`nav-link text-amber-500 ${currentPage==='users'?'nav-active':''}`}>🛠️ الإدارة المركزية</div>
                             )}
                         </nav>
-
-                        <div className="p-4 border-t border-white/5">
-                            <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg mb-4">
-                                <div className="w-10 h-10 rounded bg-blue-600 flex items-center justify-center font-bold">
-                                    {isSupreme(currentUser) ? '👑' : currentUser.name[0]}
-                                </div>
-                                <div className="overflow-hidden">
-                                    <p className="text-xs font-bold truncate">{currentUser.name}</p>
-                                    <p className="text-[10px] text-blue-400 font-bold uppercase">{currentUser.id}</p>
-                                </div>
-                            </div>
-                            <button onClick={()=>setIsLoggedIn(false)} className="w-full p-3 bg-red-600/10 text-red-500 rounded-lg hover:bg-red-600 hover:text-white transition-all text-sm font-bold">تسجيل الخروج</button>
+                        <div className="p-4 bg-white/5 m-4 rounded-xl">
+                            <p className="text-[10px] opacity-50">المستخدم:</p>
+                            <p className="text-xs font-bold">{currentUser.rank} / {currentUser.name}</p>
+                            <button onClick={()=>setIsLoggedIn(false)} className="mt-3 w-full text-[10px] text-red-400 font-bold underline">تسجيل الخروج</button>
                         </div>
                     </aside>
 
                     {/* Main Content */}
-                    <main className="flex-grow main-content overflow-y-auto p-8">
-                        <header className="flex justify-between items-end mb-10 border-b border-white/10 pb-6">
-                            <div>
-                                <h1 className="text-4xl font-black tracking-tight uppercase">
-                                    {currentPage === 'dashboard' && 'نظرة عامة'}
-                                    {currentPage === 'reports' && 'المباشرة اليومية'}
-                                    {currentPage === 'schedule' && 'جدول افراد الشرطة'}
-                                    {currentPage === 'criminals' && 'تعميمات أمنية'}
-                                    {currentPage === 'users' && 'ادارة الموظفين'}
-                                </h1>
-                                <p className="text-blue-500 text-sm font-bold mt-2">
-                                    <span className="status-dot bg-green-500"></span> النظام متصل بالخادم الرئيسي
-                                </p>
-                            </div>
-                            <div className="text-left font-mono text-sm opacity-30">
-                                {new Date().toLocaleDateString('ar-SA')}
-                            </div>
-                        </header>
-
-                        {/* DASHBOARD */}
+                    <main className="flex-grow overflow-y-auto p-8 bg-[#0a0f1d]">
+                        
+                        {/* 1. Dashboard */}
                         {currentPage === 'dashboard' && (
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div className="tactical-panel p-8">
-                                    <p className="text-gray-500 font-bold text-xs uppercase mb-1">إجمالي التقارير</p>
+                                    <p className="text-xs opacity-50 mb-2">إجمالي المباشرات</p>
                                     <h3 className="text-5xl font-black">{reports.length}</h3>
                                 </div>
-                                <div className="tactical-panel p-8">
-                                    <p className="text-gray-500 font-bold text-xs uppercase mb-1">أهداف مطلوبة</p>
+                                <div className="tactical-panel p-8 border-r-red-500">
+                                    <p className="text-xs opacity-50 mb-2">أهداف مطلوبة</p>
                                     <h3 className="text-5xl font-black text-red-500">{criminals.length}</h3>
                                 </div>
+                                <div className="tactical-panel p-8 border-r-amber-500">
+                                    <p className="text-xs opacity-50 mb-2">تقارير رسمية مؤرشفة</p>
+                                    <h3 className="text-5xl font-black text-amber-500">{officialArchive.length}</h3>
+                                </div>
                             </div>
                         )}
 
-                        {/* REPORTS PAGE (المباشرة الميدانية) */}
+                        {/* 2. Quick Reports */}
                         {currentPage === 'reports' && (
-                            <div className="max-w-4xl mx-auto space-y-6">
-                                <div className="tactical-panel p-6 border-r-4 border-r-blue-500">
-                                    <h3 className="text-lg font-black mb-4 flex items-center gap-2">
-                                        {editingReportId ? '📝 تعديل مباشر' : '✍️ إضافة مباشر جديدة'}
-                                    </h3>
-                                    <textarea 
-                                        className="w-full h-32 p-4 rounded outline-none mb-4"
-                                        placeholder="اكتب تفاصيل مباشرتك الميدانية هنا..."
-                                        value={reportInput}
-                                        onChange={e=>setReportInput(e.target.value)}
-                                    ></textarea>
-                                    <div className="flex justify-between items-center">
-                                        <p className="text-[10px] text-gray-500">باسم: {currentUser.name} (#{currentUser.id})</p>
-                                        <div className="flex gap-2">
-                                            {editingReportId && <button onClick={()=>{setEditingReportId(null); setReportInput('');}} className="px-4 py-2 text-xs font-bold">إلغاء</button>}
-                                            <button onClick={saveReport} className="bg-blue-600 px-8 py-3 rounded font-bold shadow-lg shadow-blue-900/40">إرسال التقرير</button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4 mt-10">
-                                    <h3 className="text-xl font-black border-r-4 border-r-blue-500 pr-4">سجل المباشرات الواردة</h3>
-                                    {reports.map(r => (
-                                        <div key={r.fbId} className="report-card p-6 rounded-lg group">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-slate-800 rounded flex items-center justify-center font-bold text-blue-500">#</div>
-                                                    <div>
-                                                        <h4 className="font-bold text-white text-sm">{r.userName} <span className="text-gray-600 text-[10px] ml-2">ID: {r.userId}</span></h4>
-                                                        <p className="text-[10px] text-gray-500">{r.timestamp?.toDate().toLocaleString('ar-SA')}</p>
-                                                    </div>
-                                                </div>
-                                                {(r.userId === currentUser.id || isCommand(currentUser)) && (
-                                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button onClick={()=>{setEditingReportId(r.fbId); setReportInput(r.content);}} className="text-xs text-blue-400 font-bold p-2">تعديل</button>
-                                                        <button onClick={async()=>confirm('حذف؟') && await window.fb.deleteDoc(window.fb.doc(window.fb.db, "reports", r.fbId))} className="text-xs text-red-500 font-bold p-2">حذف</button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <p className="text-gray-300 text-sm leading-relaxed pr-4 border-r border-slate-700">{r.content}</p>
-                                            {r.editedAt && <p className="text-[8px] text-amber-500 mt-2 italic">* تم تعديله</p>}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* SCHEDULE PAGE */}
-                        {currentPage === 'schedule' && (
-                            <div className="tactical-panel overflow-hidden border-right-blue">
-                                <table className="w-full text-right">
-                                    <thead>
-                                        <tr className="bg-slate-900 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-white/5">
-                                            <th className="p-6">الاسم والصفة العسكرية</th>
-                                            <th className="p-6">الرتبة</th>
-                                            <th className="p-6">القسم</th>
-                                            <th className="p-6">الرقم</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/5">
-                                        {sortedUsers.map(u => (
-                                            <tr key={u.id} className={`hover:bg-white/5 transition-all ${isSupreme(u) ? 'bg-amber-500/5' : ''}`}>
-                                                <td className="p-6 flex items-center gap-3">
-                                                    {isSupreme(u) ? '👑' : '⭐'} 
-                                                    <span className={`font-bold ${isSupreme(u) ? 'text-amber-500' : 'text-white'}`}>{u.name}</span>
-                                                </td>
-                                                <td className="p-6 font-mono text-xs">{u.rank}</td>
-                                                <td className="p-6 text-gray-400 text-sm font-bold">{u.department}</td>
-                                                <td className="p-6 font-mono text-gray-500 text-xs">{u.id}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-
-                        {/* USERS ADMIN PAGE */}
-                        {currentPage === 'users' && isCommand(currentUser) && (
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                                <div className="lg:col-span-1">
-                                    <div className="tactical-panel p-6 supreme-panel">
-                                        <h3 className="text-xl font-black mb-6 flex items-center gap-2">
-                                            {isEditing ? 'تعديل البيانات' : 'إضافة ملف جديد'}
-                                        </h3>
-                                        <div className="space-y-4">
-                                            <input type="text" placeholder="الرقم العسكري" disabled={isEditing} value={newUser.id} className="w-full p-4 rounded outline-none" onChange={e=>setNewUser({...newUser, id: e.target.value})} />
-                                            <input type="text" placeholder="الاسم الكامل" value={newUser.name} className="w-full p-4 rounded outline-none" onChange={e=>setNewUser({...newUser, name: e.target.value})} />
-                                            <input type="text" placeholder="القسم" value={newUser.department} className="w-full p-4 rounded outline-none" onChange={e=>setNewUser({...newUser, department: e.target.value})} />
-                                            <input type="text" placeholder="كلمة المرور" value={newUser.password} className="w-full p-4 rounded outline-none" onChange={e=>setNewUser({...newUser, password: e.target.value})} />
-                                            <select className="w-full p-4 rounded" value={newUser.role} onChange={e=>setNewUser({...newUser, role: e.target.value})}>
-                                                <option>رتبة فرد</option><option>رتبة ضابط</option><option>رتبة قيادية</option>
-                                            </select>
-                                            <select className="w-full p-4 rounded" value={newUser.rank} onChange={e=>setNewUser({...newUser, rank: e.target.value})}>
-                                                {RANK_HIERARCHY.map(r => <option key={r.id} value={r.id}>{r.id}</option>)}
-                                            </select>
-                                            <button onClick={saveUser} className="w-full bg-blue-600 py-4 rounded font-bold shadow-lg shadow-blue-900/40">تحديث النظام المركزي</button>
-                                            {isEditing && <button onClick={()=>setIsEditing(false)} className="w-full bg-slate-800 py-2 rounded text-xs">إلغاء التعديل</button>}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="lg:col-span-2 space-y-4">
-                                    {users.map(u => (
-                                        <div key={u.id} className="tactical-panel p-5 flex justify-between items-center group">
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-12 h-12 flex items-center justify-center font-bold ${isSupreme(u) ? 'bg-amber-500 text-black' : 'bg-slate-800'}`}>
-                                                    {isSupreme(u) ? '1001' : u.id.slice(-2)}
-                                                </div>
-                                                <div>
-                                                    <p className="font-bold">{u.name} {isSupreme(u) && '👑'}</p>
-                                                    <p className="text-[10px] text-gray-500 uppercase">{u.rank} | {u.role}</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <button onClick={()=>{setNewUser(u); setIsEditing(true);}} className="p-3 bg-blue-500/10 text-blue-500 rounded hover:bg-blue-500 hover:text-white transition-all">تعديل</button>
-                                                {u.id !== '1001' && (
-                                                    <button onClick={async()=>confirm('حذف؟')&&await window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="p-3 bg-red-500/10 text-red-500 rounded hover:bg-red-500 hover:text-white transition-all">حذف</button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* CRIMINALS PAGE */}
-                        {currentPage === 'criminals' && (
                             <div className="max-w-4xl mx-auto space-y-8">
+                                <div className="tactical-panel p-6">
+                                    <h3 className="font-bold mb-4">✍️ إضافة مباشرة ميدانية سريعة</h3>
+                                    <textarea className="w-full h-32 mb-4" placeholder="اكتب ما يحدث في الميدان الآن..." value={reportInput} onChange={e=>setReportInput(e.target.value)}></textarea>
+                                    <button onClick={saveQuickReport} className="bg-blue-600 px-8 py-3 rounded font-bold">إرسال التقرير</button>
+                                </div>
+                                <div className="space-y-4">
+                                    {reports.map(r => (
+                                        <div key={r.fbId} className="bg-white/5 p-5 rounded-lg border-r-2 border-blue-500">
+                                            <div className="flex justify-between text-[10px] mb-2 opacity-50">
+                                                <span>{r.userName} (#{r.userId})</span>
+                                                <span>{r.timestamp?.toDate().toLocaleString('ar-SA')}</span>
+                                            </div>
+                                            <p className="text-sm">{r.content}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 3. Official Print Center (The New Feature) */}
+                        {currentPage === 'print-center' && (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                                <div className="no-print space-y-5">
+                                    <div className="tactical-panel p-6 border-r-amber-500">
+                                        <h3 className="text-xl font-black mb-6 text-amber-500">مركز التقارير المعتمدة</h3>
+                                        <div className="space-y-4">
+                                            <input className="w-full" placeholder="المرسل إليه (مثلاً: مدير القسم)" value={officialData.recipient} onChange={e=>setOfficialData({...officialData, recipient: e.target.value})} />
+                                            <input className="w-full" placeholder="عنوان التقرير" value={officialData.title} onChange={e=>setOfficialData({...officialData, title: e.target.value})} />
+                                            <textarea className="w-full h-40" placeholder="نص التقرير..." value={officialData.content} onChange={e=>setOfficialData({...officialData, content: e.target.value})}></textarea>
+                                            <div className="flex items-center gap-3 text-xs">
+                                                <input type="checkbox" checked={officialData.showSignature} onChange={e=>setOfficialData({...officialData, showSignature: e.target.checked})} />
+                                                إضافة التوقيع والرتبة الشخصية
+                                            </div>
+                                            <button onClick={saveAndPrintOfficial} className="w-full bg-amber-600 py-4 rounded-xl font-black text-lg">حفظ وأرشفة وطباعة 🖨️</button>
+                                        </div>
+                                    </div>
+                                    {/* أرشيف التقارير الرسمية */}
+                                    <div className="space-y-2">
+                                        <h4 className="font-bold text-sm opacity-50">الأرشيف الرسمي الأخير:</h4>
+                                        {officialArchive.map(item => (
+                                            <div key={item.fbId} className="bg-white/5 p-3 rounded flex justify-between items-center text-xs">
+                                                <span>{item.title}</span>
+                                                <button onClick={() => setOfficialData(item)} className="text-blue-400">معاينة</button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Preview Area */}
+                                <div className="flex justify-center">
+                                    <div id="official-report-print" className="report-preview-box">
+                                        <div className="absolute top-[125px] right-[85px] font-bold text-lg">إلى / {officialData.recipient || '..........'}</div>
+                                        <div className="absolute top-[205px] left-0 right-0 text-center px-10">
+                                            <h1 className="text-2xl font-black border-b-2 border-slate-900 inline-block px-6 pb-1 uppercase">{officialData.title || 'عنوان التقرير'}</h1>
+                                        </div>
+                                        <div className="absolute top-[310px] left-[90px] right-[90px] text-justify leading-relaxed text-lg whitespace-pre-wrap">{officialData.content}</div>
+                                        <div className="absolute bottom-[160px] left-[90px] text-center min-w-[200px]">
+                                            {officialData.showSignature ? (
+                                                <div>
+                                                    <p className="font-bold border-b border-slate-300 mb-1">معد التقرير</p>
+                                                    <p className="font-bold">{currentUser.rank}: {currentUser.name}</p>
+                                                </div>
+                                            ) : <p className="text-[10px] text-slate-400">تم استخراجه آلياً من نظام وزارة الداخلية</p>}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 4. Criminals */}
+                        {currentPage === 'criminals' && (
+                            <div className="max-w-3xl mx-auto space-y-6">
                                 {isOfficer(currentUser) && (
-                                    <div className="tactical-panel p-8 border-r-4 border-r-red-600">
-                                        <h3 className="text-xl font-black text-red-500 mb-6 uppercase">إصدار مذكرة تعميم</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <input type="text" placeholder="الاسم" className="p-4 rounded" value={newCriminal.name} onChange={e=>setNewCriminal({...newCriminal, name: e.target.value})} />
-                                            <input type="text" placeholder="التهمة" className="p-4 rounded" value={newCriminal.crime} onChange={e=>setNewCriminal({...newCriminal, crime: e.target.value})} />
+                                    <div className="tactical-panel p-6 border-r-red-600">
+                                        <div className="flex gap-3">
+                                            <input className="flex-grow" placeholder="اسم المطلوب" value={newCriminal.name} onChange={e=>setNewCriminal({...newCriminal, name: e.target.value})} />
                                             <button onClick={async()=>{
-                                                if(!newCriminal.name) return;
-                                                await window.fb.addDoc(window.fb.collection(window.fb.db, "criminals"), {...newCriminal, timestamp: new Date().getTime()});
-                                                setNewCriminal({name:'', crime:'', danger:'متوسط'});
-                                            }} className="bg-red-600 p-4 rounded font-bold shadow-lg shadow-red-900/30 hover:scale-[1.02] transition-all">اعلان التعميم</button>
+                                                await window.fb.addDoc(window.fb.collection(window.fb.db, "criminals"), newCriminal);
+                                                setNewCriminal({name:'', crime:'', danger:''});
+                                            }} className="bg-red-600 px-6 rounded font-bold">إضافة</button>
                                         </div>
                                     </div>
                                 )}
-                                <div className="grid gap-4">
-                                    {criminals.map(c => (
-                                        <div key={c.fbId} className="tactical-panel p-6 border-r-4 border-r-red-600 flex justify-between items-center group">
-                                            <div>
-                                                <h4 className="text-2xl font-black text-red-500">{c.name}</h4>
-                                                <p className="text-sm font-bold opacity-60 mt-1 uppercase tracking-widest">{c.crime}</p>
-                                            </div>
-                                            {isOfficer(currentUser) && (
-                                                <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "criminals", c.fbId))} className="p-4 text-red-500 opacity-20 group-hover:opacity-100 transition-all font-bold">إغلاق الملف</button>
-                                            )}
+                                {criminals.map(c => (
+                                    <div key={c.fbId} className="tactical-panel p-6 border-r-red-600 flex justify-between">
+                                        <h4 className="text-2xl font-black text-red-500">{c.name}</h4>
+                                        <button onClick={()=>window.fb.deleteDoc(window.fb.doc(window.fb.db, "criminals", c.fbId))} className="text-xs text-red-800">إغلاق الملف</button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* 5. Central Admin */}
+                        {currentPage === 'users' && isCommand(currentUser) && (
+                            <div className="space-y-6">
+                                <div className="tactical-panel p-6 border-r-amber-500">
+                                    <h3 className="font-bold mb-4">إضافة عسكري جديد</h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <input placeholder="الرقم العسكري" value={newUser.id} onChange={e=>setNewUser({...newUser, id: e.target.value})} />
+                                        <input placeholder="الاسم" value={newUser.name} onChange={e=>setNewUser({...newUser, name: e.target.value})} />
+                                        <input placeholder="الباسورد" value={newUser.password} onChange={e=>setNewUser({...newUser, password: e.target.value})} />
+                                        <select value={newUser.rank} onChange={e=>setNewUser({...newUser, rank: e.target.value})}>
+                                            {RANK_HIERARCHY.map(r=><option key={r.id} value={r.id}>{r.id}</option>)}
+                                        </select>
+                                    </div>
+                                    <button onClick={async()=>{
+                                        await window.fb.setDoc(window.fb.doc(window.fb.db, "users", newUser.id), newUser);
+                                        alert('تمت الإضافة');
+                                    }} className="mt-4 bg-amber-600 px-6 py-2 rounded font-bold">تفعيل الملف العسكري</button>
+                                </div>
+                                <div className="grid gap-2">
+                                    {users.map(u => (
+                                        <div key={u.id} className="bg-white/5 p-4 rounded flex justify-between">
+                                            <span>{u.rank} / {u.name} ({u.id})</span>
+                                            <button onClick={()=>window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="text-red-500">حذف</button>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         )}
+
                     </main>
                 </div>
             );
