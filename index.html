@@ -4,7 +4,7 @@
     <link rel="icon" type="image/png" href="https://cdn.discordapp.com/emojis/1394931233825361930.webp?size=160&animated=true">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LSPD | SUPREME COMMAND CENTER FULL V8.0</title>
+    <title>MDT | POLICE 1.1 </title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -112,7 +112,7 @@
                 <div className="h-screen w-full flex items-center justify-center bg-[#05080f] p-6">
                     <div className="w-full max-w-sm p-8 tactical-panel text-center">
                         <img src="https://cdn.discordapp.com/emojis/1394931233825361930.webp?size=160" className="w-20 mx-auto mb-6" />
-                        <h2 className="text-xl font-black mb-6 text-blue-500 italic uppercase">Secure MDT Access</h2>
+                        <h2 className="text-xl font-black mb-6 text-blue-500 italic uppercase">MDT System</h2>
                         <div className="space-y-4">
                             <input id="l_id" placeholder="الرقم العسكري" className="text-center" />
                             <input id="l_pw" type="password" placeholder="كلمة المرور" className="text-center" />
@@ -136,7 +136,7 @@
                             ))}
                             {isCommand() && (
                                 <>
-                                    <div onClick={()=>{setPage('admin'); setMenuOpen(false)}} className={`nav-item ${page==='admin'?'bg-amber-600/10 text-amber-500':''}`}>⚙️ إدارة القوة</div>
+                                    <div onClick={()=>{setPage('admin'); setMenuOpen(false)}} className={`nav-item ${page==='admin'?'bg-amber-600/10 text-amber-500':''}`}>⚙️ إدارة العساكر</div>
                                     <div onClick={()=>{setPage('logs'); setMenuOpen(false)}} className={`nav-item ${page==='logs'?'bg-purple-600/10 text-purple-500':''}`}>📜 سجل اللوق</div>
                                 </>
                             )}
@@ -273,7 +273,7 @@
                             {page === 'civil' && (
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-center"><h1 className="text-3xl font-black italic">السجل المدني</h1>
-                                    <button onClick={()=>setModal('addCivil')} className="bg-blue-600 px-6 py-2 rounded-lg font-black text-xs uppercase">+ Register Civil</button></div>
+                                    <button onClick={()=>setModal('addCivil')} className="bg-blue-600 px-6 py-2 rounded-lg font-black text-xs uppercase">اضافة مواطن</button></div>
                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                         {civilians.map(c => (
                                             <div key={c.fbId} onClick={()=>setModal({type:'viewCivil', data:c})} className="tactical-panel p-4 flex items-center gap-4 cursor-pointer hover:bg-white/5 transition-colors">
