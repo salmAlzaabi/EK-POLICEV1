@@ -4,7 +4,7 @@
     <link rel="icon" type="image/png" href="https://cdn.discordapp.com/emojis/1394931233825361930.webp?size=160&animated=true">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MDT | POLICE SYSTEM1.0</title>
+    <title>MDT | POLICE SYSTEM 1.0</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -15,16 +15,34 @@
         @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100;400;700;900&display=swap');
         :root { --primary: #0f172a; --secondary: #1e293b; --accent: #3b82f6; --supreme: #fbbf24; }
         body { font-family: 'Noto Kufi Arabic', sans-serif; background-color: #020617; color: #e2e8f0; margin: 0; }
-        .sidebar { width: 260px; background: var(--primary); border-left: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
-        .main-content { background: #0a0f1d; background-image: radial-gradient(#1e293b 0.5px, transparent 0.5px); background-size: 24px 24px; }
+        
+        /* التعديل: القائمة الجانبية أصبحت تدعم الجوال */
+        .sidebar { 
+            width: 260px; 
+            background: var(--primary); 
+            border-left: 1px solid rgba(255,255,255,0.05); 
+            transition: all 0.3s ease-in-out; 
+        }
+        
+        .main-content { 
+            background: #0a0f1d; 
+            background-image: radial-gradient(#1e293b 0.5px, transparent 0.5px); 
+            background-size: 24px 24px; 
+        }
+        
         .tactical-panel { background: var(--secondary); border: 1px solid rgba(59, 130, 246, 0.1); border-right: 4px solid var(--accent); transition: all 0.3s; overflow: hidden; }
-        .nav-link { transition: all 0.2s; border-radius: 8px; margin: 4px 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 12px; }
+        .nav-link { transition: all 0.2s; border-radius: 8px; margin: 4px 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 12px; width: calc(100% - 24px); text-align: right; }
         .nav-active { background: var(--accent) !important; color: white !important; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        
         input, select, textarea { background: #0f172a !important; border: 1px solid #334155 !important; color: white !important; outline: none; transition: 0.2s; }
         input:focus { border-color: var(--accent) !important; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 8px; animation: pulse 2s infinite; }
+        
         @keyframes pulse { 0% { transform: scale(0.95); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.5; } 100% { transform: scale(0.95); opacity: 1; } }
         .uniform-img { width: 100%; height: 220px; object-fit: cover; border-bottom: 2px solid rgba(59, 130, 246, 0.2); }
+
+        /* إخفاء السكرول بار */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -68,6 +86,8 @@
             const [isLoggedIn, setIsLoggedIn] = useState(false);
             const [currentUser, setCurrentUser] = useState(null);
             const [currentPage, setCurrentPage] = useState('dashboard');
+            const [isSidebarOpen, setIsSidebarOpen] = useState(false); // حالة القائمة للجوال
+            
             const [users, setUsers] = useState([]);
             const [criminals, setCriminals] = useState([]);
             const [reports, setReports] = useState([]);
@@ -115,13 +135,14 @@
                 if(reportForm.isEditing) await window.fb.updateDoc(window.fb.doc(window.fb.db, "field_reports", reportForm.docId), data);
                 else await window.fb.addDoc(window.fb.collection(window.fb.db, "field_reports"), data);
                 setReportForm({ content: '', time: '', isEditing: false, docId: '' });
+                alert('تم إرسال التقرير');
             };
 
             if (!isLoggedIn) return (
-                <div className="h-screen w-full flex items-center justify-center bg-[#020617] p-4">
+                <div className="h-screen w-full flex items-center justify-center bg-[#020617] p-4 text-right">
                     <div className="w-full max-w-md p-8 bg-[#0f172a] border border-blue-500/20 rounded-lg shadow-2xl">
                         <div className="text-center mb-8">
-                            <img src="https://cdn.discordapp.com/attachments/1453507995781693634/1464367144228622516/185-1855065_los-santos-police-department-president-of-the-united-states-removebg-preview.png?ex=697535ad&is=6973e42d&hm=36374c04aa1f881264eab683cba0d57d347dd41b654467b3c21cf8181f977e3e&" className="w-54 h-54 mx-auto mb-4 object-contain" />
+                            <img src="https://cdn.discordapp.com/attachments/1453507995781693634/1464367144228622516/185-1855065_los-santos-police-department-president-of-the-united-states-removebg-preview.png?ex=697535ad&is=6973e42d&hm=36374c04aa1f881264eab683cba0d57d347dd41b654467b3c21cf8181f977e3e&" className="w-32 h-32 mx-auto mb-4 object-contain" />
                             <h1 className="text-2xl font-black text-white">نظام الـ MDT </h1>
                             <p className="text-gray-500 text-xs mt-2 uppercase">Central Police Database</p>
                         </div>
@@ -135,21 +156,48 @@
             );
 
             return (
-                <div className="flex h-screen overflow-hidden">
-                    <aside className="sidebar flex flex-col h-full shadow-2xl z-50">
+                <div className="flex h-screen overflow-hidden relative">
+                    
+                    {/* زر القائمة للجوال */}
+                    <button 
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        className="lg:hidden fixed top-4 left-4 z-[60] bg-blue-600 text-white p-3 rounded-full shadow-lg focus:outline-none"
+                    >
+                        {isSidebarOpen ? '✕' : '☰'}
+                    </button>
+
+                    {/* القائمة الجانبية المتجاوبة */}
+                    <aside className={`
+                        sidebar flex flex-col h-full shadow-2xl z-50 
+                        fixed lg:relative transition-all duration-300
+                        ${isSidebarOpen ? 'right-0' : '-right-[260px] lg:right-0'} 
+                        bg-[#0f172a]
+                    `}>
                         <div className="p-8 text-center border-b border-white/5">
                             <h2 className="text-xl font-black text-white">وزارة الداخلية</h2>
                         </div>
-                        <nav className="flex-grow mt-6">
-                            <button onClick={()=>setCurrentPage('dashboard')} className={`nav-link ${currentPage==='dashboard'?'nav-active':''}`}><span>📊</span> لوحة التحكم</button>
-                            <button onClick={()=>setCurrentPage('reports')} className={`nav-link ${currentPage==='reports'?'nav-active':''}`}><span>📄</span> التقارير</button>
-                            <button onClick={()=>setCurrentPage('uniforms')} className={`nav-link ${currentPage==='uniforms'?'nav-active':''}`}><span>👕</span> الملابس العسكرية</button>
-                            <button onClick={()=>setCurrentPage('schedule')} className={`nav-link ${currentPage==='schedule'?'nav-active':''}`}><span>📋</span> الجدول العسكري</button>
-                            <button onClick={()=>setCurrentPage('criminals')} className={`nav-link ${currentPage==='criminals'?'nav-active':''}`}><span>⚖️</span> المطلوبين</button>
+                        <nav className="flex-grow mt-6 overflow-y-auto">
+                            {[
+                                {id: 'dashboard', icon: '📊', label: 'لوحة التحكم'},
+                                {id: 'reports', icon: '📄', label: 'التقارير'},
+                                {id: 'uniforms', icon: '👕', label: 'الملابس العسكرية'},
+                                {id: 'schedule', icon: '📋', label: 'الجدول العسكري'},
+                                {id: 'criminals', icon: '⚖️', label: 'المطلوبين'}
+                            ].map(item => (
+                                <button 
+                                    key={item.id}
+                                    onClick={()=>{setCurrentPage(item.id); setIsSidebarOpen(false)}} 
+                                    className={`nav-link ${currentPage===item.id?'nav-active':''}`}
+                                >
+                                    <span>{item.icon}</span> {item.label}
+                                </button>
+                            ))}
+                            
                             {isCommand(currentUser) && (
-                                <button onClick={()=>setCurrentPage('users')} className={`nav-link ${currentPage==='users'?'nav-active bg-amber-600':'text-amber-500 font-bold'}`}><span>🛠️</span> إدارة العساكر</button>
+                                <button onClick={()=>{setCurrentPage('users'); setIsSidebarOpen(false)}} className={`nav-link ${currentPage==='users'?'nav-active bg-amber-600':'text-amber-500 font-bold'}`}><span>🛠️</span> إدارة العساكر</button>
                             )}
                         </nav>
+                        
                         <div className="p-4 border-t border-white/5">
                             <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg mb-4">
                                 <div className="w-10 h-10 rounded bg-blue-600 flex items-center justify-center font-bold">{currentUser.name[0]}</div>
@@ -162,34 +210,42 @@
                         </div>
                     </aside>
 
-                    <main className="flex-grow main-content overflow-y-auto p-8">
-                        {/* DASHBOARD */}
+                    {/* خلفية معتمة للجوال عند فتح القائمة */}
+                    {isSidebarOpen && (
+                        <div 
+                            className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+                            onClick={() => setIsSidebarOpen(false)}
+                        ></div>
+                    )}
+
+                    <main className="flex-grow main-content overflow-y-auto p-4 md:p-8 w-full">
+                        {/* محتوى الصفحة - DASHBOARD */}
                         {currentPage === 'dashboard' && (
-                            <div className="space-y-8">
-                                <h1 className="text-4xl font-black">نظرة عامة</h1>
+                            <div className="space-y-8 mt-12 lg:mt-0">
+                                <h1 className="text-3xl md:text-4xl font-black">نظرة عامة</h1>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div className="tactical-panel p-8">
+                                    <div className="tactical-panel p-6 md:p-8">
                                         <p className="text-gray-500 font-bold text-xs uppercase mb-1">إجمالي العساكر</p>
-                                        <h3 className="text-5xl font-black">{users.length}</h3>
+                                        <h3 className="text-4xl md:text-5xl font-black">{users.length}</h3>
                                     </div>
-                                    <div className="tactical-panel p-8 border-r-red-500">
+                                    <div className="tactical-panel p-6 md:p-8 border-r-red-500">
                                         <p className="text-gray-500 font-bold text-xs uppercase mb-1">مذكرات القبض</p>
-                                        <h3 className="text-5xl font-black text-red-500">{criminals.length}</h3>
+                                        <h3 className="text-4xl md:text-5xl font-black text-red-500">{criminals.length}</h3>
                                     </div>
-                                    <div className="tactical-panel p-8 border-r-blue-500">
+                                    <div className="tactical-panel p-6 md:p-8 border-r-blue-500">
                                         <p className="text-gray-500 font-bold text-xs uppercase mb-1">قطع التجهيزات</p>
-                                        <h3 className="text-5xl font-black text-blue-400">{uniforms.length}</h3>
+                                        <h3 className="text-4xl md:text-5xl font-black text-blue-400">{uniforms.length}</h3>
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* UNIFORMS */}
+                        {/* محتوى الصفحة - UNIFORMS */}
                         {currentPage === 'uniforms' && (
-                            <div className="space-y-8">
-                                <h1 className="text-4xl font-black">تجهيزات الملابس</h1>
+                            <div className="space-y-8 mt-12 lg:mt-0">
+                                <h1 className="text-3xl md:text-4xl font-black">تجهيزات الملابس</h1>
                                 {isOfficer(currentUser) && (
-                                    <div className="tactical-panel p-8 border-r-blue-600">
+                                    <div className="tactical-panel p-6 border-r-blue-600">
                                         <h3 className="text-xl font-black text-blue-500 mb-6">إضافة قطعة عسكرية</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <input type="text" placeholder="اسم اللباس" className="p-4 rounded" value={newUniform.title} onChange={e=>setNewUniform({...newUniform, title: e.target.value})} />
@@ -198,11 +254,11 @@
                                                 if(!newUniform.title || !newUniform.link) return;
                                                 await window.fb.addDoc(window.fb.collection(window.fb.db, "uniforms"), newUniform);
                                                 setNewUniform({title:'', link:''});
-                                            }} className="bg-blue-600 p-4 rounded font-bold shadow-lg">حفظ التجهيزات</button>
+                                            }} className="bg-blue-600 p-4 rounded font-bold shadow-lg">حفظ</button>
                                         </div>
                                     </div>
                                 )}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {uniforms.map(uni => (
                                         <div key={uni.fbId} className="tactical-panel border-white/10 flex flex-col hover:scale-[1.02] transition-transform">
                                             <img src={uni.link} className="uniform-img bg-slate-800" onError={(e)=>e.target.src='https://via.placeholder.com/400x220?text=Invalid+Image'} />
@@ -216,22 +272,22 @@
                             </div>
                         )}
 
-                        {/* REPORTS */}
+                        {/* محتوى الصفحة - REPORTS */}
                         {currentPage === 'reports' && (
-                            <div className="max-w-4xl mx-auto space-y-8">
-                                <h1 className="text-4xl font-black">التقارير الميدانية</h1>
-                                <input type="text" placeholder="بحث باسم العسكري أو الرقم..." className="w-full p-4 rounded-lg tactical-panel border-none" onChange={e=>setSearchTerm(e.target.value)} />
+                            <div className="max-w-4xl mx-auto space-y-8 mt-12 lg:mt-0">
+                                <h1 className="text-3xl md:text-4xl font-black">التقارير الميدانية</h1>
+                                <input type="text" placeholder="بحث..." className="w-full p-4 rounded-lg tactical-panel border-none" onChange={e=>setSearchTerm(e.target.value)} />
                                 <div className="tactical-panel p-6 border-r-blue-500">
                                     <div className="space-y-4">
                                         <input type="text" placeholder="الوقت" className="w-full p-4 rounded" value={reportForm.time} onChange={e=>setReportForm({...reportForm, time: e.target.value})} />
                                         <textarea placeholder="تفاصيل المباشرة..." className="w-full h-32 p-4 rounded" value={reportForm.content} onChange={e=>setReportForm({...reportForm, content: e.target.value})}></textarea>
-                                        <button onClick={submitReport} className="w-full bg-blue-600 py-4 rounded font-black uppercase">إرسال التقرير للمراجعة</button>
+                                        <button onClick={submitReport} className="w-full bg-blue-600 py-4 rounded font-black">إرسال التقرير</button>
                                     </div>
                                 </div>
                                 <div className="space-y-4">
                                     {reports.filter(r => r.authorName.includes(searchTerm) || r.authorId.includes(searchTerm)).map(rep => (
                                         <div key={rep.fbId} className="tactical-panel p-6 border-white/5">
-                                            <div className="flex justify-between items-start mb-2">
+                                            <div className="flex flex-col sm:flex-row justify-between items-start mb-2 gap-2">
                                                 <div><span className="font-black text-blue-400">{rep.authorName}</span> <span className="text-[10px] text-gray-500 mr-2">{rep.authorRank}</span></div>
                                                 <span className="text-xs text-gray-500">{rep.incidentTime}</span>
                                             </div>
@@ -242,11 +298,11 @@
                             </div>
                         )}
 
-                        {/* SCHEDULE */}
+                        {/* محتوى الصفحة - SCHEDULE (تم تحويله لبطاقات في الجوال) */}
                         {currentPage === 'schedule' && (
-                            <div className="space-y-8">
-                                <h1 className="text-4xl font-black">الجدول العسكري</h1>
-                                <div className="tactical-panel border-none">
+                            <div className="space-y-8 mt-12 lg:mt-0">
+                                <h1 className="text-3xl md:text-4xl font-black">الجدول العسكري</h1>
+                                <div className="hidden md:block tactical-panel border-none">
                                     <table className="w-full text-right">
                                         <thead><tr className="bg-black/50 text-gray-500 text-xs uppercase"><th className="p-4">الاسم</th><th className="p-4">الرتبة</th><th className="p-4">القسم</th><th className="p-4">الرقم</th></tr></thead>
                                         <tbody className="divide-y divide-white/5">
@@ -261,39 +317,54 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                {/* عرض الجوال للجدول */}
+                                <div className="md:hidden space-y-4">
+                                    {sortedUsers.map(u => (
+                                        <div key={u.id} className="tactical-panel p-4 flex justify-between items-center">
+                                            <div>
+                                                <p className="font-bold text-sm">{u.name}</p>
+                                                <p className="text-xs text-blue-400">{u.rank}</p>
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="text-xs text-gray-500 font-mono">#{u.id}</p>
+                                                <p className="text-[10px] text-gray-400">{u.department}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
 
-                        {/* CRIMINALS */}
+                        {/* محتوى الصفحة - CRIMINALS */}
                         {currentPage === 'criminals' && (
-                            <div className="max-w-4xl mx-auto space-y-6">
-                                <h1 className="text-4xl font-black">المطلوبين أمنياً</h1>
+                            <div className="max-w-4xl mx-auto space-y-6 mt-12 lg:mt-0">
+                                <h1 className="text-3xl md:text-4xl font-black">المطلوبين أمنياً</h1>
                                 {isOfficer(currentUser) && (
                                     <div className="tactical-panel p-6 border-r-red-600">
-                                        <div className="flex gap-4">
+                                        <div className="flex flex-col sm:flex-row gap-4">
                                             <input type="text" placeholder="اسم المطلوب" className="flex-grow p-4 rounded" value={newCriminal.name} onChange={e=>setNewCriminal({...newCriminal, name: e.target.value})} />
                                             <input type="text" placeholder="الجريمة" className="flex-grow p-4 rounded" value={newCriminal.crime} onChange={e=>setNewCriminal({...newCriminal, crime: e.target.value})} />
                                             <button onClick={async()=>{
                                                 await window.fb.addDoc(window.fb.collection(window.fb.db, "criminals"), newCriminal);
                                                 setNewCriminal({name:'', crime:''});
-                                            }} className="bg-red-600 px-8 rounded font-bold">تعميم</button>
+                                            }} className="bg-red-600 px-8 py-4 rounded font-bold">تعميم</button>
                                         </div>
                                     </div>
                                 )}
                                 {criminals.map(c => (
                                     <div key={c.fbId} className="tactical-panel p-6 border-r-red-600 flex justify-between items-center bg-red-600/5">
-                                        <div><h4 className="text-2xl font-black text-red-500">{c.name}</h4><p className="text-sm opacity-60 uppercase">{c.crime}</p></div>
-                                        {isOfficer(currentUser) && <button onClick={()=>window.fb.deleteDoc(window.fb.doc(window.fb.db, "criminals", c.fbId))} className="text-red-500 font-bold">إلغاء التعميم</button>}
+                                        <div><h4 className="text-xl md:text-2xl font-black text-red-500">{c.name}</h4><p className="text-sm opacity-60 uppercase">{c.crime}</p></div>
+                                        {isOfficer(currentUser) && <button onClick={()=>window.fb.deleteDoc(window.fb.doc(window.fb.db, "criminals", c.fbId))} className="text-red-500 font-bold text-xs">إلغاء</button>}
                                     </div>
                                 ))}
                             </div>
                         )}
 
-                        {/* ADMIN USERS */}
+                        {/* محتوى الصفحة - ADMIN */}
                         {currentPage === 'users' && isCommand(currentUser) && (
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mt-12 lg:mt-0">
                                 <div className="tactical-panel p-6 border-r-amber-500">
-                                    <h3 className="text-xl font-black text-amber-500 mb-6 underline">إدارة ملفات الموظفين</h3>
+                                    <h3 className="text-xl font-black text-amber-500 mb-6 underline">إدارة الموظفين</h3>
                                     <div className="space-y-4">
                                         <input type="text" placeholder="الرقم العسكري" value={newUser.id} className="w-full p-4 rounded" onChange={e=>setNewUser({...newUser, id: e.target.value})} />
                                         <input type="text" placeholder="الاسم الكامل" value={newUser.name} className="w-full p-4 rounded" onChange={e=>setNewUser({...newUser, name: e.target.value})} />
@@ -308,21 +379,21 @@
                                         <button onClick={async()=>{
                                             await window.fb.setDoc(window.fb.doc(window.fb.db, "users", newUser.id), newUser);
                                             setNewUser({ id: '', password: '', name: '', role: 'رتبة فرد', rank: 'Cadet', department: '' });
-                                            alert('تم حفظ البيانات');
-                                        }} className="w-full bg-amber-600 py-4 rounded font-bold shadow-lg uppercase">تحديث السجلات</button>
+                                            alert('تم التحديث');
+                                        }} className="w-full bg-amber-600 py-4 rounded font-bold shadow-lg uppercase">تحديث</button>
                                     </div>
                                 </div>
                                 <div className="lg:col-span-2 space-y-4">
-                                    <h3 className="font-black text-xl mb-4">قاعدة البيانات الحالية</h3>
+                                    <h3 className="font-black text-xl mb-4">قاعدة البيانات</h3>
                                     {users.map(u => (
-                                        <div key={u.id} className="tactical-panel p-5 flex justify-between items-center bg-slate-900/40">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 bg-slate-800 rounded flex items-center justify-center font-mono text-blue-400">{u.id}</div>
-                                                <div><p className="font-bold">{u.name}</p><p className="text-[10px] uppercase text-gray-500">{u.rank} | <span className="text-blue-500">{u.department}</span></p></div>
+                                        <div key={u.id} className="tactical-panel p-4 flex flex-col sm:flex-row justify-between items-center bg-slate-900/40 gap-4">
+                                            <div className="flex items-center gap-4 w-full">
+                                                <div className="w-12 h-12 bg-slate-800 rounded flex items-center justify-center font-mono text-blue-400 shrink-0">{u.id}</div>
+                                                <div className="overflow-hidden"><p className="font-bold truncate">{u.name}</p><p className="text-[10px] uppercase text-gray-500">{u.rank} | <span className="text-blue-500">{u.department}</span></p></div>
                                             </div>
-                                            <div className="flex gap-2">
-                                                <button onClick={()=>setNewUser(u)} className="p-2 text-blue-500 hover:underline">تعديل</button>
-                                                {u.id !== '1001' && <button onClick={()=>window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="p-2 text-red-500 hover:underline">حذف</button>}
+                                            <div className="flex gap-4 w-full sm:w-auto justify-end">
+                                                <button onClick={()=>setNewUser(u)} className="text-blue-500 text-sm">تعديل</button>
+                                                {u.id !== '1001' && <button onClick={()=>window.fb.deleteDoc(window.fb.doc(window.fb.db, "users", u.id))} className="text-red-500 text-sm">حذف</button>}
                                             </div>
                                         </div>
                                     ))}
