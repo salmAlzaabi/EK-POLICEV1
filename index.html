@@ -4,7 +4,7 @@
     <link rel="icon" type="image/png" href="https://cdn.discordapp.com/emojis/1394931233825361930.webp?size=160&animated=true">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MDT | POLICE SYSTEM 1.2</title>
+    <title>MDT | SUPREME SYSTEM 1.3</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -13,16 +13,22 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100;400;700;900&display=swap');
-        :root { --primary: #0f172a; --secondary: #1e293b; --accent: #3b82f6; }
-        body { font-family: 'Noto Kufi Arabic', sans-serif; background-color: #020617; color: #e2e8f0; margin: 0; }
+        :root { --primary: #0f172a; --secondary: #1e293b; --accent: #3b82f6; --danger: #ef4444; --success: #22c55e; }
+        body { font-family: 'Noto Kufi Arabic', sans-serif; background: #020617; color: #e2e8f0; margin: 0; overflow: hidden; }
+        
         .sidebar { width: 260px; background: var(--primary); border-left: 1px solid rgba(255,255,255,0.05); transition: all 0.3s ease-in-out; }
         .main-content { background: #0a0f1d; background-image: radial-gradient(#1e293b 0.5px, transparent 0.5px); background-size: 24px 24px; }
-        .tactical-panel { background: var(--secondary); border: 1px solid rgba(59, 130, 246, 0.1); border-right: 4px solid var(--accent); transition: all 0.3s; overflow: hidden; }
-        .nav-link { transition: all 0.2s; border-radius: 8px; margin: 4px 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 12px; }
+        .tactical-panel { background: var(--secondary); border: 1px solid rgba(59, 130, 246, 0.1); border-right: 4px solid var(--accent); border-radius: 4px; }
+        
+        .nav-link { transition: 0.2s; border-radius: 8px; margin: 4px 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 12px; font-size: 14px; }
         .nav-active { background: var(--accent) !important; color: white !important; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
-        input, select, textarea { background: #0f172a !important; border: 1px solid #334155 !important; color: white !important; outline: none; transition: 0.2s; border-radius: 8px; padding: 12px; }
+        
+        input, select, textarea { background: #0f172a !important; border: 1px solid #334155 !important; color: white !important; outline: none; border-radius: 8px; padding: 12px; width: 100%; }
         input:focus { border-color: var(--accent) !important; }
-        .modal-overlay { background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
+        
+        .modal-overlay { background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); }
     </style>
 </head>
 <body>
@@ -30,7 +36,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc, updateDoc, serverTimestamp, arrayUnion } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc, updateDoc, serverTimestamp, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCYgffN2dA7IILMbI2i_1YfERkKWIrpHyA",
@@ -42,7 +48,7 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        window.fb = { db, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc, updateDoc, serverTimestamp, arrayUnion };
+        window.fb = { db, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc, updateDoc, serverTimestamp, arrayUnion, arrayRemove };
     </script>
 
     <script type="text/babel">
@@ -54,223 +60,336 @@
             const [currentPage, setCurrentPage] = useState('dashboard');
             const [isSidebarOpen, setIsSidebarOpen] = useState(false);
             
-            // بيانات Firebase
+            // بيانات السحابة
             const [users, setUsers] = useState([]);
             const [civilians, setCivilians] = useState([]);
             const [reports, setReports] = useState([]);
-            const [uniforms, setUniforms] = useState([]);
-
-            // الحالات المحلية
-            const [showCivModal, setShowCivModal] = useState(false);
+            const [logs, setLogs] = useState([]);
+            
+            // حالات الواجهة
             const [selectedCiv, setSelectedCiv] = useState(null);
-            const [civSearch, setCivSearch] = useState('');
+            const [showAddCiv, setShowAddCiv] = useState(false);
+            const [searchTerm, setSearchTerm] = useState('');
             const [loginForm, setLoginForm] = useState({ id: '', password: '' });
-            const [newCiv, setNewCiv] = useState({ name: '', photo: '', age: '', sonyId: '', records: [] });
-            const [newRecord, setNewRecord] = useState({ charge: '', penalty: '' });
 
             useEffect(() => {
                 if (!window.fb) return;
                 window.fb.onSnapshot(window.fb.collection(window.fb.db, "users"), (s) => setUsers(s.docs.map(d=>({...d.data(), fbId: d.id}))));
                 window.fb.onSnapshot(window.fb.collection(window.fb.db, "civilians"), (s) => setCivilians(s.docs.map(d=>({...d.data(), fbId: d.id}))));
-                window.fb.onSnapshot(window.fb.collection(window.fb.db, "uniforms"), (s) => setUniforms(s.docs.map(d=>({...d.data(), fbId: d.id}))));
-                const q = window.fb.query(window.fb.collection(window.fb.db, "field_reports"), window.fb.orderBy("createdAt", "desc"));
-                window.fb.onSnapshot(q, (s) => setReports(s.docs.map(d=>({...d.data(), fbId: d.id}))));
+                window.fb.onSnapshot(window.fb.query(window.fb.collection(window.fb.db, "logs"), window.fb.orderBy("timestamp", "desc")), (s) => setLogs(s.docs.map(d=>d.data())));
+                window.fb.onSnapshot(window.fb.query(window.fb.collection(window.fb.db, "field_reports"), window.fb.orderBy("createdAt", "desc")), (s) => setReports(s.docs.map(d=>({...d.data(), fbId: d.id}))));
             }, []);
 
-            const isOfficer = (u) => u?.id === '1001' || u?.role === 'رتبة قيادية' || u?.role === 'رتبة ضابط';
+            const isCommand = (u) => u?.id === '1001' || u?.role === 'رتبة قيادية';
+            const isOfficer = (u) => isCommand(u) || u?.role === 'رتبة ضابط';
+
+            const addLog = async (action) => {
+                const dateGroup = new Date().toLocaleDateString('en-CA');
+                const time = new Date().toLocaleTimeString('ar-SA');
+                await window.fb.addDoc(window.fb.collection(window.fb.db, "logs"), {
+                    user: currentUser.name,
+                    action: action,
+                    dateGroup: dateGroup,
+                    time: time,
+                    timestamp: window.fb.serverTimestamp()
+                });
+            };
 
             const handleLogin = () => {
                 const u = users.find(x => x.id === loginForm.id && x.password === loginForm.password);
-                if (u) { setCurrentUser(u); setIsLoggedIn(true); } else alert('بيانات الدخول خاطئة');
+                if (u) { 
+                    setCurrentUser(u); 
+                    setIsLoggedIn(true); 
+                    addLog("قام بتسجيل الدخول إلى النظام");
+                } else alert('خطأ في الرقم العسكري أو كلمة المرور');
             };
 
-            const addCivilian = async () => {
-                if(!newCiv.name || !newCiv.sonyId) return alert('يرجى تعبئة الاسم و ID السوني');
-                await window.fb.addDoc(window.fb.collection(window.fb.db, "civilians"), {
-                    ...newCiv,
-                    createdAt: window.fb.serverTimestamp()
-                });
-                setNewCiv({ name: '', photo: '', age: '', sonyId: '', records: [] });
-                setShowCivModal(false);
+            const groupedLogs = useMemo(() => {
+                return logs.reduce((acc, log) => {
+                    (acc[log.dateGroup] = acc[log.dateGroup] || []).push(log);
+                    return acc;
+                }, {});
+            }, [logs]);
+
+            // --- مكونات الصفحات ---
+
+            const Dashboard = () => (
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                        <h1 className="text-3xl font-black">الموجز العملياتي</h1>
+                        <div className="bg-blue-600/20 px-4 py-2 rounded-full border border-blue-500/30 text-xs font-bold text-blue-400">
+                            الحالة: متصل بالنظام المركزي
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="tactical-panel p-6 border-r-blue-500">
+                            <p className="text-[10px] uppercase opacity-50 font-bold">إجمالي القوة</p>
+                            <h2 className="text-4xl font-black">{users.length}</h2>
+                        </div>
+                        <div className="tactical-panel p-6 border-r-red-500">
+                            <p className="text-[10px] uppercase opacity-50 font-bold">السجل المدني</p>
+                            <h2 className="text-4xl font-black">{civilians.length}</h2>
+                        </div>
+                        <div className="tactical-panel p-6 border-r-green-500">
+                            <p className="text-[10px] uppercase opacity-50 font-bold">التقارير المودعة</p>
+                            <h2 className="text-4xl font-black">{reports.length}</h2>
+                        </div>
+                        <div className="tactical-panel p-6 border-r-amber-500">
+                            <p className="text-[10px] uppercase opacity-50 font-bold">رتبة الجلسة</p>
+                            <h2 className="text-xl font-black truncate text-amber-500">{currentUser.rank}</h2>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+                        <div className="tactical-panel p-6">
+                            <h3 className="text-lg font-black mb-4 flex items-center gap-2"><span>📄</span> آخر التقارير الميدانية</h3>
+                            <div className="space-y-3">
+                                {reports.slice(0, 5).map(r => (
+                                    <div key={r.fbId} className="bg-black/20 p-3 rounded text-xs flex justify-between">
+                                        <span className="font-bold text-blue-400">{r.authorName}</span>
+                                        <span className="opacity-50">{r.incidentTime}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="tactical-panel p-6 border-r-red-500">
+                            <h3 className="text-lg font-black mb-4 flex items-center gap-2"><span>⚖️</span> مطلوبين مؤخراً</h3>
+                            <div className="space-y-3">
+                                {civilians.filter(c => c.records?.length > 0).slice(0, 5).map(c => (
+                                    <div key={c.fbId} className="bg-black/20 p-3 rounded text-xs flex justify-between">
+                                        <span className="font-bold">{c.name}</span>
+                                        <span className="text-red-500 font-bold">{c.records[c.records.length-1].charge}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const CivilRegistry = () => {
+                const [newCiv, setNewCiv] = useState({ name: '', photo: '', age: '', sonyId: '', records: [] });
+                const [chargeForm, setChargeForm] = useState({ charge: '', penalty: '' });
+
+                return (
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center gap-4">
+                            <h1 className="text-3xl font-black">السجل المدني</h1>
+                            <button onClick={()=>setShowAddCiv(true)} className="bg-blue-600 px-6 py-2 rounded-lg font-bold text-sm hover:bg-blue-500 transition-all">+ إضافة مواطن</button>
+                        </div>
+                        
+                        <input type="text" placeholder="ابحث بالاسم أو PS ID..." className="p-4" onChange={e=>setSearchTerm(e.target.value)} />
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {civilians.filter(c => c.name.includes(searchTerm) || c.sonyId.includes(searchTerm)).map(c => (
+                                <div key={c.fbId} onClick={()=>setSelectedCiv(c)} className="tactical-panel p-4 cursor-pointer hover:scale-[1.02] transition-transform flex items-center gap-4">
+                                    <img src={c.photo || 'https://via.placeholder.com/100'} className="w-14 h-14 rounded-full object-cover border-2 border-white/5" />
+                                    <div>
+                                        <p className="font-black text-sm">{c.name}</p>
+                                        <p className="text-[10px] text-blue-400 font-mono">ID: {c.sonyId}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* مودال الإضافة */}
+                        {showAddCiv && (
+                            <div className="fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4">
+                                <div className="bg-[#1e293b] w-full max-w-md p-8 rounded-2xl shadow-2xl space-y-4">
+                                    <h2 className="text-xl font-black mb-4">تسجيل مواطن جديد</h2>
+                                    <input type="text" placeholder="الاسم الكامل" onChange={e=>setNewCiv({...newCiv, name: e.target.value})} />
+                                    <input type="text" placeholder="رابط الصورة" onChange={e=>setNewCiv({...newCiv, photo: e.target.value})} />
+                                    <div className="flex gap-2">
+                                        <input type="number" placeholder="العمر" onChange={e=>setNewCiv({...newCiv, age: e.target.value})} />
+                                        <input type="text" placeholder="PS ID" onChange={e=>setNewCiv({...newCiv, sonyId: e.target.value})} />
+                                    </div>
+                                    <div className="flex gap-2 pt-4">
+                                        <button onClick={async()=>{
+                                            await window.fb.addDoc(window.fb.collection(window.fb.db, "civilians"), newCiv);
+                                            addLog(`أضاف مواطن جديد للسجل: ${newCiv.name}`);
+                                            setShowAddCiv(false);
+                                        }} className="flex-grow bg-blue-600 py-3 rounded-xl font-bold">حفظ</button>
+                                        <button onClick={()=>setShowAddCiv(false)} className="flex-grow bg-white/5 py-3 rounded-xl font-bold">إلغاء</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ملف الشخص */}
+                        {selectedCiv && (
+                            <div className="fixed inset-0 bg-black/95 z-[110] flex justify-end">
+                                <div className="w-full max-w-2xl bg-[#0f172a] h-full p-6 md:p-10 overflow-y-auto border-r border-blue-500/20">
+                                    <button onClick={()=>setSelectedCiv(null)} className="mb-8 text-blue-500 font-black">← العودة للقائمة</button>
+                                    
+                                    <div className="flex items-center gap-6 mb-10 border-b border-white/5 pb-10">
+                                        <img src={selectedCiv.photo} className="w-32 h-32 rounded-2xl object-cover border-4 border-blue-600 shadow-2xl shadow-blue-500/20" />
+                                        <div>
+                                            <h2 className="text-3xl font-black">{selectedCiv.name}</h2>
+                                            <p className="text-blue-400 font-mono mt-1">PS ID: {selectedCiv.sonyId}</p>
+                                            <p className="text-gray-500 text-sm">العمر: {selectedCiv.age} عاماً</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <h3 className="text-red-500 font-black flex items-center gap-2"><span>⚠️</span> السجل الجنائي</h3>
+                                        <div className="space-y-3">
+                                            {selectedCiv.records?.map((rec, i) => (
+                                                <div key={i} className="bg-white/5 p-4 rounded-xl border border-white/5 flex justify-between items-start group">
+                                                    <div>
+                                                        <p className="font-bold text-amber-500">{rec.charge}</p>
+                                                        <p className="text-[10px] text-gray-400 mt-1 italic">بواسطة العسكري: {rec.officerName} | {rec.date}</p>
+                                                    </div>
+                                                    {isOfficer(currentUser) && (
+                                                        <button onClick={async()=>{
+                                                            if(!confirm('تأكيد حذف التهمة؟')) return;
+                                                            await window.fb.updateDoc(window.fb.doc(window.fb.db, "civilians", selectedCiv.fbId), { records: window.fb.arrayRemove(rec) });
+                                                            addLog(`حذف تهمة (${rec.charge}) من ملف المواطن ${selectedCiv.name}`);
+                                                            setSelectedCiv(null);
+                                                        }} className="text-red-500 text-[10px] bg-red-500/10 px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-all">حذف التهمة</button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="mt-10 tactical-panel p-6 border-r-amber-500 bg-amber-500/5">
+                                            <h4 className="font-black mb-4">إضافة تهمة/قضية</h4>
+                                            <div className="space-y-4">
+                                                <input type="text" placeholder="نوع الجريمة" value={chargeForm.charge} onChange={e=>setChargeForm({...chargeForm, charge: e.target.value})} />
+                                                <input type="text" placeholder="العقوبة (سجن/غرامة)" value={chargeForm.penalty} onChange={e=>setChargeForm({...chargeForm, penalty: e.target.value})} />
+                                                <button onClick={async()=>{
+                                                    if(!chargeForm.charge) return;
+                                                    const r = { ...chargeForm, officerName: currentUser.name, date: new Date().toLocaleDateString('ar-SA') };
+                                                    await window.fb.updateDoc(window.fb.doc(window.fb.db, "civilians", selectedCiv.fbId), { records: window.fb.arrayUnion(r) });
+                                                    addLog(`أضاف تهمة (${chargeForm.charge}) للمواطن ${selectedCiv.name}`);
+                                                    setChargeForm({charge:'', penalty:''});
+                                                    setSelectedCiv(null);
+                                                }} className="w-full bg-amber-600 py-3 rounded-lg font-bold">تسجيل في السجل</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
             };
 
-            const addCharge = async () => {
-                if(!newRecord.charge) return;
-                const chargeData = {
-                    ...newRecord,
-                    officerName: currentUser.name,
-                    date: new Date().toLocaleDateString('ar-SA')
-                };
-                const civRef = window.fb.doc(window.fb.db, "civilians", selectedCiv.fbId);
-                await window.fb.updateDoc(civRef, {
-                    records: window.fb.arrayUnion(chargeData)
-                });
-                setNewRecord({ charge: '', penalty: '' });
-                // تحديث العرض المحلي فوراً
-                setSelectedCiv(prev => ({...prev, records: [...prev.records, chargeData]}));
-            };
+            const SystemLogs = () => (
+                <div className="space-y-6 animate-in fade-in duration-500">
+                    <h1 className="text-3xl font-black text-amber-500">سجل الرقابة الإدارية</h1>
+                    <p className="text-xs opacity-50 mb-6 italic">هذا السجل للأرشفة وغير قابل للحذف من قبل أي رتبة.</p>
+                    
+                    {Object.keys(groupedLogs).length === 0 && <div className="text-center py-20 opacity-20">لا توجد سجلات حالياً</div>}
+                    
+                    {Object.keys(groupedLogs).map(date => (
+                        <details key={date} className="tactical-panel border-white/10 overflow-hidden" open>
+                            <summary className="p-4 cursor-pointer font-bold bg-white/5 hover:bg-white/10 flex justify-between">
+                                <span>📅 أرشيف يوم: {date}</span>
+                                <span className="text-[10px] bg-blue-600 px-2 py-1 rounded">{groupedLogs[date].length} عملية</span>
+                            </summary>
+                            <div className="p-4 space-y-2 max-h-80 overflow-y-auto bg-black/20">
+                                {groupedLogs[date].map((l, i) => (
+                                    <div key={i} className="text-[11px] border-r border-white/10 pr-3 flex justify-between items-center py-1">
+                                        <span><b className="text-blue-400 ml-1">{l.user}</b> {l.action}</span>
+                                        <span className="opacity-30 font-mono">{l.time}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </details>
+                    ))}
+                </div>
+            );
+
+            // --- صفحة التقارير مع إمكانية التعديل ---
+            const ReportsPage = () => (
+                <div className="space-y-6 max-w-4xl mx-auto">
+                    <h1 className="text-3xl font-black">التقارير الميدانية</h1>
+                    {reports.map(rep => (
+                        <div key={rep.fbId} className="tactical-panel p-6 relative group">
+                            <div className="flex justify-between items-center mb-4">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-blue-400 font-black">{rep.authorName}</span>
+                                    <span className="text-[10px] opacity-40">{rep.authorRank}</span>
+                                </div>
+                                <div className="flex gap-4 items-center">
+                                    <span className="text-[10px] font-mono opacity-50">{rep.incidentTime}</span>
+                                    {rep.authorId === currentUser.id && (
+                                        <button onClick={async()=>{
+                                            const newText = prompt("تعديل محتوى التقرير:", rep.content);
+                                            if(newText && newText !== rep.content) {
+                                                await window.fb.updateDoc(window.fb.doc(window.fb.db, "field_reports", rep.fbId), { content: newText });
+                                                addLog(`قام بتعديل التقرير الخاص به رقم: ${rep.fbId}`);
+                                            }
+                                        }} className="text-amber-500 text-xs font-bold hover:underline">تعديل ✎</button>
+                                    )}
+                                </div>
+                            </div>
+                            <p className="text-sm leading-relaxed text-gray-300 border-r-2 border-blue-500/20 pr-4 whitespace-pre-wrap">{rep.content}</p>
+                        </div>
+                    ))}
+                </div>
+            );
 
             if (!isLoggedIn) return (
-                <div className="h-screen w-full flex items-center justify-center bg-[#020617] p-4 text-right">
-                    <div className="w-full max-w-md p-8 bg-[#0f172a] border border-blue-500/20 rounded-2xl">
-                        <img src="https://cdn.discordapp.com/attachments/1453507995781693634/1464367144228622516/185-1855065_los-santos-police-department-president-of-the-united-states-removebg-preview.png?ex=697535ad&is=6973e42d&hm=36374c04aa1f881264eab683cba0d57d347dd41b654467b3c21cf8181f977e3e&" className="w-24 h-24 mx-auto mb-6" />
-                        <h2 className="text-xl font-black text-center mb-6">نظام قاعدة البيانات المركزية</h2>
+                <div className="h-screen w-full flex items-center justify-center p-4">
+                    <div className="w-full max-w-sm p-10 bg-[#0f172a] border border-blue-500/20 rounded-3xl shadow-2xl text-center">
+                        <img src="https://cdn.discordapp.com/attachments/1453507995781693634/1464367144228622516/185-1855065_los-santos-police-department-president-of-the-united-states-removebg-preview.png?ex=697535ad&is=6973e42d&hm=36374c04aa1f881264eab683cba0d57d347dd41b654467b3c21cf8181f977e3e&" className="w-24 h-24 mx-auto mb-8" />
+                        <h2 className="text-xl font-black mb-6 tracking-widest uppercase">MDT Login</h2>
                         <div className="space-y-4">
-                            <input type="text" placeholder="الرقم العسكري" className="w-full" onChange={e=>setLoginForm({...loginForm, id: e.target.value})} />
-                            <input type="password" placeholder="كلمة المرور" className="w-full" onChange={e=>setLoginForm({...loginForm, password: e.target.value})} onKeyPress={e=>e.key==='Enter'&&handleLogin()} />
-                            <button onClick={handleLogin} className="w-full bg-blue-600 py-4 rounded-xl font-bold">تسجيل الدخول</button>
+                            <input type="text" placeholder="الرقم العسكري" className="text-center" onChange={e=>setLoginForm({...loginForm, id: e.target.value})} />
+                            <input type="password" placeholder="كلمة المرور" className="text-center" onChange={e=>setLoginForm({...loginForm, password: e.target.value})} onKeyPress={e=>e.key==='Enter'&&handleLogin()} />
+                            <button onClick={handleLogin} className="w-full bg-blue-600 py-4 rounded-2xl font-black hover:bg-blue-500 transition-all">تسجيل الدخول</button>
                         </div>
+                        <p className="text-[10px] opacity-20 mt-8">SECURED BY LSPD ENCRYPTION</p>
                     </div>
                 </div>
             );
 
             return (
                 <div className="flex h-screen overflow-hidden">
-                    {/* Sidebar */}
-                    <aside className={`sidebar flex flex-col fixed lg:relative z-50 h-full transition-all ${isSidebarOpen ? 'right-0' : '-right-[260px] lg:right-0'}`}>
-                        <div className="p-6 text-center border-b border-white/5">
-                            <h1 className="text-xl font-black tracking-tighter">وزارة الداخلية</h1>
+                    <aside className={`sidebar fixed lg:relative z-[120] h-full ${isSidebarOpen ? 'right-0' : '-right-[260px] lg:right-0 shadow-none'}`}>
+                        <div className="p-8 text-center border-b border-white/5">
+                            <h1 className="font-black text-xl tracking-tighter">مركز البيانات</h1>
                         </div>
-                        <nav className="flex-grow mt-4">
+                        <nav className="mt-6">
                             {[
-                                {id: 'dashboard', icon: '📊', label: 'الرئيسية'},
+                                {id: 'dashboard', icon: '🏠', label: 'الرئيسية'},
                                 {id: 'civil_registry', icon: '🪪', label: 'السجل المدني'},
-                                {id: 'reports', icon: '📄', label: 'التقارير الميدانية'},
-                                {id: 'uniforms', icon: '👕', label: 'التجهيزات'},
-                                {id: 'schedule', icon: '📋', label: 'جدول العساكر'}
+                                {id: 'reports', icon: '📄', label: 'التقارير'},
+                                {id: 'uniforms', icon: '👕', label: 'الملابس'}
                             ].map(btn => (
                                 <button key={btn.id} onClick={()=>{setCurrentPage(btn.id); setIsSidebarOpen(false)}} className={`nav-link w-[235px] ${currentPage===btn.id?'nav-active':''}`}>
                                     <span>{btn.icon}</span> {btn.label}
                                 </button>
                             ))}
+                            {isCommand(currentUser) && (
+                                <button onClick={()=>{setCurrentPage('logs'); setIsSidebarOpen(false)}} className={`nav-link w-[235px] mt-10 ${currentPage==='logs'?'nav-active bg-amber-600':'text-amber-500 font-bold border border-amber-500/20'}`}>
+                                    <span>📜</span> سجل الرقابة (LOGS)
+                                </button>
+                            )}
                         </nav>
-                        <div className="p-4 border-t border-white/5 text-xs">
-                            <p className="opacity-50">المستخدم: {currentUser.name}</p>
-                            <button onClick={()=>setIsLoggedIn(false)} className="text-red-500 mt-2">تسجيل الخروج</button>
+                        <div className="absolute bottom-0 w-full p-4 border-t border-white/5 bg-[#0f172a]">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-8 h-8 rounded bg-blue-600 flex items-center justify-center font-bold text-xs">{currentUser.name[0]}</div>
+                                <div className="overflow-hidden"><p className="text-[10px] font-bold truncate">{currentUser.name}</p></div>
+                            </div>
+                            <button onClick={()=>setIsLoggedIn(false)} className="w-full py-2 text-[10px] text-red-500 font-bold hover:bg-red-500/10 rounded transition-all">خروج آمن</button>
                         </div>
                     </aside>
 
-                    {/* زر الجوال */}
-                    <button onClick={()=>setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden fixed top-5 left-5 z-[60] bg-blue-600 p-3 rounded-lg">☰</button>
+                    {isSidebarOpen && <div onClick={()=>setIsSidebarOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[115] lg:hidden"></div>}
 
-                    <main className="flex-grow main-content overflow-y-auto p-4 md:p-10">
+                    <main className="flex-grow main-content p-6 md:p-12 overflow-y-auto">
+                        <button onClick={()=>setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden fixed top-5 left-5 z-[130] bg-blue-600 p-2 rounded-lg">☰</button>
                         
-                        {currentPage === 'dashboard' && <h1 className="text-4xl font-black">مرحباً بك، سيادة {currentUser.rank}</h1>}
-
-                        {/* --- صفحة السجل المدني --- */}
-                        {currentPage === 'civil_registry' && (
-                            <div className="space-y-8 mt-10 lg:mt-0">
-                                <div className="flex justify-between items-center">
-                                    <h1 className="text-3xl font-black">السجل المدني (المواطنين)</h1>
-                                    <button onClick={()=>setShowCivModal(true)} className="bg-blue-600 w-12 h-12 rounded-full text-2xl font-bold shadow-lg shadow-blue-500/20">+</button>
-                                </div>
-
-                                <div className="relative">
-                                    <input 
-                                        type="text" 
-                                        placeholder="ابحث عن مواطن بالاسم أو ID السوني..." 
-                                        className="w-full p-5 text-lg" 
-                                        onChange={e=>setCivSearch(e.target.value)}
-                                    />
-                                    <span className="absolute left-5 top-5 opacity-30 text-xl">🔍</span>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {civilians.filter(c => c.name.includes(civSearch) || c.sonyId.includes(civSearch)).map(civ => (
-                                        <div key={civ.fbId} onClick={()=>setSelectedCiv(civ)} className="tactical-panel cursor-pointer hover:border-blue-500 transition-all p-4 flex items-center gap-4">
-                                            <img src={civ.photo || 'https://via.placeholder.com/80'} className="w-16 h-16 rounded-full object-cover border-2 border-white/10" />
-                                            <div>
-                                                <h3 className="font-black text-lg">{civ.name}</h3>
-                                                <p className="text-xs text-blue-400 font-mono">PS ID: {civ.sonyId}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* مودال إضافة مواطن جديد */}
-                                {showCivModal && (
-                                    <div className="fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4">
-                                        <div className="bg-[#1e293b] w-full max-w-lg rounded-2xl p-8 shadow-2xl space-y-4">
-                                            <h2 className="text-2xl font-black mb-6">تسجيل مواطن جديد</h2>
-                                            <input type="text" placeholder="اسم الشخص بالكامل" className="w-full" onChange={e=>setNewCiv({...newCiv, name: e.target.value})} />
-                                            <input type="text" placeholder="رابط صورة الشخص" className="w-full" onChange={e=>setNewCiv({...newCiv, photo: e.target.value})} />
-                                            <div className="flex gap-4">
-                                                <input type="number" placeholder="العمر" className="w-1/3" onChange={e=>setNewCiv({...newCiv, age: e.target.value})} />
-                                                <input type="text" placeholder="ID السوني" className="w-2/3" onChange={e=>setNewCiv({...newCiv, sonyId: e.target.value})} />
-                                            </div>
-                                            <div className="flex gap-4 pt-4">
-                                                <button onClick={addCivilian} className="flex-grow bg-blue-600 py-3 rounded-xl font-bold">إضافة للسجل</button>
-                                                <button onClick={()=>setShowCivModal(false)} className="flex-grow bg-red-600/10 text-red-500 py-3 rounded-xl font-bold">إلغاء</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* ملف المواطن الشخصي */}
-                                {selectedCiv && (
-                                    <div className="fixed inset-0 modal-overlay z-[100] flex items-center justify-end">
-                                        <div className="bg-[#0f172a] h-full w-full max-w-2xl shadow-2xl p-6 md:p-10 overflow-y-auto border-r border-blue-500/30">
-                                            <button onClick={()=>setSelectedCiv(null)} className="mb-6 text-blue-500 font-bold">← إغلاق الملف</button>
-                                            
-                                            <div className="flex flex-col md:flex-row gap-8 items-center md:items-start mb-10 border-b border-white/5 pb-10">
-                                                <img src={selectedCiv.photo} className="w-40 h-40 rounded-2xl object-cover border-4 border-blue-600" />
-                                                <div className="text-center md:text-right">
-                                                    <h2 className="text-4xl font-black text-white">{selectedCiv.name}</h2>
-                                                    <p className="text-blue-400 font-black mt-2">رقم الهوية الرقمي: {selectedCiv.sonyId}</p>
-                                                    <p className="text-gray-400 mt-1">العمر: {selectedCiv.age} عاماً</p>
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-6">
-                                                <h3 className="text-xl font-black text-red-500 border-r-4 border-red-500 pr-3">السجل الجنائي والقضايا</h3>
-                                                
-                                                <div className="space-y-3">
-                                                    {selectedCiv.records && selectedCiv.records.map((rec, i) => (
-                                                        <div key={i} className="bg-black/30 p-4 rounded-xl border border-white/5">
-                                                            <div className="flex justify-between items-start mb-2">
-                                                                <span className="font-bold text-lg text-white">{rec.charge}</span>
-                                                                <span className="text-[10px] bg-red-600/20 text-red-400 px-2 py-1 rounded">{rec.date}</span>
-                                                            </div>
-                                                            <p className="text-sm text-gray-400 mb-2">العقوبة: {rec.penalty}</p>
-                                                            <p className="text-[10px] text-blue-500 font-bold">بواسطة العسكري: {rec.officerName}</p>
-                                                        </div>
-                                                    ))}
-                                                    {(!selectedCiv.records || selectedCiv.records.length === 0) && (
-                                                        <p className="text-center text-gray-600 py-10 italic">السجل نظيف، لا توجد قضايا سابقة</p>
-                                                    )}
-                                                </div>
-
-                                                <div className="tactical-panel p-6 mt-10 border-r-amber-500 bg-amber-500/5">
-                                                    <h4 className="font-black text-amber-500 mb-4">إضافة تهمة/سرقة جديدة</h4>
-                                                    <div className="space-y-4">
-                                                        <input type="text" placeholder="نوع التهمة (مثال: سرقة بنك)" className="w-full bg-slate-800" value={newRecord.charge} onChange={e=>setNewRecord({...newRecord, charge: e.target.value})} />
-                                                        <input type="text" placeholder="العقوبة (سجن/غرامة)" className="w-full bg-slate-800" value={newRecord.penalty} onChange={e=>setNewRecord({...newRecord, penalty: e.target.value})} />
-                                                        <button onClick={addCharge} className="w-full bg-amber-600 py-3 rounded-lg font-bold">تسجيل التهمة في الملف</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* بقية الصفحات (التقارير، الملابس، إلخ - نفس الكود السابق) */}
-                        {currentPage === 'reports' && (
-                            <div className="max-w-4xl mx-auto space-y-8 mt-12">
-                                <h1 className="text-4xl font-black">التقارير الميدانية</h1>
-                                <div className="space-y-4">
-                                    {reports.map(rep => (
-                                        <div key={rep.fbId} className="tactical-panel p-6">
-                                            <p className="text-blue-400 font-black">{rep.authorName}</p>
-                                            <p className="mt-2 text-gray-300">{rep.content}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                        
-                        {/* صفحة الملابس والجدول والادارة تضاف هنا كالسابق */}
+                        <div className="max-w-6xl mx-auto">
+                            {currentPage === 'dashboard' && <Dashboard />}
+                            {currentPage === 'civil_registry' && <CivilRegistry />}
+                            {currentPage === 'logs' && isCommand(currentUser) && <SystemLogs />}
+                            {currentPage === 'reports' && <ReportsPage />}
+                            {currentPage === 'uniforms' && <div className="text-center py-20 opacity-30">صفحة الملابس تحت الصيانة</div>}
+                        </div>
                     </main>
                 </div>
             );
