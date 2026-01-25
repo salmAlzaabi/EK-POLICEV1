@@ -4,7 +4,7 @@
     <link rel="icon" type="image/png" href="https://cdn.discordapp.com/emojis/1394931233825361930.webp?size=160&animated=true">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LSPD |</title>
+    <title>LSPD | SUPREME COMMAND CENTER V6.0</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -13,32 +13,135 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: #05080f; color: #f1f5f9; overflow-x: hidden; height: 100vh; }
-
-        .sidebar { position: fixed; top: 0; bottom: 0; right: -300px; width: 300px; background: #0f172a; border-left: 4px solid #3b82f6; z-index: 2000; transition: 0.5s; display: flex; flex-direction: column; }
-        .sidebar.open { right: 0; }
-        .mobile-header { position: fixed; top: 0; left: 0; right: 0; height: 75px; background: #0f172a; border-bottom: 2px solid rgba(59, 130, 246, 0.5); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 1000; }
-        .main-view { flex-grow: 1; overflow-y: auto; height: 100vh; width: 100%; padding-top: 85px; }
-
-        @media (min-width: 1024px) { .sidebar { position: relative; right: 0; } .mobile-header { display: none; } .main-view { padding-top: 0; } }
-
-        .panel { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(51, 65, 85, 0.5); border-radius: 20px; padding: 20px; }
-        .nav-item { margin: 5px 15px; padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 12px; color: #94a3b8; font-weight: 800; cursor: pointer; transition: 0.3s; }
-        .nav-item.active { background: #3b82f6; color: white; }
         
-        input, select, textarea { background: #1e293b !important; border: 2px solid #334155 !important; color: white !important; border-radius: 12px; padding: 12px; width: 100%; outline: none; }
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; backdrop-filter: blur(4px); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #05080f;
+            color: #f1f5f9;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            right: -300px;
+            width: 300px;
+            background: #0f172a;
+            border-left: 3px solid #3b82f6;
+            z-index: 2000;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+        }
+
+        .sidebar.open {
+            right: 0;
+        }
+
+        /* Mobile Header */
+        .mobile-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: #0f172a;
+            border-bottom: 2px solid #3b82f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+
+        /* Main Content View */
+        .main-view {
+            flex-grow: 1;
+            overflow-y: auto;
+            height: 100vh;
+            width: 100%;
+            padding-top: 80px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (min-width: 1024px) {
+            .sidebar { position: relative; right: 0; flex-shrink: 0; }
+            .mobile-header { display: none; }
+            .main-view { padding-top: 0; }
+        }
+
+        /* Tactical UI Components */
+        .tactical-panel {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .nav-item {
+            margin: 4px 12px;
+            padding: 14px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #94a3b8;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .nav-item.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        input, select, textarea {
+            background: #1e293b !important;
+            border: 1px solid #334155 !important;
+            color: white !important;
+            border-radius: 8px;
+            padding: 12px;
+            width: 100%;
+            outline: none;
+            font-size: 14px;
+        }
+
+        input:focus { border-color: #3b82f6 !important; }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1500;
+            backdrop-filter: blur(4px);
+        }
         .overlay.active { display: block; }
 
-        /* تلوين الرتب */
-        .rank-high { border-right: 6px solid #ef4444; background: rgba(239, 68, 68, 0.05); }
-        .rank-mid { border-right: 6px solid #3b82f6; background: rgba(59, 130, 246, 0.05); }
-        .rank-low { border-right: 6px solid #64748b; }
+        /* Table Styling */
+        table { border-collapse: collapse; width: 100%; text-align: right; }
+        th { background: #070b14; color: #64748b; font-size: 12px; font-weight: 900; text-transform: uppercase; padding: 16px; border-bottom: 2px solid #1e293b; }
+        td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+        tr:hover { background: rgba(59, 130, 246, 0.05); }
 
-        img { object-fit: cover; background: #1e293b; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #3b82f6; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -46,7 +149,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc, updateDoc, serverTimestamp, arrayUnion } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
         
         const firebaseConfig = { 
             apiKey: "AIzaSyCYgffN2dA7IILMbI2i_1YfERkKWIrpHyA", 
@@ -56,26 +159,36 @@
             messagingSenderId: "300605258409", 
             appId: "1:300605258409:web:f265025ffa5592f651c7b8" 
         };
+
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        window.fb = { db, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc, updateDoc, serverTimestamp, arrayUnion };
+        window.fb = { db, collection, onSnapshot, setDoc, doc, deleteDoc, query, orderBy, addDoc, updateDoc, serverTimestamp };
     </script>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // الترتيب العسكري الرسمي (تنازلياً)
-        const RANKS_MASTER = [
-            { id: 'General', label: 'فريق أول', class: 'rank-high' },
-            { id: 'Colonel', label: 'عقيد', class: 'rank-high' },
-            { id: 'Major', label: 'رائد', class: 'rank-mid' },
-            { id: 'Captain', label: 'نقيب', class: 'rank-mid' },
-            { id: 'Lieutenant', label: 'ملازم', class: 'rank-mid' },
-            { id: 'Sergeant', label: 'رقيب', class: 'rank-low' },
-            { id: 'Officer III', label: 'عريف', class: 'rank-low' },
-            { id: 'Officer II', label: 'جندي أول', class: 'rank-low' },
-            { id: 'Officer I', label: 'جندي', class: 'rank-low' },
-            { id: 'Cadet', label: 'طالب عسكري', class: 'rank-low' }
+        // مصفوفة الرتب المعتمدة بالترتيب التنازلي (19 رتبة)
+        const RANK_HIERARCHY = [
+            { id: 'General' },
+            { id: 'Lieutenant General' },
+            { id: 'Major General' },
+            { id: 'Brigadier General' },
+            { id: 'Colonel' },
+            { id: 'Major' },
+            { id: 'Captain' },
+            { id: 'First Lieutenant' },
+            { id: 'Lieutenant' },
+            { id: 'Staff Sergeant' },
+            { id: 'First Sergeant' },
+            { id: 'Sergeant' },
+            { id: 'Senior Officer' },
+            { id: 'Officer III' },
+            { id: 'Officer II' },
+            { id: 'Officer I' },
+            { id: 'Officer' },
+            { id: 'Solo Cadet' },
+            { id: 'Cadet' }
         ];
 
         const App = () => {
@@ -84,45 +197,42 @@
             const [page, setPage] = useState('dashboard');
             const [menuOpen, setMenuOpen] = useState(false);
             const [users, setUsers] = useState([]);
-            const [wanted, setWanted] = useState([]);
-            const [civilians, setCivilians] = useState([]);
-            const [uniforms, setUniforms] = useState([]);
-            const [reports, setReports] = useState([]);
             const [modal, setModal] = useState(null);
 
+            // جلب البيانات من Firebase
             useEffect(() => {
                 if (!window.fb) return;
                 const db = window.fb.db;
-                window.fb.onSnapshot(window.fb.collection(db, "users"), s => setUsers(s.docs.map(d => ({...d.data(), fbId: d.id}))));
-                window.fb.onSnapshot(window.fb.collection(db, "wanted"), s => setWanted(s.docs.map(d => ({...d.data(), fbId: d.id}))));
-                window.fb.onSnapshot(window.fb.collection(db, "civilians"), s => setCivilians(s.docs.map(d => ({...d.data(), fbId: d.id}))));
-                window.fb.onSnapshot(window.fb.collection(db, "uniforms"), s => setUniforms(s.docs.map(d => ({...d.data(), fbId: d.id}))));
-                window.fb.onSnapshot(window.fb.query(window.fb.collection(db, "field_reports"), window.fb.orderBy("createdAt", "desc")), s => setReports(s.docs.map(d => ({...d.data(), fbId: d.id}))));
+                const unsub = window.fb.onSnapshot(window.fb.collection(db, "users"), (snapshot) => {
+                    const usersList = snapshot.docs.map(d => ({ ...d.data(), fbId: d.id }));
+                    setUsers(usersList);
+                });
+                return () => unsub();
             }, []);
 
-            const isCommand = () => currentUser?.role === 'رتبة قيادية' || currentUser?.id === '1001';
-
-            // وظيفة الترتيب التلقائي
+            // ترتيب العساكر حسب رتبهم
             const getSortedUsers = () => {
                 return [...users].sort((a, b) => {
-                    const idxA = RANKS_MASTER.findIndex(r => r.id === a.rank);
-                    const idxB = RANKS_MASTER.findIndex(r => r.id === b.rank);
-                    return idxA - idxB;
+                    const indexA = RANK_HIERARCHY.findIndex(r => r.id === a.rank);
+                    const indexB = RANK_HIERARCHY.findIndex(r => r.id === b.rank);
+                    return indexA - indexB;
                 });
             };
 
+            const isCommand = () => currentUser?.role === 'رتبة قيادية' || currentUser?.id === '1001';
+
             if (!isLoggedIn) return (
-                <div className="h-screen w-full flex items-center justify-center bg-[#070b14] p-6">
-                    <div className="w-full max-w-sm p-10 panel border-blue-500/40 text-center">
+                <div className="h-screen w-full flex items-center justify-center bg-[#05080f] p-6">
+                    <div className="w-full max-w-sm p-10 tactical-panel text-center shadow-2xl">
                         <img src="https://cdn.discordapp.com/emojis/1394931233825361930.webp?size=160" className="w-20 mx-auto mb-6" />
-                        <h2 className="text-xl font-black mb-8 text-blue-500 italic">MDT SYSTEM</h2>
+                        <h2 className="text-2xl font-black mb-8 text-blue-500 italic uppercase tracking-tighter">LSPD MDT SYSTEM</h2>
                         <div className="space-y-4">
-                            <input id="l_id" type="text" placeholder="الرقم العسكري" className="text-center" />
-                            <input id="l_pw" type="password" placeholder="كلمة المرور" className="text-center" />
+                            <input id="login_id" type="text" placeholder="الرقم العسكري" className="text-center" />
+                            <input id="login_pw" type="password" placeholder="كلمة المرور" className="text-center" />
                             <button onClick={() => {
-                                const u = users.find(x => x.id === document.getElementById('l_id').value && x.password === document.getElementById('l_pw').value);
-                                if(u) { setCurrentUser(u); setIsLoggedIn(true); } else alert("بياناتك غير صحيحة يا عسكري!");
-                            }} className="w-full bg-blue-600 py-4 rounded-xl font-black shadow-lg">دخول</button>
+                                const u = users.find(x => x.id === document.getElementById('login_id').value && x.password === document.getElementById('login_pw').value);
+                                if(u) { setCurrentUser(u); setIsLoggedIn(true); } else alert("خطأ في بيانات الدخول");
+                            }} className="w-full bg-blue-600 py-4 rounded-lg font-black uppercase text-sm hover:bg-blue-700 transition-colors">Authorize Access</button>
                         </div>
                     </div>
                 </div>
@@ -131,136 +241,99 @@
             return (
                 <div className="flex h-screen overflow-hidden">
                     <div className={`overlay ${menuOpen ? 'active' : ''}`} onClick={()=>setMenuOpen(false)}></div>
+                    
+                    {/* Sidebar */}
                     <aside className={`sidebar ${menuOpen ? 'open' : ''}`}>
-                        <div className="p-8 text-center border-b border-white/5"><h1 className="font-black text-2xl text-blue-500 italic">LSPD 2026</h1></div>
-                        <nav className="mt-6 flex-grow">
-                            {[{id:'dashboard', i:'🏠', l:'الرئيسية'}, {id:'schedule', i:'📅', l:'جدول القوة'}, {id:'civil', i:'🪪', l:'السجل المدني'}, {id:'wanted', i:'🚨', l:'المطلوبين'}, {id:'reports', i:'📝', l:'التقارير'}, {id:'uniforms', i:'👕', l:'الملابس'}].map(item => (
-                                <div key={item.id} onClick={()=>{setPage(item.id); setMenuOpen(false)}} className={`nav-item ${page===item.id?'active':''}`}><span>{item.i}</span> {item.l}</div>
-                            ))}
-                            {isCommand() && <div onClick={()=>{setPage('admin'); setMenuOpen(false)}} className="nav-item bg-amber-600/10 text-amber-500 mt-4">⚙️ إدارة القوة</div>}
+                        <div className="p-10 text-center border-b border-white/5">
+                            <h1 className="font-black text-2xl text-blue-500 italic">LSPD</h1>
+                            <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Command Division</p>
+                        </div>
+                        <nav className="mt-6 flex-grow overflow-y-auto">
+                            <div onClick={()=>{setPage('dashboard'); setMenuOpen(false)}} className={`nav-item ${page==='dashboard'?'active':''}`}>🏚️ الرئيسية</div>
+                            <div onClick={()=>{setPage('soldiers'); setMenuOpen(false)}} className={`nav-item ${page==='soldiers'?'active':''}`}>📋 قائمة العساكر</div>
+                            {isCommand() && (
+                                <div className="mt-4 pt-4 border-t border-white/5">
+                                    <div onClick={()=>{setPage('admin'); setMenuOpen(false)}} className={`nav-item ${page==='admin'?'bg-amber-600/10 text-amber-500':''}`}>⚙️ إدارة القوة</div>
+                                </div>
+                            )}
                         </nav>
-                        <button onClick={()=>setIsLoggedIn(false)} className="m-6 p-4 bg-red-600/10 text-red-500 rounded-xl font-black">خروج</button>
+                        <div className="p-6">
+                            <button onClick={()=>setIsLoggedIn(false)} className="w-full p-4 bg-red-600/10 text-red-500 rounded-lg font-black text-xs uppercase border border-red-500/20">تسجيل الخروج</button>
+                        </div>
                     </aside>
 
+                    {/* Main Content */}
                     <main className="main-view">
                         <header className="mobile-header">
                             <button onClick={()=>setMenuOpen(true)} className="text-3xl text-blue-500">☰</button>
-                            <span className="font-black text-blue-500 uppercase">مركز المعلومات</span>
-                            <div className="w-8"></div>
+                            <span className="font-black text-blue-500 italic">MDT</span>
+                            <div className="w-10"></div>
                         </header>
 
                         <div className="p-6 md:p-12 max-w-7xl mx-auto space-y-10">
                             
+                            {/* Dashboard */}
                             {page === 'dashboard' && (
                                 <div className="space-y-6 fade-in text-right">
-                                    <h1 className="text-4xl font-black italic">مرحباً، {currentUser.name}</h1>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <div className="panel border-r-4 border-r-blue-500"><h3>إجمالي الأفراد</h3><p className="text-3xl font-black">{users.length}</p></div>
-                                        <div className="panel border-r-4 border-r-red-500"><h3>مطلوبين</h3><p className="text-3xl font-black">{wanted.length}</p></div>
+                                    <h1 className="text-4xl md:text-6xl font-black italic">مرحباً، {currentUser.name}</h1>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="tactical-panel p-8 border-r-4 border-r-blue-500">
+                                            <p className="text-gray-500 font-bold uppercase text-xs mb-2">إجمالي القوة الحالية</p>
+                                            <p className="text-5xl font-black">{users.length}</p>
+                                        </div>
                                     </div>
                                 </div>
                             )}
 
-                            {/* جدول القوة بالترتيب الطولي من الأعلى للأقل */}
-                            {page === 'schedule' && (
-                                <div className="space-y-6 fade-in max-w-4xl mx-auto">
-                                    <h1 className="text-3xl font-black italic text-blue-500">ترتيب القوة العسكرية</h1>
-                                    <div className="flex flex-col gap-4">
-                                        {getSortedUsers().map(u => {
-                                            const rankData = RANKS_MASTER.find(r => r.id === u.rank);
-                                            return (
-                                                <div key={u.fbId} className={`panel ${rankData?.class || ''} flex justify-between items-center transition-all hover:translate-x-[-10px]`}>
-                                                    <div className="flex items-center gap-6">
-                                                        <div className="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center font-black">#{u.id}</div>
-                                                        <div>
-                                                            <p className="font-black text-xl">{u.name}</p>
-                                                            <p className="text-xs text-blue-400 font-bold uppercase tracking-widest">{rankData?.label || u.rank}</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="bg-green-500/10 text-green-500 text-[10px] px-3 py-1 rounded-full font-black animate-pulse">ACTIVE</div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            {page === 'wanted' && (
+                            {/* قائمة العساكر - بنظام الجدول والترتيب */}
+                            {page === 'soldiers' && (
                                 <div className="space-y-6 fade-in">
-                                    <div className="flex justify-between items-center">
-                                        <h1 className="text-2xl font-black text-red-500 italic">WANTED LIST</h1>
-                                        <button onClick={()=>setModal('addWanted')} className="bg-red-600 px-6 py-2 rounded-xl font-black text-xs">+ إضافة</button>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        {wanted.map(w => (
-                                            <div key={w.fbId} className="panel p-0 overflow-hidden relative shadow-2xl">
-                                                <img src={w.photo || 'https://via.placeholder.com/400'} className="w-full h-64" onError={(e)=>e.target.src='https://via.placeholder.com/400?text=No+Photo'} />
-                                                <div className="p-4">
-                                                    <h3 className="text-xl font-black text-red-500">{w.name}</h3>
-                                                    <p className="text-xs font-bold mt-1 text-amber-500">التهمة: {w.charge}</p>
-                                                    {isCommand() && <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "wanted", w.fbId))} className="mt-4 text-red-500 text-[10px] underline">حذف</button>}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {page === 'uniforms' && (
-                                <div className="space-y-6 fade-in">
-                                    <div className="flex justify-between items-center">
-                                        <h1 className="text-2xl font-black italic">معرض الملابس</h1>
-                                        {isCommand() && <button onClick={()=>setModal('addUniform')} className="bg-blue-600 px-6 py-2 rounded-xl font-black text-xs">+ إضافة</button>}
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        {uniforms.map(uni => (
-                                            <div key={uni.fbId} className="panel p-0 overflow-hidden group">
-                                                <img src={uni.photo} className="w-full h-80 group-hover:scale-110 transition-all" onError={(e)=>e.target.src='https://via.placeholder.com/400?text=Uniform'} />
-                                                <div className="p-4 bg-black/60 flex justify-between items-center">
-                                                    <span className="font-black text-xs">{uni.name}</span>
-                                                    {isCommand() && <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db, "uniforms", uni.fbId))} className="text-red-500 text-xs">🗑️</button>}
-                                                </div>
-                                            </div>
-                                        ))}
+                                    <h1 className="text-4xl font-black italic">قائمة العساكر</h1>
+                                    <div className="tactical-panel">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full">
+                                                <thead>
+                                                    <tr>
+                                                        <th>الاسم</th>
+                                                        <th>الرتبة</th>
+                                                        <th>القسم</th>
+                                                        <th>الرقم العسكري</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {getSortedUsers().map(u => (
+                                                        <tr key={u.id}>
+                                                            <td className="font-bold">{u.name}</td>
+                                                            <td className="text-blue-400 font-black text-sm uppercase">{u.rank}</td>
+                                                            <td className="text-gray-400 text-xs font-bold">{u.department || 'الميدان'}</td>
+                                                            <td className="font-mono text-gray-500 text-xs">#{u.id}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             )}
 
+                            {/* صفحة الإدارة - التحكم بالأفراد */}
                             {page === 'admin' && isCommand() && (
                                 <div className="space-y-8 fade-in">
-                                    <div className="flex justify-between items-center">
-                                        <h1 className="text-2xl font-black text-amber-500 italic">التحكم بالأفراد</h1>
-                                        <button onClick={()=>setModal('addOfficer')} className="bg-blue-600 px-6 py-2 rounded-xl font-black text-xs">+ عسكري جديد</button>
+                                    <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                                        <h1 className="text-3xl font-black text-amber-500 italic">إدارة شؤون الموظفين</h1>
+                                        <button onClick={()=>setModal('add')} className="w-full md:w-auto bg-blue-600 px-8 py-4 rounded-lg font-black text-sm">+ إضافة عسكري جديد</button>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {users.map(u => (
-                                            <div key={u.fbId} className="panel flex justify-between items-center">
+                                            <div key={u.fbId} className="tactical-panel p-6 flex justify-between items-center border-l-4 border-l-amber-500">
                                                 <div>
                                                     <p className="font-black text-lg">{u.name}</p>
-                                                    <p className="text-[10px] text-blue-400 font-bold uppercase">{u.rank} | ID: {u.id}</p>
+                                                    <p className="text-[10px] text-blue-400 font-black uppercase tracking-widest">{u.rank}</p>
                                                 </div>
                                                 <div className="flex gap-2">
-                                                    <button onClick={()=>setModal({type:'editOfficer', user:u})} className="bg-amber-600/20 text-amber-500 px-3 py-1 rounded-lg text-[10px] font-black italic">تعديل</button>
-                                                    <button onClick={async()=>{if(confirm('فصل؟')) await window.fb.deleteDoc(window.fb.doc(window.fb.db,"users",u.fbId))}} className="bg-red-600/20 text-red-500 px-3 py-1 rounded-lg text-[10px] font-black italic">فصل</button>
+                                                    <button onClick={()=>setModal({type:'edit', user:u})} className="p-2 bg-amber-500/10 text-amber-500 rounded text-[10px] font-black uppercase border border-amber-500/20">تعديل</button>
+                                                    <button onClick={async()=>{if(confirm('هل أنت متأكد من فصل هذا العسكري؟')) await window.fb.deleteDoc(window.fb.doc(window.fb.db,"users",u.fbId))}} className="p-2 bg-red-600/10 text-red-500 rounded text-[10px] font-black uppercase border border-red-500/20">فصل</button>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Civil Registry */}
-                            {page === 'civil' && (
-                                <div className="space-y-6 fade-in">
-                                    <div className="flex justify-between items-center">
-                                        <h1 className="text-2xl font-black italic">البحث المدني</h1>
-                                        <button onClick={()=>setModal('addCivil')} className="bg-blue-600 px-6 py-2 rounded-xl font-black text-xs">+ مواطن جديد</button>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        {civilians.map(c => (
-                                            <div key={c.fbId} onClick={()=>setModal({type:'viewCivil', data:c})} className="panel flex items-center gap-4 cursor-pointer hover:border-blue-500">
-                                                <img src={c.photo} className="w-16 h-16 rounded-xl" onError={(e)=>e.target.src='https://via.placeholder.com/100'} />
-                                                <div><p className="font-black">{c.name}</p><p className="text-[10px] opacity-40">Sony ID: {c.sonyId}</p></div>
                                             </div>
                                         ))}
                                     </div>
@@ -270,97 +343,62 @@
                         </div>
                     </main>
 
-                    {/* Modals Container */}
+                    {/* Modals Engine */}
                     {modal && (
-                        <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-black/95">
-                            <div className="bg-[#1e293b] p-8 rounded-[2rem] w-full max-w-md space-y-6 border border-white/5 shadow-2xl overflow-y-auto max-h-[90vh]">
+                        <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-black/90 animate-in fade-in">
+                            <div className="bg-[#1e293b] p-8 rounded-xl w-full max-w-md space-y-5 border border-white/5 shadow-2xl overflow-y-auto max-h-[90vh]">
                                 
-                                {modal === 'addOfficer' && (
+                                {(modal === 'add' || modal.type === 'edit') && (
                                     <div className="space-y-4">
-                                        <h2 className="text-xl font-black text-blue-500 text-center uppercase tracking-widest">Add Unit</h2>
-                                        <input id="n_id" placeholder="الرقم العسكري" />
-                                        <input id="n_nm" placeholder="الاسم" />
-                                        <input id="n_pw" placeholder="الباسورد" />
-                                        <select id="n_rk">{RANKS_MASTER.map(r=><option key={r.id} value={r.id}>{r.label}</option>)}</select>
-                                        <select id="n_rl"><option value="فرد عسكري">فرد</option><option value="رتبة قيادية">قيادة</option></select>
-                                        <button onClick={async()=>{
-                                            const d = { id: document.getElementById('n_id').value, name: document.getElementById('n_nm').value, password: document.getElementById('n_pw').value, rank: document.getElementById('n_rk').value, role: document.getElementById('n_rl').value };
-                                            await window.fb.setDoc(window.fb.doc(window.fb.db, "users", d.id), d); setModal(null);
-                                        }} className="w-full bg-blue-600 py-4 rounded-xl font-black shadow-lg">تأكيد الإضافة</button>
-                                    </div>
-                                )}
-
-                                {modal.type === 'editOfficer' && (
-                                    <div className="space-y-4">
-                                        <h2 className="text-xl font-black text-amber-500 text-center uppercase">تعديل ملف العسكري</h2>
-                                        <p className="text-center text-xs opacity-50">تعديل: {modal.user.name}</p>
-                                        <input id="e_nm" placeholder="الاسم الجديد" defaultValue={modal.user.name} />
-                                        <input id="e_pw" placeholder="الباسورد الجديد" defaultValue={modal.user.password} />
-                                        <select id="e_rk" defaultValue={modal.user.rank}>{RANKS_MASTER.map(r=><option key={r.id} value={r.id}>{r.label}</option>)}</select>
-                                        <select id="e_rl" defaultValue={modal.user.role}><option value="فرد عسكري">فرد</option><option value="رتبة قيادية">قيادة</option></select>
-                                        <button onClick={async()=>{
-                                            const upd = { ...modal.user, name: document.getElementById('e_nm').value, password: document.getElementById('e_pw').value, rank: document.getElementById('e_rk').value, role: document.getElementById('e_rl').value };
-                                            await window.fb.updateDoc(window.fb.doc(window.fb.db, "users", modal.user.fbId), upd); setModal(null);
-                                        }} className="w-full bg-amber-600 py-4 rounded-xl font-black">حفظ التغييرات</button>
-                                    </div>
-                                )}
-
-                                {modal === 'addWanted' && (
-                                    <div className="space-y-4">
-                                        <h2 className="text-xl font-black text-red-500 text-center uppercase">تعميم جديد</h2>
-                                        <input id="w_nm" placeholder="اسم المطلوب" />
-                                        <input id="w_ch" placeholder="التهمة" />
-                                        <input id="w_ph" placeholder="رابط الصورة المباشر" />
-                                        <button onClick={async()=>{
-                                            await window.fb.addDoc(window.fb.collection(window.fb.db, "wanted"), { name: document.getElementById('w_nm').value, charge: document.getElementById('w_ch').value, photo: document.getElementById('w_ph').value });
-                                            setModal(null);
-                                        }} className="w-full bg-red-600 py-4 rounded-xl font-black">نشر التعميم</button>
-                                    </div>
-                                )}
-
-                                {modal === 'addUniform' && (
-                                    <div className="space-y-4">
-                                        <h2 className="text-xl font-black text-blue-500 text-center">طقم جديد</h2>
-                                        <input id="u_nm" placeholder="اسم الطقم" />
-                                        <input id="u_ph" placeholder="رابط صورة الطقم" />
-                                        <button onClick={async()=>{
-                                            await window.fb.addDoc(window.fb.collection(window.fb.db, "uniforms"), { name: document.getElementById('u_nm').value, photo: document.getElementById('u_ph').value });
-                                            setModal(null);
-                                        }} className="w-full bg-blue-600 py-4 rounded-xl font-black">إضافة للمعرض</button>
-                                    </div>
-                                )}
-
-                                {modal === 'addCivil' && (
-                                    <div className="space-y-4">
-                                        <h2 className="text-xl font-black text-amber-500 text-center">مواطن جديد</h2>
-                                        <input id="c_nm" placeholder="اسم المواطن" />
-                                        <input id="c_id" placeholder="Sony ID" />
-                                        <input id="c_ph" placeholder="رابط صورة الهوية" />
-                                        <button onClick={async()=>{
-                                            await window.fb.addDoc(window.fb.collection(window.fb.db, "civilians"), { name: document.getElementById('c_nm').value, sonyId: document.getElementById('c_id').value, photo: document.getElementById('c_ph').value, records: [] });
-                                            setModal(null);
-                                        }} className="w-full bg-amber-600 py-4 rounded-xl font-black text-white">تسجيل في السجل المدني</button>
-                                    </div>
-                                )}
-
-                                {modal.type === 'viewCivil' && (
-                                    <div className="space-y-4 text-center">
-                                        <img src={modal.data.photo} className="w-32 h-32 mx-auto rounded-full border-4 border-blue-500" onError={(e)=>e.target.src='https://via.placeholder.com/100'} />
-                                        <h2 className="text-2xl font-black uppercase">{modal.data.name}</h2>
-                                        <div className="text-right space-y-2 max-h-32 overflow-y-auto">
-                                            <p className="text-[10px] font-black text-red-500">السجل الجنائي:</p>
-                                            {modal.data.records?.map((r,i)=><div key={i} className="text-[9px] bg-red-500/10 p-2 rounded">🚨 {r.charge} - {r.date}</div>)}
+                                        <h2 className="text-xl font-black text-blue-500 text-center uppercase italic tracking-widest border-b border-white/5 pb-4">
+                                            {modal.type === 'edit' ? 'Update Unit Record' : 'Register New Unit'}
+                                        </h2>
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black opacity-40 uppercase">الرقم العسكري</label>
+                                            <input id="m_id" defaultValue={modal.user?.id || ''} />
+                                            
+                                            <label className="text-[10px] font-black opacity-40 uppercase">اسم العسكري</label>
+                                            <input id="m_nm" defaultValue={modal.user?.name || ''} />
+                                            
+                                            <label className="text-[10px] font-black opacity-40 uppercase">كلمة المرور</label>
+                                            <input id="m_pw" defaultValue={modal.user?.password || ''} />
+                                            
+                                            <label className="text-[10px] font-black opacity-40 uppercase">القسم</label>
+                                            <input id="m_dp" defaultValue={modal.user?.department || ''} placeholder="مثلاً: التحقيقات" />
+                                            
+                                            <label className="text-[10px] font-black opacity-40 uppercase">الرتبة العسكرية</label>
+                                            <select id="m_rk" defaultValue={modal.user?.rank || 'Cadet'}>
+                                                {RANK_HIERARCHY.map(r=><option key={r.id} value={r.id}>{r.id}</option>)}
+                                            </select>
+                                            
+                                            <label className="text-[10px] font-black opacity-40 uppercase">الصلاحية</label>
+                                            <select id="m_rl" defaultValue={modal.user?.role || 'فرد عسكري'}>
+                                                <option value="فرد عسكري">فرد عسكري</option>
+                                                <option value="رتبة قيادية">رتبة قيادية (لوحة الإدارة)</option>
+                                            </select>
                                         </div>
-                                        <input id="new_ch" placeholder="إضافة سابقة..." className="text-xs" />
                                         <button onClick={async()=>{
-                                            const v = document.getElementById('new_ch').value; if(!v) return;
-                                            await window.fb.updateDoc(window.fb.doc(window.fb.db, "civilians", modal.data.fbId), { records: window.fb.arrayUnion({ charge: v, date: new Date().toLocaleDateString('ar-SA') }) });
+                                            const d = { 
+                                                id: document.getElementById('m_id').value, 
+                                                name: document.getElementById('m_nm').value, 
+                                                password: document.getElementById('m_pw').value, 
+                                                rank: document.getElementById('m_rk').value, 
+                                                role: document.getElementById('m_rl').value,
+                                                department: document.getElementById('m_dp').value 
+                                            };
+                                            if(!d.id || !d.name) return alert("امسح بيانات واكتب من جديد");
+                                            
+                                            if(modal.type === 'edit') {
+                                                await window.fb.updateDoc(window.fb.doc(window.fb.db, "users", modal.user.fbId), d);
+                                            } else {
+                                                await window.fb.setDoc(window.fb.doc(window.fb.db, "users", d.id), d);
+                                            }
                                             setModal(null);
-                                        }} className="w-full bg-red-600 py-3 rounded-xl font-black text-[10px]">تحديث السوابق</button>
+                                        }} className="w-full bg-blue-600 py-4 rounded-lg font-black uppercase text-sm mt-4">Save Database Record</button>
                                     </div>
                                 )}
 
-                                <button onClick={()=>setModal(null)} className="w-full py-2 font-black opacity-30 text-xs">إغلاق</button>
+                                <button onClick={()=>setModal(null)} className="w-full py-2 font-black opacity-30 text-[10px] uppercase tracking-widest hover:opacity-100 transition-opacity">Cancel Operation</button>
                             </div>
                         </div>
                     )}
