@@ -4,7 +4,7 @@
     <link rel="icon" type="image/png" href="https://cdn.discordapp.com/emojis/1394931233825361930.webp?size=160&animated=true">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LSPD |</title>
+    <title>LSPD | SUPREME COMMAND CENTER FULL V8.0</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -82,6 +82,7 @@
             const [civilians, setCivilians] = useState([]);
             const [uniforms, setUniforms] = useState([]);
             const [reports, setReports] = useState([]);
+            const [logs, setLogs] = useState([]);
             const [modal, setModal] = useState(null);
 
             useEffect(() => {
@@ -92,7 +93,17 @@
                 window.fb.onSnapshot(window.fb.collection(db, "civilians"), s => setCivilians(s.docs.map(d => ({...d.data(), fbId: d.id}))));
                 window.fb.onSnapshot(window.fb.collection(db, "uniforms"), s => setUniforms(s.docs.map(d => ({...d.data(), fbId: d.id}))));
                 window.fb.onSnapshot(window.fb.query(window.fb.collection(db, "field_reports"), window.fb.orderBy("createdAt", "desc")), s => setReports(s.docs.map(d => ({...d.data(), fbId: d.id}))));
+                window.fb.onSnapshot(window.fb.query(window.fb.collection(db, "system_logs"), window.fb.orderBy("timestamp", "desc")), s => setLogs(s.docs.map(d => ({...d.data(), fbId: d.id}))));
             }, []);
+
+            const addLog = async (action) => {
+                await window.fb.addDoc(window.fb.collection(window.fb.db, "system_logs"), {
+                    action,
+                    user: currentUser.name,
+                    id: currentUser.id,
+                    timestamp: window.fb.serverTimestamp()
+                });
+            };
 
             const getSortedUsers = () => [...users].sort((a, b) => RANK_HIERARCHY.findIndex(r => r.id === a.rank) - RANK_HIERARCHY.findIndex(r => r.id === b.rank));
             const isCommand = () => currentUser?.role === 'رتبة قيادية' || currentUser?.id === '1001';
@@ -101,14 +112,14 @@
                 <div className="h-screen w-full flex items-center justify-center bg-[#05080f] p-6">
                     <div className="w-full max-w-sm p-8 tactical-panel text-center">
                         <img src="https://cdn.discordapp.com/emojis/1394931233825361930.webp?size=160" className="w-20 mx-auto mb-6" />
-                        <h2 className="text-xl font-black mb-6 text-blue-500 italic">SYSTEM LOGIN</h2>
+                        <h2 className="text-xl font-black mb-6 text-blue-500 italic uppercase">Secure MDT Access</h2>
                         <div className="space-y-4">
                             <input id="l_id" placeholder="الرقم العسكري" className="text-center" />
                             <input id="l_pw" type="password" placeholder="كلمة المرور" className="text-center" />
                             <button onClick={() => {
                                 const u = users.find(x => x.id === document.getElementById('l_id').value && x.password === document.getElementById('l_pw').value);
-                                if(u) { setCurrentUser(u); setIsLoggedIn(true); } else alert("خطأ عسكري في البيانات");
-                            }} className="w-full bg-blue-600 py-4 rounded-lg font-black">دخول</button>
+                                if(u) { setCurrentUser(u); setIsLoggedIn(true); } else alert("بيانات خاطئة!");
+                            }} className="w-full bg-blue-600 py-4 rounded-lg font-black uppercase tracking-widest">Login</button>
                         </div>
                     </div>
                 </div>
@@ -118,20 +129,25 @@
                 <div className="flex h-screen overflow-hidden">
                     <div className={`overlay ${menuOpen ? 'active' : ''}`} onClick={()=>setMenuOpen(false)}></div>
                     <aside className={`sidebar ${menuOpen ? 'open' : ''}`}>
-                        <div className="p-8 text-center border-b border-white/5 font-black text-blue-500 italic text-xl">LSPD HUB</div>
+                        <div className="p-8 text-center border-b border-white/5 font-black text-blue-500 italic text-xl uppercase tracking-tighter">LSPD COMMAND</div>
                         <nav className="mt-6 flex-grow">
                             {[{id:'dashboard', i:'🏠', l:'الرئيسية'}, {id:'soldiers', i:'📋', l:'قائمة العساكر'}, {id:'civil', i:'🪪', l:'السجل المدني'}, {id:'wanted', i:'🚨', l:'المطلوبين'}, {id:'reports', i:'📝', l:'التقارير'}, {id:'uniforms', i:'👕', l:'الملابس'}].map(m => (
                                 <div key={m.id} onClick={()=>{setPage(m.id); setMenuOpen(false)}} className={`nav-item ${page===m.id?'active':''}`}>{m.i} {m.l}</div>
                             ))}
-                            {isCommand() && <div onClick={()=>{setPage('admin'); setMenuOpen(false)}} className={`nav-item ${page==='admin'?'bg-amber-600/10 text-amber-500':''}`}>⚙️ إدارة القوة</div>}
+                            {isCommand() && (
+                                <>
+                                    <div onClick={()=>{setPage('admin'); setMenuOpen(false)}} className={`nav-item ${page==='admin'?'bg-amber-600/10 text-amber-500':''}`}>⚙️ إدارة القوة</div>
+                                    <div onClick={()=>{setPage('logs'); setMenuOpen(false)}} className={`nav-item ${page==='logs'?'bg-purple-600/10 text-purple-500':''}`}>📜 سجل اللوق</div>
+                                </>
+                            )}
                         </nav>
-                        <button onClick={()=>setIsLoggedIn(false)} className="m-6 p-4 bg-red-600/10 text-red-500 rounded-lg font-black text-xs">خروج</button>
+                        <button onClick={()=>setIsLoggedIn(false)} className="m-6 p-4 bg-red-600/10 text-red-500 rounded-lg font-black text-xs uppercase tracking-widest border border-red-500/10">Logout</button>
                     </aside>
 
                     <main className="main-view">
                         <header className="mobile-header">
                             <button onClick={()=>setMenuOpen(true)} className="text-3xl text-blue-500">☰</button>
-                            <span className="font-black text-blue-500 italic uppercase">LSPD MDT</span>
+                            <span className="font-black text-blue-500 italic uppercase">Command Hub</span>
                             <div className="w-10"></div>
                         </header>
 
@@ -139,9 +155,9 @@
                             {page === 'dashboard' && (
                                 <div className="space-y-6 text-right">
                                     <h1 className="text-5xl font-black italic">مرحباً، {currentUser.name}</h1>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <div className="tactical-panel p-6"><h3>العساكر</h3><p className="text-3xl font-black text-blue-500">{users.length}</p></div>
-                                        <div className="tactical-panel p-6"><h3>المطلوبين</h3><p className="text-3xl font-black text-red-500">{wanted.length}</p></div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="tactical-panel p-8 border-r-4 border-r-blue-500"><h3>عدد القوة</h3><p className="text-4xl font-black">{users.length}</p></div>
+                                        <div className="tactical-panel p-8 border-r-4 border-r-red-500"><h3>المطلوبين</h3><p className="text-4xl font-black">{wanted.length}</p></div>
                                     </div>
                                 </div>
                             )}
@@ -156,9 +172,80 @@
                                                 {getSortedUsers().map(u => (
                                                     <tr key={u.id}>
                                                         <td className="font-bold">{u.name}</td>
-                                                        <td className="text-blue-400 font-black text-xs">{u.rank}</td>
-                                                        <td className="text-gray-500">{u.department || 'الميدان'}</td>
-                                                        <td className="font-mono text-gray-600">#{u.id}</td>
+                                                        <td className="text-blue-400 font-black text-xs uppercase">{u.rank}</td>
+                                                        <td className="text-gray-500 font-bold">{u.department || 'الميدان'}</td>
+                                                        <td className="font-mono text-gray-600 text-xs">#{u.id}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {page === 'reports' && (
+                                <div className="max-w-4xl mx-auto space-y-6">
+                                    <h1 className="text-3xl font-black">مركز التقارير الميدانية</h1>
+                                    <div className="tactical-panel p-6 space-y-4">
+                                        <textarea id="r_content" placeholder="أدخل تفاصيل التقرير هنا..." className="h-32 text-sm"></textarea>
+                                        <button onClick={async()=>{
+                                            const val = document.getElementById('r_content').value; if(!val) return;
+                                            await window.fb.addDoc(window.fb.collection(window.fb.db, "field_reports"), { 
+                                                content: val, 
+                                                author: currentUser.name, 
+                                                authorId: currentUser.id,
+                                                createdAt: window.fb.serverTimestamp() 
+                                            });
+                                            addLog(`رفع تقرير ميداني جديد`);
+                                            document.getElementById('r_content').value = '';
+                                        }} className="w-full bg-blue-600 py-4 rounded-lg font-black uppercase tracking-widest text-sm">Submit Report</button>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {reports.map(r => (
+                                            <div key={r.fbId} className="tactical-panel p-6 border-r-4 border-r-blue-500 relative group">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div>
+                                                        <p className="text-[10px] text-blue-500 font-black uppercase tracking-widest">{r.author}</p>
+                                                        <p className="text-[9px] text-gray-600">{r.createdAt?.toDate().toLocaleString('ar-SA')}</p>
+                                                    </div>
+                                                    {(r.authorId === currentUser.id || isCommand()) && (
+                                                        <div className="flex gap-2">
+                                                            <button onClick={()=>setModal({type:'editReport', data:r})} className="text-amber-500 text-[10px] font-black uppercase hover:underline">تعديل</button>
+                                                            <button onClick={async()=>{
+                                                                if(confirm('حذف التقرير نهائياً؟')) {
+                                                                    await window.fb.deleteDoc(window.fb.doc(window.fb.db, "field_reports", r.fbId));
+                                                                    addLog(`حذف تقرير ميداني`);
+                                                                }
+                                                            }} className="text-red-500 text-[10px] font-black uppercase hover:underline">حذف</button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <p className="text-sm italic text-gray-300 leading-relaxed whitespace-pre-wrap">{r.content}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {page === 'logs' && isCommand() && (
+                                <div className="space-y-6 fade-in">
+                                    <div className="flex justify-between items-center">
+                                        <h1 className="text-3xl font-black text-purple-500 italic uppercase">System Audit Logs</h1>
+                                        <button onClick={async()=>{
+                                            if(confirm('تصفير السجل؟')) {
+                                                for(let l of logs) await window.fb.deleteDoc(window.fb.doc(window.fb.db, "system_logs", l.fbId));
+                                            }
+                                        }} className="text-red-500 text-xs font-black">مسح السجل</button>
+                                    </div>
+                                    <div className="tactical-panel overflow-hidden">
+                                        <table className="text-right">
+                                            <thead><tr><th>المسؤول</th><th>العملية</th><th>الوقت</th></tr></thead>
+                                            <tbody>
+                                                {logs.map(l => (
+                                                    <tr key={l.fbId}>
+                                                        <td className="font-bold text-xs">{l.user} <span className="opacity-30">#{l.id}</span></td>
+                                                        <td className="text-purple-400 text-xs font-black">{l.action}</td>
+                                                        <td className="text-[10px] text-gray-500">{l.timestamp?.toDate().toLocaleString('ar-SA')}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -174,9 +261,9 @@
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         {wanted.map(w => (
                                             <div key={w.fbId} className="tactical-panel">
-                                                <img src={w.photo} className="img-card" onError={(e)=>e.target.src='https://via.placeholder.com/300?text=LSPD'} />
-                                                <div className="p-4 text-center"><h3 className="text-xl font-black text-red-500 uppercase">{w.name}</h3><p className="text-xs text-amber-500 mt-1 font-bold">التهمة: {w.charge}</p>
-                                                {isCommand() && <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db,"wanted",w.fbId))} className="mt-3 text-red-500 text-[10px] underline">إغلاق الملف</button>}</div>
+                                                <img src={w.photo} className="img-card" onError={(e)=>e.target.src='https://via.placeholder.com/300?text=No+Image'} />
+                                                <div className="p-5 text-center"><h3 className="text-xl font-black text-red-500 uppercase">{w.name}</h3><p className="text-xs text-amber-500 mt-1 font-bold tracking-widest">CHARGE: {w.charge}</p>
+                                                {isCommand() && <button onClick={async()=>{await window.fb.deleteDoc(window.fb.doc(window.fb.db,"wanted",w.fbId)); addLog(`إزالة مطلوب: ${w.name}`)}} className="mt-4 text-red-500 text-[10px] font-black underline uppercase">Close Case</button>}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -186,34 +273,12 @@
                             {page === 'civil' && (
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-center"><h1 className="text-3xl font-black italic">السجل المدني</h1>
-                                    <button onClick={()=>setModal('addCivil')} className="bg-blue-600 px-6 py-2 rounded-lg font-black text-xs">+ تسجيل مواطن</button></div>
+                                    <button onClick={()=>setModal('addCivil')} className="bg-blue-600 px-6 py-2 rounded-lg font-black text-xs uppercase">+ Register Civil</button></div>
                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                         {civilians.map(c => (
-                                            <div key={c.fbId} onClick={()=>setModal({type:'viewCivil', data:c})} className="tactical-panel p-4 flex items-center gap-4 cursor-pointer hover:bg-white/5">
-                                                <img src={c.photo} className="w-12 h-12 rounded-full object-cover" />
-                                                <div><p className="font-black text-sm">{c.name}</p><p className="text-[10px] opacity-40">ID: {c.sonyId}</p></div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {page === 'reports' && (
-                                <div className="max-w-3xl mx-auto space-y-6">
-                                    <h1 className="text-3xl font-black italic">أرشيف التقارير</h1>
-                                    <div className="tactical-panel p-6 space-y-4">
-                                        <textarea id="r_content" placeholder="اكتب تفاصيل التقرير الميداني..." className="h-32"></textarea>
-                                        <button onClick={async()=>{
-                                            const val = document.getElementById('r_content').value; if(!val) return;
-                                            await window.fb.addDoc(window.fb.collection(window.fb.db, "field_reports"), { content: val, author: currentUser.name, createdAt: window.fb.serverTimestamp() });
-                                            document.getElementById('r_content').value = '';
-                                        }} className="w-full bg-blue-600 py-4 rounded-lg font-black">إرسال التقرير</button>
-                                    </div>
-                                    <div className="space-y-4">
-                                        {reports.map(r => (
-                                            <div key={r.fbId} className="tactical-panel p-5 border-r-4 border-r-blue-500">
-                                                <p className="text-[10px] text-blue-400 font-black mb-2 uppercase">{r.author}</p>
-                                                <p className="text-sm italic">"{r.content}"</p>
+                                            <div key={c.fbId} onClick={()=>setModal({type:'viewCivil', data:c})} className="tactical-panel p-4 flex items-center gap-4 cursor-pointer hover:bg-white/5 transition-colors">
+                                                <img src={c.photo} className="w-12 h-12 rounded-full object-cover border border-blue-500/20" />
+                                                <div><p className="font-black text-sm">{c.name}</p><p className="text-[10px] opacity-40 uppercase">Sony ID: {c.sonyId}</p></div>
                                             </div>
                                         ))}
                                     </div>
@@ -223,13 +288,13 @@
                             {page === 'uniforms' && (
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-center"><h1 className="text-3xl font-black italic">معرض الملابس</h1>
-                                    {isCommand() && <button onClick={()=>setModal('addUni')} className="bg-blue-600 px-6 py-2 rounded-lg font-black text-xs">+ طقم جديد</button>}</div>
+                                    {isCommand() && <button onClick={()=>setModal('addUni')} className="bg-blue-600 px-6 py-2 rounded-lg font-black text-xs">+ Add Uniform</button>}</div>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         {uniforms.map(u => (
                                             <div key={u.fbId} className="tactical-panel p-2">
                                                 <img src={u.photo} className="img-card mb-2" />
-                                                <div className="flex justify-between p-2"><span className="font-black text-xs">{u.name}</span>
-                                                {isCommand() && <button onClick={async()=>await window.fb.deleteDoc(window.fb.doc(window.fb.db,"uniforms",u.fbId))} className="text-red-500 text-xs">🗑️</button>}</div>
+                                                <div className="flex justify-between items-center p-2"><span className="font-black text-xs uppercase">{u.name}</span>
+                                                {isCommand() && <button onClick={async()=>{await window.fb.deleteDoc(window.fb.doc(window.fb.db,"uniforms",u.fbId)); addLog(`حذف طقم ملابس: ${u.name}`)}} className="text-red-500 text-xs">🗑️</button>}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -238,15 +303,15 @@
 
                             {page === 'admin' && isCommand() && (
                                 <div className="space-y-8">
-                                    <div className="flex justify-between items-center"><h1 className="text-3xl font-black text-amber-500 italic">التحكم بالشؤون العسكرية</h1>
-                                    <button onClick={()=>setModal('addOfficer')} className="bg-amber-600 px-6 py-3 rounded-lg font-black text-xs">+ عسكري جديد</button></div>
+                                    <div className="flex justify-between items-center"><h1 className="text-3xl font-black text-amber-500 italic">إدارة شؤون الموظفين</h1>
+                                    <button onClick={()=>setModal('addOfficer')} className="bg-amber-600 px-8 py-3 rounded-lg font-black text-xs">+ عسكري جديد</button></div>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         {users.map(u => (
                                             <div key={u.fbId} className="tactical-panel p-6 flex justify-between items-center border-l-4 border-l-amber-500">
-                                                <div><p className="font-black text-lg">{u.name}</p><p className="text-[10px] text-blue-400 font-black uppercase">{u.rank}</p></div>
+                                                <div><p className="font-black text-lg">{u.name}</p><p className="text-[10px] text-blue-400 font-black uppercase tracking-widest">{u.rank}</p></div>
                                                 <div className="flex gap-2">
-                                                    <button onClick={()=>setModal({type:'editOfficer', user:u})} className="p-2 bg-amber-500/10 text-amber-500 rounded text-[10px] font-black italic border border-amber-500/20">تعديل</button>
-                                                    <button onClick={async()=>{if(confirm('حذف؟')) await window.fb.deleteDoc(window.fb.doc(window.fb.db,"users",u.fbId))}} className="p-2 bg-red-600/10 text-red-500 rounded text-[10px] font-black italic border border-red-500/20">حذف</button>
+                                                    <button onClick={()=>setModal({type:'editOfficer', user:u})} className="p-2 bg-amber-500/10 text-amber-500 rounded text-[10px] font-black uppercase border border-amber-500/20">Edit</button>
+                                                    <button onClick={async()=>{if(confirm('فصل نهائي؟')) { await window.fb.deleteDoc(window.fb.doc(window.fb.db,"users",u.fbId)); addLog(`فصل العسكري: ${u.name}`); }}} className="p-2 bg-red-600/10 text-red-500 rounded text-[10px] font-black uppercase border border-red-500/20">Fire</button>
                                                 </div>
                                             </div>
                                         ))}
@@ -257,77 +322,103 @@
                     </main>
 
                     {modal && (
-                        <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-black/90">
+                        <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-black/95">
                             <div className="bg-[#1e293b] p-8 rounded-xl w-full max-w-md space-y-4 border border-white/5 overflow-y-auto max-h-[90vh]">
+                                
+                                {modal.type === 'editReport' && (
+                                    <div className="space-y-4">
+                                        <h2 className="text-xl font-black text-amber-500 text-center uppercase">تعديل التقرير الميداني</h2>
+                                        <textarea id="edit_r_val" defaultValue={modal.data.content} className="h-40 text-xs"></textarea>
+                                        <button onClick={async()=>{
+                                            const v = document.getElementById('edit_r_val').value;
+                                            await window.fb.updateDoc(window.fb.doc(window.fb.db, "field_reports", modal.data.fbId), { content: v });
+                                            addLog(`تعديل تقرير ميداني`);
+                                            setModal(null);
+                                        }} className="w-full bg-amber-600 py-4 rounded-lg font-black text-sm uppercase">Update Report</button>
+                                    </div>
+                                )}
+
                                 { (modal === 'addOfficer' || modal.type === 'editOfficer') && (
                                     <div className="space-y-4">
-                                        <h2 className="text-xl font-black text-blue-500 text-center uppercase border-b border-white/5 pb-4">الملف العسكري</h2>
+                                        <h2 className="text-xl font-black text-blue-500 text-center uppercase">بيانات العسكري</h2>
                                         <input id="m_id" placeholder="الرقم العسكري" defaultValue={modal.user?.id || ''} />
                                         <input id="m_nm" placeholder="الاسم" defaultValue={modal.user?.name || ''} />
                                         <input id="m_pw" placeholder="الباسورد" defaultValue={modal.user?.password || ''} />
                                         <input id="m_dp" placeholder="القسم" defaultValue={modal.user?.department || ''} />
                                         <select id="m_rk" defaultValue={modal.user?.rank || 'Cadet'}>{RANK_HIERARCHY.map(r=><option key={r.id} value={r.id}>{r.id}</option>)}</select>
-                                        <select id="m_rl" defaultValue={modal.user?.role || 'فرد عسكري'}><option value="فرد عسكري">فرد عسكري</option><option value="رتبة قيادية">قيادة</option></select>
+                                        <select id="m_rl" defaultValue={modal.user?.role || 'فرد عسكري'}><option value="فرد عسكري">فرد عسكري</option><option value="رتبة قيادية">رتبة قيادية</option></select>
                                         <button onClick={async()=>{
                                             const d = { id:document.getElementById('m_id').value, name:document.getElementById('m_nm').value, password:document.getElementById('m_pw').value, rank:document.getElementById('m_rk').value, role:document.getElementById('m_rl').value, department:document.getElementById('m_dp').value };
-                                            if(modal.type==='editOfficer') await window.fb.updateDoc(window.fb.doc(window.fb.db,"users",modal.user.fbId), d);
-                                            else await window.fb.setDoc(window.fb.doc(window.fb.db,"users",d.id), d);
+                                            if(modal.type==='editOfficer') { await window.fb.updateDoc(window.fb.doc(window.fb.db,"users",modal.user.fbId), d); addLog(`تعديل بيانات عسكري: ${d.name}`); }
+                                            else { await window.fb.setDoc(window.fb.doc(window.fb.db,"users",d.id), d); addLog(`إضافة عسكري جديد: ${d.name}`); }
                                             setModal(null);
-                                        }} className="w-full bg-blue-600 py-4 rounded-lg font-black uppercase text-sm">حفظ السجلات</button>
+                                        }} className="w-full bg-blue-600 py-4 rounded-lg font-black uppercase text-sm">Save Unit Data</button>
                                     </div>
                                 )}
+
                                 { modal === 'addWanted' && (
                                     <div className="space-y-4">
-                                        <h2 className="text-xl font-black text-red-500 text-center uppercase border-b border-white/5 pb-4">تعميم جديد</h2>
+                                        <h2 className="text-xl font-black text-red-500 text-center uppercase">Wanted Bulletin</h2>
                                         <input id="w_nm" placeholder="اسم المطلوب" />
-                                        <input id="w_ch" placeholder="التهمة الرئيسية" />
-                                        <input id="w_ph" placeholder="رابط الصورة المباشر" />
+                                        <input id="w_ch" placeholder="التهمة" />
+                                        <input id="w_ph" placeholder="رابط الصورة" />
                                         <button onClick={async()=>{
-                                            await window.fb.addDoc(window.fb.collection(window.fb.db,"wanted"), { name:document.getElementById('w_nm').value, charge:document.getElementById('w_ch').value, photo:document.getElementById('w_ph').value });
+                                            const name = document.getElementById('w_nm').value;
+                                            await window.fb.addDoc(window.fb.collection(window.fb.db,"wanted"), { name, charge:document.getElementById('w_ch').value, photo:document.getElementById('w_ph').value });
+                                            addLog(`إضافة تعميم مطلوب: ${name}`);
                                             setModal(null);
-                                        }} className="w-full bg-red-600 py-4 rounded-lg font-black">نشر التعميم</button>
+                                        }} className="w-full bg-red-600 py-4 rounded-lg font-black uppercase">Post Bulletin</button>
                                     </div>
                                 )}
+
                                 { modal === 'addCivil' && (
                                     <div className="space-y-4">
-                                        <h2 className="text-xl font-black text-amber-500 text-center uppercase border-b border-white/5 pb-4">تسجيل مدني</h2>
-                                        <input id="c_nm" placeholder="اسم المواطن" />
+                                        <h2 className="text-xl font-black text-blue-500 text-center uppercase">Register Citizen</h2>
+                                        <input id="c_nm" placeholder="الاسم الكامل" />
                                         <input id="c_id" placeholder="Sony ID" />
-                                        <input id="c_ph" placeholder="رابط صورة الهوية" />
+                                        <input id="c_ph" placeholder="رابط الصورة الشخصية" />
                                         <button onClick={async()=>{
-                                            await window.fb.addDoc(window.fb.collection(window.fb.db,"civilians"), { name:document.getElementById('c_nm').value, sonyId:document.getElementById('c_id').value, photo:document.getElementById('c_ph').value, records:[] });
+                                            const nm = document.getElementById('c_nm').value;
+                                            await window.fb.addDoc(window.fb.collection(window.fb.db,"civilians"), { name:nm, sonyId:document.getElementById('c_id').value, photo:document.getElementById('c_ph').value, records:[] });
+                                            addLog(`تسجيل مواطن جديد: ${nm}`);
                                             setModal(null);
-                                        }} className="w-full bg-amber-600 py-4 rounded-lg font-black text-sm">تسجيل في النظام</button>
+                                        }} className="w-full bg-blue-600 py-4 rounded-lg font-black uppercase">Confirm Registry</button>
                                     </div>
                                 )}
+
                                 { modal.type === 'viewCivil' && (
                                     <div className="space-y-4 text-center">
-                                        <img src={modal.data.photo} className="w-24 h-24 mx-auto rounded-full border-4 border-blue-600 object-cover" />
+                                        <img src={modal.data.photo} className="w-24 h-24 mx-auto rounded-full border-4 border-blue-500 object-cover" />
                                         <h2 className="text-2xl font-black">{modal.data.name}</h2>
                                         <div className="text-right space-y-2 max-h-40 overflow-y-auto">
-                                            <p className="text-xs font-black text-red-500 uppercase border-b border-white/5 pb-1">السوابق الجنائية:</p>
+                                            <p className="text-[10px] font-black text-red-500 uppercase border-b border-white/5 pb-1 tracking-widest">Criminal Record</p>
                                             {modal.data.records?.map((r,i)=><div key={i} className="text-[10px] bg-red-500/10 p-2 rounded">🚨 {r.charge} - {r.date}</div>)}
                                         </div>
-                                        <input id="new_rec" placeholder="إضافة سابقة جديدة..." className="text-xs" />
+                                        <input id="new_rec" placeholder="إضافة مخالفة..." className="text-xs" />
                                         <button onClick={async()=>{
                                             const v = document.getElementById('new_rec').value; if(!v) return;
                                             await window.fb.updateDoc(window.fb.doc(window.fb.db,"civilians",modal.data.fbId), { records: window.fb.arrayUnion({charge:v, date:new Date().toLocaleDateString('ar-SA')}) });
+                                            addLog(`إضافة سابقة للمواطن: ${modal.data.name}`);
                                             setModal(null);
-                                        }} className="w-full bg-red-600 py-3 rounded-lg font-black text-[10px]">تحديث السجل</button>
+                                        }} className="w-full bg-red-600 py-3 rounded-lg font-black text-[10px] uppercase">Update Records</button>
                                     </div>
                                 )}
+
                                 { modal === 'addUni' && (
                                     <div className="space-y-4">
-                                        <h2 className="text-xl font-black text-blue-500 text-center uppercase">Add Uniform</h2>
+                                        <h2 className="text-xl font-black text-blue-500 text-center uppercase">New Uniform</h2>
                                         <input id="u_nm" placeholder="اسم الطقم" />
                                         <input id="u_ph" placeholder="رابط الصورة" />
                                         <button onClick={async()=>{
-                                            await window.fb.addDoc(window.fb.collection(window.fb.db,"uniforms"), { name:document.getElementById('u_nm').value, photo:document.getElementById('u_ph').value });
+                                            const nm = document.getElementById('u_nm').value;
+                                            await window.fb.addDoc(window.fb.collection(window.fb.db,"uniforms"), { name:nm, photo:document.getElementById('u_ph').value });
+                                            addLog(`إضافة طقم ملابس جديد: ${nm}`);
                                             setModal(null);
-                                        }} className="w-full bg-blue-600 py-4 rounded-lg font-black uppercase text-sm">إرسال للمعرض</button>
+                                        }} className="w-full bg-blue-600 py-4 rounded-lg font-black uppercase">Add to Gallery</button>
                                     </div>
                                 )}
-                                <button onClick={()=>setModal(null)} className="w-full py-2 font-black opacity-30 text-[10px] uppercase">إلغاء</button>
+
+                                <button onClick={()=>setModal(null)} className="w-full py-2 font-black opacity-30 text-[10px] uppercase tracking-tighter hover:opacity-100 transition-opacity">Abort Mission</button>
                             </div>
                         </div>
                     )}
